@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-is-mobile';
 
 const authRoutes = ['/login', '/signup', '/terms', '/privacy'];
 const fullScreenRoutes = ['/pay/confirm'];
+const welcomeRoute = '/welcome';
 
 const AppLoader = () => (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -42,28 +43,30 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
     const isMobile = useIsMobile();
     
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+    const isWelcomePage = pathname.startsWith(welcomeRoute);
 
     useEffect(() => {
         if (isLoading) return;
 
-        if (!isAuthenticated && !isAuthRoute) {
+        if (!isAuthenticated && !isAuthRoute && !isWelcomePage) {
             router.push('/login');
         } else if (isAuthenticated) {
-            if (userData && userData.hasCompletedOnboarding === false && pathname !== '/welcome') {
+            if (userData && !userData.hasCompletedOnboarding && !isWelcomePage) {
                 router.push('/welcome');
-            } else if (userData && userData.hasCompletedOnboarding === true && (isAuthRoute || pathname === '/welcome')) {
+            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute || isWelcomePage)) {
                 router.push('/');
             }
         }
 
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage]);
     
-    // While loading, or if we are not authenticated and not on an auth route, show the loader.
     if (isLoading || (!isAuthenticated && !isAuthRoute)) {
+        // Show loader if loading, or if not authenticated and not on an auth/welcome route
+        // This prevents flashes of content for unauthenticated users.
+        if (isWelcomePage && !isAuthenticated) return null; // Don't show loader on welcome if not logged in yet, let it handle its own state
         return <AppLoader />;
     }
     
-    const isWelcomePage = pathname.startsWith('/welcome');
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.startsWith(route));
 
     // Render children directly for auth pages, welcome page, or if user is authenticated but data is not yet available

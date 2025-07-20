@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
@@ -26,9 +26,15 @@ export default function WelcomePage() {
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const { user, userData, checkUsernameExists, refreshUserData } = useAuth();
+    const { user, userData, checkUsernameExists, refreshUserData, isLoading: isAuthLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+
+    useEffect(() => {
+        if (!isAuthLoading && !user) {
+            router.push('/login');
+        }
+    }, [isAuthLoading, user, router]);
 
     const getInitials = (email: string | null | undefined) => {
         if (!email) return 'U';
@@ -40,15 +46,30 @@ export default function WelcomePage() {
         setUsername(e.target.value.toLowerCase().replace(/[^a-zA-Z0-9_.]/g, ''));
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            setAvatarFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+            setIsLoading(true);
+            try {
+                 const options = {
+                    maxSizeMB: 0.2, 
+                    maxWidthOrHeight: 256,
+                    useWebWorker: true,
+                };
+                const compressedFile = await imageCompression(file, options);
+                setAvatarFile(compressedFile);
+                
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setAvatarPreview(reader.result as string);
+                };
+                reader.readAsDataURL(compressedFile);
+            } catch (error) {
+                console.error("Image compression error:", error);
+                toast({ variant: 'destructive', title: "Image Processing Failed", description: "Could not process image." });
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
     
@@ -62,16 +83,9 @@ export default function WelcomePage() {
             };
 
             if (avatarFile) {
-                const options = {
-                    maxSizeMB: 0.1,
-                    maxWidthOrHeight: 100,
-                    useWebWorker: true,
-                };
-                const compressedFile = await imageCompression(avatarFile, options);
-                
                 const dataUrl = await new Promise<string>((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.readAsDataURL(compressedFile);
+                    reader.readAsDataURL(avatarFile);
                     reader.onload = () => resolve(reader.result as string);
                     reader.onerror = error => reject(error);
                 });
@@ -132,6 +146,10 @@ export default function WelcomePage() {
             }
         }
     };
+
+    if (isAuthLoading || !user) {
+        return <LoadingOverlay isLoading={true} />;
+    }
 
     const renderStep = () => {
         switch (step) {

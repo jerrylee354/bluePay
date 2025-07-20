@@ -187,7 +187,7 @@ export default function PayPage() {
                 )}
             </div>
             
-            <div className="flex-grow">
+            <div className="flex-grow overflow-y-auto">
                  {searchTerm.length > 0 ? renderSearchResults() : (
                     <Card>
                         <CardContent className="p-0">
@@ -207,7 +207,7 @@ export default function PayPage() {
                  )}
             </div>
             
-             <div className="mt-auto flex w-full justify-center mb-4">
+             <div className="mt-auto flex w-full justify-center pt-4 mb-4">
                 <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
                     <Button 
                         asChild

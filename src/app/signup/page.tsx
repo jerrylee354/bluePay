@@ -40,29 +40,27 @@ export default function SignupPage() {
 
     const handleNextStep = async () => {
         setError('');
-        setIsLoading(true);
-
+        
         if (step === 1) {
             if (!accountType) {
                 setError('Please select an account type to continue.');
-                setIsLoading(false);
                 return;
             }
         }
+        
         if (step === 2) { 
             if (!email) {
                 setError('Please enter your email address.');
-                setIsLoading(false);
                 return;
             }
              if (accountType === 'business') {
                 const domain = email.split('@')[1];
                 if (!domain || ['gmail.com', 'yahoo.com', 'hotmail.com'].includes(domain)) {
                     setError('Business accounts require a company domain email.');
-                    setIsLoading(false);
                     return;
                 }
             }
+            setIsLoading(true);
             try {
                 const emailExists = await checkEmailExists(email);
                 if (emailExists) {
@@ -74,38 +72,45 @@ export default function SignupPage() {
                  setError('Failed to validate email. Please try again.');
                  setIsLoading(false);
                  return;
+            } finally {
+                setIsLoading(false);
             }
         }
+        
         if (step === 3) { 
             if (password.length < 6) {
                 setError('Password must be at least 6 characters long.');
-                setIsLoading(false);
                 return;
             }
             if (password !== confirmPassword) {
                 setError('Passwords do not match.');
-                setIsLoading(false);
                 return;
             }
         }
+        
         if (step === 4) { 
             if (!firstName || !lastName) {
                 setError('Please enter your first and last name.');
-                setIsLoading(false);
                 return;
             }
         }
-        if (step === (accountType === 'business' ? 6 : 5)) { 
-             if (!agreedToTerms) {
+
+        const isFinalStep = (accountType === 'personal' && step === 4) || (accountType === 'business' && step === 5);
+        if (isFinalStep) {
+            setStep(prev => prev + 1);
+            return;
+        }
+
+        const isSubmitStep = (accountType === 'personal' && step === 5) || (accountType === 'business' && step === 6);
+        if (isSubmitStep) {
+            if (!agreedToTerms) {
                 setError('You must agree to the terms to continue.');
-                setIsLoading(false);
                 return;
             }
             handleSubmit();
             return;
         }
         
-        setIsLoading(false);
         setStep(prev => prev + 1);
     };
 
@@ -140,7 +145,7 @@ export default function SignupPage() {
                 title: "Signup Successful",
                 description: "Your account has been created.",
             });
-            router.push('/');
+            router.push('/welcome');
         } catch (err: any) {
             if (err.code === 'auth/email-already-in-use') {
                  setError('This email address is already in use.');
@@ -339,7 +344,7 @@ export default function SignupPage() {
     };
 
     const isFinalStep = (accountType === 'personal' && step === 5) || (accountType === 'business' && step === 6);
-    const buttonAction = isFinalStep ? handleSubmit : handleNextStep;
+    const buttonAction = handleNextStep;
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center p-4">

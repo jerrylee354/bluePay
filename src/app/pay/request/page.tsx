@@ -250,11 +250,11 @@ export default function RequestPage() {
                 )}
             </div>
             
-            <div className="flex-grow">
+            <div className="flex-grow overflow-y-auto">
                 {renderContent()}
             </div>
             
-             <div className="mt-auto flex w-full justify-center mb-4">
+             <div className="mt-auto flex w-full justify-center pt-4 mb-4">
                 <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
                      <Button 
                         asChild
