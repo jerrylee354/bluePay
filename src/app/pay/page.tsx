@@ -187,11 +187,11 @@ export default function PayPage() {
                 )}
             </div>
             
-            <div className="flex-grow overflow-y-auto">
+            <div className="flex-grow overflow-y-auto pb-24 md:pb-0">
                  {searchTerm.length > 0 ? renderSearchResults() : (
                     <Card>
                         <CardContent className="p-0">
-                            <Link href="/pay/scan" className="block hover:bg-muted/50 transition-colors rounded-xl">
+                            <Link href="/pay/scan" className="block hover:bg-muted/50 transition-colors rounded-t-xl">
                                 <div className="flex items-center gap-4 p-4">
                                     <div className="p-3 bg-primary/10 rounded-lg">
                                         <QrCode className="w-6 h-6 text-primary" />
@@ -207,26 +207,29 @@ export default function PayPage() {
                  )}
             </div>
             
-             <div className="mt-auto flex w-full justify-center pt-4 mb-4">
-                <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
-                    <Button 
-                        asChild
-                        className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                            pathname === '/pay' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
-                        )}
-                    >
-                        <Link href="/pay">付款</Link>
-                    </Button>
-                    <Button 
-                        asChild
-                        className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                            pathname === '/pay/request' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
-                        )}
-                    >
-                        <Link href="/pay/request">要求付款</Link>
-                    </Button>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 md:static md:translate-x-0 md:left-auto md:bottom-auto md:max-w-none md:p-0 md:mt-auto">
+                <div className="flex w-full justify-center pt-4">
+                    <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
+                        <Button 
+                            asChild
+                            className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
+                                pathname === '/pay' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                            )}
+                        >
+                            <Link href="/pay">付款</Link>
+                        </Button>
+                        <Button 
+                            asChild
+                            className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
+                                pathname === '/pay/request' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                            )}
+                        >
+                            <Link href="/pay/request">要求付款</Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
+
              <Dialog open={isPayDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="p-0 max-w-md h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
                     {selectedUser && (
