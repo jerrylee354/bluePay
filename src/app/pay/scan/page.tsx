@@ -88,22 +88,8 @@ export default function ScanToPayPage() {
     useEffect(() => {
         if (scanResult && !isProcessing) {
             setIsProcessing(true);
-            try {
-                const url = new URL(scanResult);
-                const pathParts = url.pathname.split('/').filter(Boolean);
-
-                if (pathParts.length === 1 && pathParts[0].startsWith('@')) {
-                    const usernamePath = pathParts[0]; // e.g., @username
-                    toast({ title: "QR Code Scanned!", description: `Navigating to ${usernamePath}'s profile...` });
-                    router.push(`/${usernamePath}`);
-                    return; 
-                }
-            } catch (error) {
-                // Not a valid URL, or does not match expected format
-            }
             
-            // If it's not a valid BluePay URL QR code
-            toast({ variant: 'destructive', title: 'Invalid QR Code', description: 'This is not a valid BluePay payment code.' });
+            toast({ variant: 'destructive', title: 'Invalid QR Code', description: 'This QR code is not valid for payments at this time.' });
             
             setTimeout(() => {
                 setScanResult(null);

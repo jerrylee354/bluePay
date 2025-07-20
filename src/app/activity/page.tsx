@@ -70,7 +70,7 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
 
     return (
         <li className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-muted/50" onClick={isPaymentRequest ? undefined : onClick}>
-            <Avatar className="h-11 w-11" onClick={onAvatarClick}>
+            <Avatar className="h-11 w-11 cursor-default" onClick={onAvatarClick}>
                 <AvatarImage src={tx.otherParty?.photoURL} alt={tx.name} />
                 <AvatarFallback>{getInitials(tx.name)}</AvatarFallback>
             </Avatar>
@@ -95,8 +95,20 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
 };
 
 const TransactionList = ({ transactions, currency, onTransactionClick, onConfirmPayment }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, onConfirmPayment: (tx: Transaction) => void }) => {
-    const router = require('next/navigation').useRouter();
+    
+    const handleAvatarClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Profile page functionality removed
+    }
 
+    if (transactions.length === 0) {
+        return (
+            <div className="p-8 text-center text-muted-foreground">
+                No transactions found.
+            </div>
+        );
+    }
+    
     const groupedTransactions = useMemo(() => {
         if (transactions.length === 0) return {};
 
@@ -110,21 +122,6 @@ const TransactionList = ({ transactions, currency, onTransactionClick, onConfirm
         }, {} as Record<string, Transaction[]>);
     }, [transactions]);
 
-    if (transactions.length === 0) {
-        return (
-            <div className="p-8 text-center text-muted-foreground">
-                No transactions found.
-            </div>
-        );
-    }
-    
-    const handleAvatarClick = (e: React.MouseEvent, tx: Transaction) => {
-        e.stopPropagation();
-        if (tx.otherParty?.username) {
-            const usernamePath = tx.otherParty.username.startsWith('@') ? tx.otherParty.username.substring(1) : tx.otherParty.username;
-            router.push(`/p/${usernamePath}`);
-        }
-    }
 
     return (
         <div className="space-y-4">
@@ -141,7 +138,7 @@ const TransactionList = ({ transactions, currency, onTransactionClick, onConfirm
                                 currency={currency} 
                                 onClick={() => onTransactionClick(tx)} 
                                 onConfirmPayment={onConfirmPayment}
-                                onAvatarClick={(e) => handleAvatarClick(e, tx)}
+                                onAvatarClick={(e) => handleAvatarClick(e)}
                             />
                         ))}
                     </ul>

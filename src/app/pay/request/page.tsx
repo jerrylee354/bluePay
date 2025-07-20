@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { Search, X, Users } from 'lucide-react';
+import { Search, X, Users, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,7 +17,7 @@ import { DocumentData } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
-import { QRCodeSVG } from 'qrcode.react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
     Dialog,
     DialogContent,
@@ -51,7 +51,6 @@ export default function RequestPage() {
     const [showNoResults, setShowNoResults] = useState(false);
     const [selectedUser, setSelectedUser] = useState<DocumentData | null>(null);
     const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
-    const [qrValue, setQrValue] = useState('');
 
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -103,16 +102,6 @@ export default function RequestPage() {
         }
         return `@${firstName?.toLowerCase() || 'user'}`;
     }
-
-    const displayUsername = getDisplayUsername();
-
-    useEffect(() => {
-        if (typeof window !== 'undefined' && currentUser && displayUsername) {
-            const origin = window.location.origin;
-            const usernamePath = displayUsername.substring(1); 
-            setQrValue(`${origin}/@${usernamePath}`);
-        }
-    }, [currentUser, displayUsername]);
 
     const clearSearch = () => {
         setSearchTerm('');
@@ -192,18 +181,13 @@ export default function RequestPage() {
                 <Card className="w-full max-w-xs p-6 shadow-lg">
                     <CardContent className="p-0 flex flex-col items-center space-y-4">
                          <div className="p-4 bg-white rounded-lg flex items-center justify-center">
-                            {currentUser && qrValue ? (
-                                <QRCodeSVG 
-                                    value={qrValue} 
-                                    size={240}
-                                    bgColor={"#ffffff"}
-                                    fgColor={"#000000"}
-                                    level={"L"}
-                                    includeMargin={false}
-                                />
-                            ) : (
-                                <Skeleton className="w-[240px] h-[240px]" />
-                            )}
+                            <Alert>
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>QR Code Disabled</AlertTitle>
+                                <AlertDescription>
+                                    Profile pages are currently disabled.
+                                </AlertDescription>
+                            </Alert>
                          </div>
                         
                         <div className="flex items-center gap-3 pt-2">
@@ -213,7 +197,7 @@ export default function RequestPage() {
                             </Avatar>
                              <div className="text-left">
                                 <p className="font-bold text-lg">{userData?.firstName} {userData?.lastName}</p>
-                                <p className="text-muted-foreground">{displayUsername}</p>
+                                <p className="text-muted-foreground">{getDisplayUsername()}</p>
                             </div>
                         </div>
                     </CardContent>
