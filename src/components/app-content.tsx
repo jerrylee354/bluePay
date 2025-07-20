@@ -40,11 +40,11 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
+    
+    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
     useEffect(() => {
         if (isLoading) return;
-
-        const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
         if (!isAuthenticated && !isAuthRoute) {
             router.push('/login');
@@ -56,22 +56,23 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
             }
         }
 
-    }, [isAuthenticated, isLoading, pathname, router, userData]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute]);
     
-    if (isLoading) {
+    // While loading, or if we are not authenticated and not on an auth route, show the loader.
+    if (isLoading || (!isAuthenticated && !isAuthRoute)) {
         return <AppLoader />;
     }
     
-    const isAuthPage = authRoutes.some(route => pathname.startsWith(route));
     const isWelcomePage = pathname.startsWith('/welcome');
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.startsWith(route));
 
-    if (isAuthPage || isWelcomePage || !isAuthenticated || (isMobile && isFullScreenPage)) {
+    // Render children directly for auth pages, welcome page, or if user is authenticated but data is not yet available
+    if (isAuthRoute || isWelcomePage || !userData) {
         return <main className="h-screen">{children}</main>;
     }
     
-    if (!userData) {
-         return <AppLoader />;
+    if (isMobile && isFullScreenPage) {
+         return <main className="h-screen">{children}</main>;
     }
 
     if (isMobile) {

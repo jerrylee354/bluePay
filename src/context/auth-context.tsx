@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       uid: user.uid,
       email: user.email,
       ...additionalData,
-      balance: 1000, // Start with a balance for testing
+      balance: 0,
       currency: 'USD',
       hasCompletedOnboarding: false,
       createdAt: new Date(),
