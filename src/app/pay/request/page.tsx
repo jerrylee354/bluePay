@@ -17,7 +17,7 @@ import { DocumentData } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import QRCode from 'qrcode.react';
 import {
     Dialog,
     DialogContent,
@@ -51,6 +51,14 @@ export default function RequestPage() {
     const [showNoResults, setShowNoResults] = useState(false);
     const [selectedUser, setSelectedUser] = useState<DocumentData | null>(null);
     const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+    const [qrValue, setQrValue] = useState('');
+
+     useEffect(() => {
+        if (typeof window !== 'undefined' && currentUser) {
+            const baseUrl = window.location.origin;
+            setQrValue(`${baseUrl}/pay/confirm?userId=${currentUser.uid}`);
+        }
+    }, [currentUser]);
 
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -181,13 +189,11 @@ export default function RequestPage() {
                 <Card className="w-full max-w-xs p-6 shadow-lg">
                     <CardContent className="p-0 flex flex-col items-center space-y-4">
                          <div className="p-4 bg-white rounded-lg flex items-center justify-center">
-                            <Alert>
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>QR Code Disabled</AlertTitle>
-                                <AlertDescription>
-                                    Profile pages are currently disabled.
-                                </AlertDescription>
-                            </Alert>
+                            {qrValue ? (
+                                <QRCode value={qrValue} size={160} />
+                            ) : (
+                                <Skeleton className="h-[160px] w-[160px]" />
+                            )}
                          </div>
                         
                         <div className="flex items-center gap-3 pt-2">

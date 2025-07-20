@@ -88,14 +88,20 @@ export default function ScanToPayPage() {
     useEffect(() => {
         if (scanResult && !isProcessing) {
             setIsProcessing(true);
-            
-            toast({ variant: 'destructive', title: 'Invalid QR Code', description: 'This QR code is not valid for payments at this time.' });
-            
-            setTimeout(() => {
-                setScanResult(null);
-                setIsProcessing(false);
-            }, 2000);
-
+            try {
+                const url = new URL(scanResult);
+                if (url.pathname.includes('/pay/confirm') && url.searchParams.has('userId')) {
+                     router.push(url.pathname + url.search);
+                } else {
+                    throw new Error("QR code is not a valid payment link.");
+                }
+            } catch (e) {
+                toast({ variant: 'destructive', title: 'Invalid QR Code', description: 'This QR code is not valid for payments.' });
+                setTimeout(() => {
+                    setScanResult(null);
+                    setIsProcessing(false);
+                }, 2000);
+            }
         }
     }, [scanResult, toast, router, isProcessing]);
 

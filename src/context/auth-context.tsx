@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     const user = userCredential.user;
     
-    const userData = {
+    const newUserData = {
       uid: user.uid,
       email: user.email,
       ...additionalData,
@@ -139,9 +139,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       createdAt: new Date(),
     };
 
-    await setDoc(doc(db, "users", user.uid), userData);
+    await setDoc(doc(db, "users", user.uid), newUserData);
     
-    setUserData(userData);
+    setUserData(newUserData);
 
     return userCredential;
   };
