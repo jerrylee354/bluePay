@@ -162,11 +162,11 @@ export default function PayPage() {
 
     return (
         <div className="flex flex-col h-full">
-            <header className="mb-6">
+            <header className="mb-6 flex-shrink-0">
                 <h1 className="text-3xl font-bold">付款和要求付款</h1>
             </header>
 
-            <div className="relative mb-6">
+            <div className="relative mb-6 flex-shrink-0">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground" />
                 <Input
                     type="search"
@@ -187,7 +187,7 @@ export default function PayPage() {
                 )}
             </div>
             
-            <div className="flex-grow overflow-y-auto pb-24 md:pb-0">
+            <div className="flex-grow overflow-y-auto pb-4">
                  {searchTerm.length > 0 ? renderSearchResults() : (
                     <Card>
                         <CardContent className="p-0">
@@ -207,8 +207,8 @@ export default function PayPage() {
                  )}
             </div>
             
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 md:static md:translate-x-0 md:left-auto md:bottom-auto md:max-w-none md:p-0 md:mt-auto">
-                <div className="flex w-full justify-center pt-4">
+            <div className="flex-shrink-0 mt-auto pt-4">
+                <div className="flex w-full justify-center">
                     <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
                         <Button 
                             asChild
