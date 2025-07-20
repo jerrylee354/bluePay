@@ -1,0 +1,7 @@
+# apphosting.yaml
+run:
+  build:
+    - npm install
+    - npm run build
+  runtime: node20
+  entrypoint: npm start
