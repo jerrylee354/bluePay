@@ -3,11 +3,13 @@
 
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
 import { Skeleton } from './ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIdleTimeout } from '@/hooks/use-idle-timeout';
+import { IdleTimeoutDialog } from './idle-timeout-dialog';
 
 const authRoutes = ['/login', '/signup', '/terms', '/privacy'];
 const fullScreenRoutes = ['/pay/confirm'];
@@ -38,10 +40,22 @@ const AppLoader = () => (
 );
 
 export default function AppContent({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated, isLoading, userData } = useAuth();
+    const { isAuthenticated, isLoading, userData, logout } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
+    
+    const [isIdle, setIsIdle] = useState(false);
+
+    const handleIdle = () => {
+        setIsIdle(true);
+    };
+
+    useIdleTimeout({
+        onIdle: handleIdle,
+        timeout: 180000, // 3 minutes
+        isIdle: !isAuthenticated || isLoading,
+    });
     
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
     const isWelcomePage = pathname.startsWith(welcomeRoute);
@@ -85,13 +99,24 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
 
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.startsWith(route));
 
+     const handleConfirmIdle = () => {
+        logout();
+        setIsIdle(false);
+    };
+
     if (isMobile && isFullScreenPage) {
-         return <main className="h-screen">{children}</main>;
+         return (
+            <main className="h-screen">
+                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} />}
+                {children}
+            </main>
+         );
     }
 
     if (isMobile) {
         return (
             <div className="relative flex min-h-screen w-full flex-col items-center">
+                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} />}
                 <div className="w-full max-w-lg bg-background h-screen flex flex-col">
                     <main className="flex-1 overflow-y-auto p-4 mb-24">
                         {children}
@@ -104,6 +129,7 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
 
     return (
         <div className="flex min-h-screen">
+            {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} />}
             <DesktopNav />
             <main className="flex-1 p-8">
                <div className="mx-auto max-w-5xl">
