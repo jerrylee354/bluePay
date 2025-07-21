@@ -31,16 +31,20 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
     return (
         <>
             <style jsx>{`
+                :root {
+                    --primary-hsl: 210 67% 46%;
+                    --primary-foreground-hsl: 0 0% 100%;
+                }
                 .checkmark {
                     width: 100px;
                     height: 100px;
                     border-radius: 50%;
                     display: block;
                     stroke-width: 2;
-                    stroke: hsl(var(--primary));
+                    stroke: hsl(var(--primary-hsl));
                     stroke-miterlimit: 10;
                     margin: 2rem auto;
-                    box-shadow: inset 0px 0px 0px hsl(var(--primary));
+                    box-shadow: inset 0px 0px 0px hsl(var(--primary-hsl));
                     animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
                 }
                 .checkmark__circle {
@@ -48,7 +52,7 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
                     stroke-dashoffset: 166;
                     stroke-width: 2;
                     stroke-miterlimit: 10;
-                    stroke: hsl(var(--primary));
+                    stroke: hsl(var(--primary-hsl));
                     fill: none;
                     animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
                 }
@@ -56,7 +60,7 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
                     transform-origin: 50% 50%;
                     stroke-dasharray: 48;
                     stroke-dashoffset: 48;
-                    stroke: hsl(var(--primary-foreground));
+                    stroke: hsl(var(--primary-foreground-hsl));
                     animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards;
                 }
                 @keyframes stroke {
@@ -67,7 +71,7 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
                     50% { transform: scale3d(1.1, 1.1, 1); }
                 }
                 @keyframes fill {
-                    100% { box-shadow: inset 0px 0px 0px 50px hsl(var(--primary)); }
+                    100% { box-shadow: inset 0px 0px 0px 50px hsl(var(--primary-hsl)); }
                 }
             `}</style>
             <div className="flex flex-col h-full bg-background items-center justify-center text-center p-8">

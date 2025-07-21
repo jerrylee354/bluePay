@@ -235,6 +235,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     let finalTransaction: Transaction | null = null;
+    let fromUserData: DocumentData | null = null;
+    let toUserData: DocumentData | null = null;
     
     try {
       await runTransaction(db, async (transaction) => {
@@ -245,8 +247,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           throw new Error("User not found.");
         }
 
-        const fromUserData = fromUserDoc.data();
-        const toUserData = toUserDoc.data();
+        fromUserData = fromUserDoc.data();
+        toUserData = toUserDoc.data();
 
         if (fromUserData.balance < amount) {
           throw new Error("Insufficient funds.");
@@ -323,23 +325,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 name: `${toUserData.firstName} ${toUserData.lastName}`,
             };
         }
-
-        const receiptDetails: ReceiptDetails = {
-            toEmail: fromUserData.email,
-            toName: fromUserData.firstName,
-            transactionId: finalTransaction!.id,
-            transactionDate: timestamp,
-            transactionType: 'Payment Sent',
-            amount: amount,
-            currency: fromUserData.currency,
-            recipientName: `${toUserData.firstName} ${toUserData.lastName}`,
-            note: note,
-        };
-        sendReceipt(receiptDetails).catch(err => console.error("Failed to send receipt email:", err));
       });
+      
+      if (!finalTransaction || !fromUserData || !toUserData) {
+          throw new Error("Transaction could not be finalized.");
+      }
+      
+      const receiptDetails: ReceiptDetails = {
+          toEmail: fromUserData.email,
+          toName: fromUserData.firstName,
+          transactionId: finalTransaction.id,
+          transactionDate: finalTransaction.date,
+          transactionType: 'Payment Sent',
+          amount: amount,
+          currency: fromUserData.currency,
+          recipientName: `${toUserData.firstName} ${toUserData.lastName}`,
+          note: note,
+      };
+      
+      await sendReceipt(receiptDetails);
 
-      if (!finalTransaction) throw new Error("Transaction could not be finalized.");
       return finalTransaction;
+
     } catch (e) {
       console.error("Transaction failed: ", e);
       if (e instanceof Error) {
@@ -400,17 +407,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await batch.commit();
 
     const receiptDetails: ReceiptDetails = {
-        toEmail: toUserData.email,
-        toName: toUserData.firstName,
-        transactionId: requesteeTxRef.id,
+        toEmail: fromUserData.email, // Send request confirmation to the requester
+        toName: fromUserData.firstName,
+        transactionId: requesterTxRef.id,
         transactionDate: timestamp,
-        transactionType: 'Payment Request',
+        transactionType: 'Payment Request Sent',
         amount: amount,
-        currency: toUserData.currency,
-        requesterName: `${fromUserData.firstName} ${fromUserData.lastName}`,
+        currency: fromUserData.currency,
+        recipientName: `${toUserData.firstName} ${toUserData.lastName}`,
         note: note,
     };
-    sendReceipt(receiptDetails).catch(err => console.error("Failed to send request email:", err));
+    
+    // Use await to ensure email is sent before returning
+    await sendReceipt(receiptDetails);
     
     return {
         id: requesterTxRef.id,
