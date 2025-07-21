@@ -22,8 +22,8 @@ const isFirebaseConfigured =
   firebaseConfig.messagingSenderId &&
   firebaseConfig.appId;
 
-// Initialize Firebase for client-side only if configured
-const app = isFirebaseConfigured && !getApps().length ? initializeApp(firebaseConfig) : (getApps().length > 0 ? getApp() : null);
+// Initialize Firebase only if configured (i.e., on the client-side with env vars)
+const app = isFirebaseConfigured ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : null;
 const auth = app ? getAuth(app) : null;
 const db = app ? getFirestore(app) : null;
 
