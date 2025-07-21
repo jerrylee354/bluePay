@@ -107,20 +107,6 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section id="how-it-works" className="py-24 bg-white">
-                    <div className="container max-w-6xl mx-auto px-4">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">三步驟，輕鬆上手</h2>
-                            <p className="mt-4 text-lg text-gray-600">體驗前所未有的流暢支付流程。</p>
-                        </div>
-                        <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-                            <StepItem step="1" icon={LinkIcon} title="安全連結您的帳戶" description="只需幾分鐘即可完成註冊並連結您的金融卡或銀行帳戶。" />
-                            <StepItem step="2" icon={Search} title="尋找您的朋友" description="使用他們的使用者名稱或電子郵件，快速找到您想付款或收款的對象。" />
-                            <StepItem step="3" icon={Send} title="即時轉帳" description="輸入金額，點擊發送，資金即刻到帳。就是這麼簡單！" />
-                        </div>
-                    </div>
-                </section>
-                
                 <section id="privacy-focus" className="py-24 bg-gray-50">
                     <div className="container max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
                         <div className="relative flex justify-center items-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl">
@@ -185,5 +171,3 @@ export default function LandingPage() {
         </div>
     );
 }
-
-    
