@@ -25,11 +25,6 @@ const ReceiptDetailsSchema = z.object({
 });
 export type ReceiptDetails = z.infer<typeof ReceiptDetailsSchema>;
 
-const ReceiptEmailSchema = z.object({
-  subject: z.string(),
-  htmlBody: z.string(),
-});
-
 function formatCurrency(amount: number, currency: string) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -48,34 +43,63 @@ function formatDate(dateString: string) {
     });
 }
 
-const generateReceiptPrompt = ai.definePrompt({
-    name: 'generateReceiptPrompt',
-    input: { schema: ReceiptDetailsSchema },
-    output: { schema: ReceiptEmailSchema },
-    prompt: `
-You are an email generation assistant for a payment app called BluePay. Your task is to generate a friendly and professional HTML email receipt for a transaction.
+function generateReceiptHtml(details: ReceiptDetails): { subject: string, htmlBody: string } {
+    const formattedAmount = formatCurrency(details.amount, details.currency);
+    const formattedDate = formatDate(details.transactionDate);
+    const subject = `Your BluePay Receipt for ${formattedAmount}`;
 
-Generate the subject line and the HTML body for the email based on the provided transaction details.
+    const htmlBody = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${subject}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, sans-serif; margin: 0; padding: 20px; background-color: #f7fafc; color: #1a202c; }
+        .container { max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden; }
+        .header { background-color: #3880ff; color: #ffffff; padding: 24px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 24px; }
+        .content h2 { font-size: 20px; color: #2d3748; margin-top: 0; }
+        .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .details-table td { padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+        .details-table td:first-child { color: #718096; }
+        .details-table td:last-child { text-align: right; font-weight: 500; color: #2d3748; }
+        .details-table tr:last-child td { border-bottom: none; }
+        .total { font-size: 28px; font-weight: bold; color: #3880ff; margin-top: 24px; text-align: right;}
+        .note { background-color: #edf2f7; padding: 16px; border-radius: 6px; margin-top: 24px; font-style: italic; color: #4a5568;}
+        .footer { padding: 24px; text-align: center; font-size: 12px; color: #a0aec0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Transaction Receipt</h1>
+        </div>
+        <div class="content">
+            <h2>Hi ${details.toName},</h2>
+            <p>Here are the details of your recent transaction:</p>
+            <div class="total">${details.transactionType.includes('Sent') ? '-' : '+'} ${formattedAmount}</div>
+            <table class="details-table">
+                <tr><td>Transaction Type</td><td>${details.transactionType}</td></tr>
+                ${details.recipientName ? `<tr><td>To</td><td>${details.recipientName}</td></tr>` : ''}
+                ${details.requesterName ? `<tr><td>From</td><td>${details.requesterName}</td></tr>` : ''}
+                <tr><td>Date</td><td>${formattedDate}</td></tr>
+                <tr><td>Transaction ID</td><td>${details.transactionId}</td></tr>
+            </table>
+            ${details.note ? `<div class="note"><strong>Note:</strong> ${details.note}</div>` : ''}
+        </div>
+        <div class="footer">
+            <p>Thank you for using BluePay.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
 
-Here is the transaction information:
-- Recipient Name: {{toName}}
-- Transaction Type: {{transactionType}}
-- Amount: {{amount}} {{currency}}
-- Date: {{transactionDate}}
-- Transaction ID: {{transactionId}}
-{{#if recipientName}}- Other Party: {{recipientName}}{{/if}}
-{{#if requesterName}}- From: {{requesterName}}{{/if}}
-{{#if note}}- Note: "{{note}}"{{/if}}
-
-The HTML should be modern, clean, and responsive, using inline CSS for compatibility.
-- The main subject should be clear (e.g., "Your BluePay Receipt for {{amount}} {{currency}}").
-- The body should greet the user by name (e.g., "Hi {{toName}},").
-- Clearly state the transaction type, amount, and who the other party was.
-- Include the date and transaction ID.
-- If there is a note, display it.
-- End with a thank you message from "The BluePay Team".
-`,
-});
+    return { subject, htmlBody };
+}
 
 const sendReceiptFlow = ai.defineFlow(
   {
@@ -84,29 +108,22 @@ const sendReceiptFlow = ai.defineFlow(
     outputSchema: z.void(),
   },
   async (details) => {
-    const { output } = await generateReceiptPrompt(details);
-    if (!output) {
-      throw new Error('Failed to generate email content.');
-    }
+    const { subject, htmlBody } = generateReceiptHtml(details);
     
     await sendEmail({
       to: details.toEmail,
-      subject: output.subject,
-      html: output.htmlBody,
+      subject: subject,
+      html: htmlBody,
     });
   }
 );
 
 
 export async function sendReceipt(details: ReceiptDetails): Promise<void> {
-    // This is a wrapper function to call the flow.
-    // In a real app, you might add more logic here before or after the flow runs.
     try {
         await sendReceiptFlow(details);
         console.log(`Receipt email sent to ${details.toEmail}`);
     } catch (error) {
         console.error(`Error in sendReceiptFlow for ${details.toEmail}:`, error);
-        // We don't re-throw the error to avoid breaking the frontend transaction flow
-        // if only the email fails. Logging is important here.
     }
 }
