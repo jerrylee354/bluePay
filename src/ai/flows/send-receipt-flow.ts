@@ -11,7 +11,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { sendEmail } from '@/services/email-service';
 
-export const ReceiptDetailsSchema = z.object({
+const ReceiptDetailsSchema = z.object({
   toEmail: z.string().email().describe('The recipient\'s email address.'),
   toName: z.string().describe('The recipient\'s name.'),
   transactionId: z.string().describe('The unique ID of the transaction.'),
@@ -77,7 +77,7 @@ The HTML should be modern, clean, and responsive, using inline CSS for compatibi
 `,
 });
 
-export const sendReceiptFlow = ai.defineFlow(
+const sendReceiptFlow = ai.defineFlow(
   {
     name: 'sendReceiptFlow',
     inputSchema: ReceiptDetailsSchema,

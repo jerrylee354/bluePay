@@ -1,5 +1,5 @@
-import {sendReceiptFlow} from './flows/send-receipt-flow';
+import {sendReceipt} from './flows/send-receipt-flow';
 
 export default {
-  'send-receipt': sendReceiptFlow,
+  'send-receipt': sendReceipt,
 };
