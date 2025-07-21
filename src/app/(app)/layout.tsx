@@ -1,9 +1,6 @@
 
 "use client";
 
-import AppContent from '@/components/app-content';
-import { AuthProvider } from '@/context/auth-context';
-
 export const dynamic = 'force-dynamic';
 
 export default function AppGroupLayout({
@@ -11,9 +8,5 @@ export default function AppGroupLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <AuthProvider>
-      <AppContent>{children}</AppContent>
-    </AuthProvider>
-  );
+  return <>{children}</>;
 }
