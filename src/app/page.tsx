@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle, Lock, Users, Zap, Wallet } from 'lucide-react';
+import { ArrowRight, CheckCircle, ShieldCheck, Users, Zap, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 
@@ -110,7 +110,7 @@ export default function LandingPage() {
                                 description="透過使用者名稱輕鬆找到朋友並進行轉帳。無需再交換敏感且冗長的銀行詳細資訊。"
                             />
                             <FeatureItem
-                                icon={Lock}
+                                icon={ShieldCheck}
                                 title="銀行級安全防護"
                                 description="您的交易資料經過端對端加密，我們絕不會分享或出售您的資料。"
                             />
@@ -124,7 +124,7 @@ export default function LandingPage() {
                              <div className="relative w-72 h-72">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-primary/10"></div>
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full bg-primary/20"></div>
-                                <Lock className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 text-primary" />
+                                <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 text-primary" />
                             </div>
                         </div>
                         <div className="text-left">
@@ -187,3 +187,4 @@ export default function LandingPage() {
     );
 
     
+ 
