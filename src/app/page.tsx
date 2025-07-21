@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, ShieldCheck, Users, Zap } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Dialog,
@@ -13,6 +13,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
+import { cn } from '@/lib/utils';
 
 
 const features = [
@@ -65,7 +66,11 @@ const FeatureItem = ({ feature, onClick }: { feature: Feature, onClick: () => vo
 
 export default function LandingPage() {
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+    const [showStickyButton, setShowStickyButton] = useState(false);
     const router = useRouter();
+
+    const heroCtaRef = useRef<HTMLDivElement>(null);
+    const footerCtaRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         // Check if the app is running in standalone mode (PWA)
@@ -73,6 +78,22 @@ export default function LandingPage() {
             router.push('/home');
         }
     }, [router]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!heroCtaRef.current || !footerCtaRef.current) return;
+
+            const heroCtaBottom = heroCtaRef.current.getBoundingClientRect().bottom;
+            const footerCtaTop = footerCtaRef.current.getBoundingClientRect().top;
+            const headerHeight = 80; // height of the header
+
+            const shouldShow = heroCtaBottom < headerHeight && footerCtaTop > window.innerHeight;
+            setShowStickyButton(shouldShow);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
 
     return (
@@ -87,7 +108,10 @@ export default function LandingPage() {
                         </svg>
                         <span className="text-2xl font-bold text-gray-900">BluePay</span>
                     </Link>
-                    <nav className="flex items-center gap-4">
+                    <nav className={cn(
+                        "transition-opacity duration-300",
+                        showStickyButton ? "opacity-100" : "opacity-0 pointer-events-none"
+                    )}>
                          <Button asChild size="lg" className="group transition-all duration-300">
                             <Link href="/login">
                                 開始使用
@@ -109,7 +133,7 @@ export default function LandingPage() {
                         <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 md:text-xl">
                             告別複雜的轉帳流程。使用 BluePay，只需輕點幾下即可向朋友和家人付款或收款。您的安全與隱私是我們的第一要務。
                         </p>
-                        <div className="mt-10">
+                        <div className="mt-10" ref={heroCtaRef}>
                              <Button asChild size="lg" className="h-14 text-lg group">
                                 <Link href="/login">
                                     立即免費開始
@@ -182,7 +206,7 @@ export default function LandingPage() {
                     <div className="container max-w-4xl mx-auto px-4">
                         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">準備好體驗更簡單的支付方式了嗎？</h2>
                         <p className="mt-4 text-lg text-gray-600">立即加入數百萬用戶的行列，享受無縫、安全的交易。</p>
-                        <div className="mt-8">
+                        <div className="mt-8" ref={footerCtaRef}>
                              <Button asChild size="lg" className="h-14 text-lg group">
                                 <Link href="/login">
                                     免費註冊
