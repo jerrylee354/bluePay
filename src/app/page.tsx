@@ -4,7 +4,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, ShieldCheck, Users, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Dialog,
     DialogContent,
@@ -42,7 +43,7 @@ const features = [
         details: {
             title: "堅若磐石的安全承諾",
             description: "我們採用業界領先的端對端加密技術，確保您的每一筆交易資料在傳輸過程中都受到嚴密保護。此外，您的個人資料和財務資訊絕不會被用於廣告或出售給第三方。您的安全是我們的最高準則。",
-            application: "在網路上購買二手物品時，使用 BluePay 进行交易，您無需向陌生人透露您的銀行卡號或個人敏感資訊，大大降低了詐騙風險。"
+            application: "在網路上購買二手物品時，使用 BluePay进行交易，您無需向陌生人透露您的銀行卡號或個人敏感資訊，大大降低了詐騙風險。"
         }
     }
 ];
@@ -64,6 +65,15 @@ const FeatureItem = ({ feature, onClick }: { feature: Feature, onClick: () => vo
 
 export default function LandingPage() {
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        // Check if the app is running in standalone mode (PWA)
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            router.push('/home');
+        }
+    }, [router]);
+
 
     return (
         <div className="flex flex-col min-h-dvh bg-white text-gray-800 font-body">
