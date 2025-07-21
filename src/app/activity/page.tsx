@@ -333,11 +333,13 @@ export default function ActivityPage() {
       </Tabs>
 
       <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-2xl">
-            <DialogHeader>
+        <DialogContent className="sm:max-w-2xl p-0 flex flex-col max-h-[85vh]">
+            <DialogHeader className="p-6 pb-4">
                 <DialogTitle className="sr-only">Transaction Details</DialogTitle>
             </DialogHeader>
-            {selectedTx && <TransactionDetails transaction={selectedTx} />}
+            <div className="overflow-y-auto px-6 pb-6">
+                {selectedTx && <TransactionDetails transaction={selectedTx} />}
+            </div>
         </DialogContent>
       </Dialog>
       
