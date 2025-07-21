@@ -6,23 +6,69 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, ShieldCheck, Users, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect, useRef } from 'react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 
-const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-    <div className="flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm">
+
+const features = [
+    {
+        icon: Zap,
+        title: "即時交易",
+        description: "轉帳和收款都在瞬間完成，無需等待。體驗前所未有的流暢支付。",
+        details: {
+            title: "快如閃電的即時交易",
+            description: "忘記銀行轉帳的漫長等待。BluePay 的技術讓您的資金在幾秒鐘內從您的帳戶到達您朋友的帳戶。無論是白天還是半夜，週末還是假日，交易都能即時完成。",
+            application: "和朋友聚餐後，用 BluePay 即時分攤帳單，無需等待任何人找零或隔天轉帳。"
+        }
+    },
+    {
+        icon: Users,
+        title: "輕鬆社交支付",
+        description: "透過使用者名稱輕鬆找到朋友並進行轉帳。無需再交換敏感且冗長的銀行詳細資訊。",
+        details: {
+            title: "為社交而生的支付方式",
+            description: "您只需要知道朋友的 BluePay 使用者名稱，就可以安全地向他們付款或收款。這不僅保護了雙方的銀行帳戶隱私，也讓支付過程像傳送訊息一樣簡單自然。",
+            application: "在辦公室團購下午茶時，同事們只需透過您的 BluePay 使用者名稱就能輕鬆付款給您，無需一個個加銀行好友。"
+        }
+    },
+    {
+        icon: ShieldCheck,
+        title: "銀行級安全防護",
+        description: "您的交易資料經過端對端加密，我們絕不會分享或出售您的資料。",
+        details: {
+            title: "堅若磐石的安全承諾",
+            description: "我們採用業界領先的端對端加密技術，確保您的每一筆交易資料在傳輸過程中都受到嚴密保護。此外，您的個人資料和財務資訊絕不會被用於廣告或出售給第三方。您的安全是我們的最高準則。",
+            application: "在網路上購買二手物品時，使用 BluePay 進行交易，您無需向陌生人透露您的銀行卡號或個人敏感資訊，大大降低了詐騙風險。"
+        }
+    }
+];
+
+type Feature = typeof features[0];
+
+
+const FeatureItem = ({ feature, onClick }: { feature: Feature, onClick: () => void }) => (
+    <button onClick={onClick} className="text-left flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-primary hover:bg-primary/5 transition-all duration-300">
         <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
-            <Icon className="w-6 h-6 text-primary" />
+            <feature.icon className="w-6 h-6 text-primary" />
         </div>
         <div>
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-            <p className="mt-1 text-gray-600">{description}</p>
+            <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+            <p className="mt-1 text-gray-600">{feature.description}</p>
         </div>
-    </div>
+    </button>
 );
 
 export default function LandingPage() {
     const [isHeaderButtonVisible, setIsHeaderButtonVisible] = useState(false);
     const heroButtonRef = useRef<HTMLAnchorElement>(null);
     const ctaButtonRef = useRef<HTMLAnchorElement>(null);
+    
+    const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -103,21 +149,9 @@ export default function LandingPage() {
                             <p className="mt-4 text-lg text-gray-600">探索 BluePay 如何讓您的金融生活更輕鬆。</p>
                         </div>
                         <div className="grid md:grid-cols-3 gap-8">
-                            <FeatureItem
-                                icon={Zap}
-                                title="即時交易"
-                                description="轉帳和收款都在瞬間完成，無需等待。體驗前所未有的流暢支付。"
-                            />
-                            <FeatureItem
-                                icon={Users}
-                                title="輕鬆社交支付"
-                                description="透過使用者名稱輕鬆找到朋友並進行轉帳。無需再交換敏感且冗長的銀行詳細資訊。"
-                            />
-                            <FeatureItem
-                                icon={ShieldCheck}
-                                title="銀行級安全防護"
-                                description="您的交易資料經過端對端加密，我們絕不會分享或出售您的資料。"
-                            />
+                            {features.map((feature, index) => (
+                                <FeatureItem key={index} feature={feature} onClick={() => setSelectedFeature(feature)} />
+                            ))}
                         </div>
                     </div>
                 </section>
@@ -187,6 +221,31 @@ export default function LandingPage() {
                     <p>&copy; {new Date().getFullYear()} BluePay. All rights reserved.</p>
                 </div>
             </footer>
+
+            <Dialog open={!!selectedFeature} onOpenChange={(isOpen) => !isOpen && setSelectedFeature(null)}>
+                <DialogContent className="sm:max-w-lg">
+                    {selectedFeature && (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-3 text-2xl">
+                                    <selectedFeature.icon className="w-8 h-8 text-primary" />
+                                    {selectedFeature.details.title}
+                                </DialogTitle>
+                                <DialogDescription className="pt-4 text-base text-gray-700">
+                                    {selectedFeature.details.description}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="pt-4">
+                                <h4 className="font-semibold text-gray-800">日常生活應用：</h4>
+                                <p className="mt-2 text-gray-600 bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                    {selectedFeature.details.application}
+                                </p>
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 }
