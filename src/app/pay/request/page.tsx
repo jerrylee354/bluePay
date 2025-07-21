@@ -19,6 +19,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Separator } from '@/components/ui/separator';
 
 export default function RequestPage() {
     const pathname = usePathname();
@@ -54,52 +55,64 @@ export default function RequestPage() {
                 <h1 className="text-3xl font-bold">付款和要求付款</h1>
             </header>
             
-            <div className="flex-grow flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-                    <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
-                        <DialogTrigger asChild>
-                             <Card className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors aspect-square">
-                                <CardContent className="p-0 flex flex-col items-center justify-center gap-4">
-                                    <QrCode className="w-12 h-12 text-primary" />
-                                    <p className="font-semibold text-lg">出示 QR Code</p>
-                                </CardContent>
-                            </Card>
-                        </DialogTrigger>
-                        <DialogContent>
-                             <DialogHeader>
-                                <DialogTitle className="text-center">向他人收款</DialogTitle>
-                            </DialogHeader>
-                            <div className="flex flex-col items-center justify-center text-center px-4 py-6 space-y-6">
-                                <div className="p-4 bg-white rounded-lg border flex items-center justify-center">
-                                    {qrValue ? (
-                                        <QRCode value={qrValue} size={192} />
-                                    ) : (
-                                        <Skeleton className="h-[192px] w-[192px]" />
-                                    )}
-                                 </div>
-                                <div className="flex items-center gap-3 pt-2">
-                                     <Avatar className="h-12 w-12">
-                                        <AvatarImage src={userData?.photoURL || ''} alt="User Avatar" />
-                                        <AvatarFallback>{getInitials(currentUser?.email)}</AvatarFallback>
-                                    </Avatar>
-                                     <div className="text-left">
-                                        <p className="font-bold text-lg">{userData?.firstName} {userData?.lastName}</p>
-                                        <p className="text-muted-foreground">{getDisplayUsername()}</p>
+            <div className="flex-grow">
+                <Card>
+                    <CardContent className="p-0">
+                        <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
+                            <DialogTrigger asChild>
+                                 <div className="block hover:bg-muted/50 transition-colors rounded-t-xl cursor-pointer">
+                                    <div className="flex items-center gap-4 p-4">
+                                        <div className="p-3 bg-primary/10 rounded-lg">
+                                            <QrCode className="w-6 h-6 text-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold">出示 QR Code</p>
+                                            <p className="text-sm text-muted-foreground">顯示您的 QR Code 以收款</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle className="text-center">向他人收款</DialogTitle>
+                                </DialogHeader>
+                                <div className="flex flex-col items-center justify-center text-center px-4 py-6 space-y-6">
+                                    <div className="p-4 bg-white rounded-lg border flex items-center justify-center">
+                                        {qrValue ? (
+                                            <QRCode value={qrValue} size={192} />
+                                        ) : (
+                                            <Skeleton className="h-[192px] w-[192px]" />
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-3 pt-2">
+                                        <Avatar className="h-12 w-12">
+                                            <AvatarImage src={userData?.photoURL || ''} alt="User Avatar" />
+                                            <AvatarFallback>{getInitials(currentUser?.email)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="text-left">
+                                            <p className="font-bold text-lg">{userData?.firstName} {userData?.lastName}</p>
+                                            <p className="text-muted-foreground">{getDisplayUsername()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
 
-                    <Link href="/pay/group">
-                         <Card className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors aspect-square">
-                            <CardContent className="p-0 flex flex-col items-center justify-center gap-4">
-                                <Users className="w-12 h-12 text-primary" />
-                                <p className="font-semibold text-lg">群組付款</p>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                </div>
+                        <Separator />
+
+                        <Link href="/pay/group" className="block hover:bg-muted/50 transition-colors rounded-b-xl">
+                            <div className="flex items-center gap-4 p-4">
+                                <div className="p-3 bg-primary/10 rounded-lg">
+                                    <Users className="w-6 h-6 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold">群組付款</p>
+                                    <p className="text-sm text-muted-foreground">建立群組以分攤款項</p>
+                                </div>
+                            </div>
+                        </Link>
+                    </CardContent>
+                </Card>
             </div>
             
             <div className="flex-shrink-0 mt-auto pt-4 md:absolute md:bottom-8 md:left-1/2 md:-translate-x-1/2">
