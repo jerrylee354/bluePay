@@ -7,9 +7,6 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
-  pwa: {
-    start_url: '/home',
-  }
 });
 
 const nextConfig: NextConfig = {
