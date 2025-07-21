@@ -14,6 +14,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, query, onSnapshot, DocumentData, orderBy, where, getDocs, limit, runTransaction, serverTimestamp, writeBatch, collectionGroup, deleteDoc } from 'firebase/firestore';
 import type { Transaction, Ticket } from '@/lib/data';
+import { sendReceipt, type ReceiptDetails } from '@/ai/flows/send-receipt-flow';
 
 interface ProcessTransactionParams {
     fromUserId: string;
@@ -46,8 +47,8 @@ interface AuthContextType {
   searchUsers: (searchTerm: string) => Promise<DocumentData[]>;
   getUserByUsername: (username: string) => Promise<DocumentData | null>;
   getUserById: (userId: string) => Promise<DocumentData | null>;
-  processTransaction: (params: ProcessTransactionParams) => Promise<void>;
-  requestTransaction: (params: RequestTransactionParams) => Promise<void>;
+  processTransaction: (params: ProcessTransactionParams) => Promise<Transaction>;
+  requestTransaction: (params: RequestTransactionParams) => Promise<Transaction>;
   declineTransaction: (payerTxId: string, requesterId: string) => Promise<void>;
   isLoading: boolean;
   refreshUserData: () => Promise<void>;
@@ -230,9 +231,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, requestId }: ProcessTransactionParams) => {
+  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, requestId }: ProcessTransactionParams): Promise<Transaction> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
+    let finalTransaction: Transaction | null = null;
     
     try {
       await runTransaction(db, async (transaction) => {
@@ -256,33 +258,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         transaction.update(fromUserRef, { balance: newFromBalance });
         transaction.update(toUserRef, { balance: newToBalance });
         
+        const now = new Date();
+        const timestamp = now.toISOString();
+
         if (requestId) {
-            // This is a payment confirmation for a request.
-            // Find the sender's (payer's) request transaction and update it.
             const payerTransactionRef = doc(db, "users", fromUserId, "transactions", requestId);
-            
-            // To update the requester's side, we need to find their corresponding transaction.
             const requesterTxQuery = query(
                 collection(db, "users", toUserId, "transactions"),
                 where("requestId", "==", requestId),
                 limit(1)
             );
-            
-            // This needs to be outside the transaction.get, so we get it before the transaction starts
             const requesterTxSnapshot = await getDocs(requesterTxQuery);
             
             if (!requesterTxSnapshot.empty) {
                 const requesterTxDoc = requesterTxSnapshot.docs[0];
                 transaction.update(requesterTxDoc.ref, { status: 'Completed' });
             }
-
             transaction.update(payerTransactionRef, { status: 'Completed' });
+            finalTransaction = {
+                id: requestId,
+                type: 'payment',
+                status: 'Completed',
+                date: timestamp,
+                amount,
+                description: note,
+                attachmentUrl,
+                name: `${toUserData.firstName} ${toUserData.lastName}`,
+                otherPartyUid: toUserId,
+            };
 
         } else {
-             const now = new Date();
-             const timestamp = now.toISOString();
              const sharedRequestId = doc(collection(db, "dummy")).id;
-
              const sharedTxData = {
                amount: amount,
                description: note,
@@ -309,8 +315,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 currency: toUserData.currency,
                 otherPartyUid: fromUserId,
             });
+            
+            finalTransaction = {
+                id: senderTransactionRef.id,
+                ...sharedTxData,
+                type: 'payment',
+                name: `${toUserData.firstName} ${toUserData.lastName}`,
+            };
         }
+
+        const receiptDetails: ReceiptDetails = {
+            toEmail: fromUserData.email,
+            toName: fromUserData.firstName,
+            transactionId: finalTransaction!.id,
+            transactionDate: timestamp,
+            transactionType: 'Payment Sent',
+            amount: amount,
+            currency: fromUserData.currency,
+            recipientName: `${toUserData.firstName} ${toUserData.lastName}`,
+            note: note,
+        };
+        sendReceipt(receiptDetails).catch(err => console.error("Failed to send receipt email:", err));
       });
+
+      if (!finalTransaction) throw new Error("Transaction could not be finalized.");
+      return finalTransaction;
     } catch (e) {
       console.error("Transaction failed: ", e);
       if (e instanceof Error) {
@@ -320,7 +349,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl }: RequestTransactionParams) => {
+  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl }: RequestTransactionParams): Promise<Transaction> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
 
@@ -336,7 +365,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const now = new Date();
     const timestamp = now.toISOString();
-    const sharedRequestId = doc(collection(db, "dummy")).id; // Generate a unique ID for both tx
+    const sharedRequestId = doc(collection(db, "dummy")).id;
     
     const sharedData = {
         amount: amount,
@@ -348,29 +377,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const batch = writeBatch(db);
 
-    // Record for requester (fromUser, who will get paid)
     const requesterTxRef = doc(collection(db, "users", fromUserId, "transactions"));
     batch.set(requesterTxRef, {
         ...sharedData,
-        status: 'Pending', // Requester sees 'Pending' until it's paid
-        type: 'receipt', // It's an incoming payment for them
+        status: 'Pending',
+        type: 'receipt',
         name: `${toUserData.firstName} ${toUserData.lastName}`,
         currency: fromUserData.currency,
         otherPartyUid: toUserId,
     });
     
-    // Record for requestee (toUser, who needs to pay)
     const requesteeTxRef = doc(collection(db, "users", toUserId, "transactions"));
     batch.set(requesteeTxRef, {
         ...sharedData,
-        status: 'Requested', // Requestee sees 'Requested' and can act on it
-        type: 'payment', // It's an outgoing payment for them
+        status: 'Requested',
+        type: 'payment',
         name: `${fromUserData.firstName} ${fromUserData.lastName}`,
         currency: toUserData.currency,
         otherPartyUid: fromUserId,
     });
     
     await batch.commit();
+
+    const receiptDetails: ReceiptDetails = {
+        toEmail: toUserData.email,
+        toName: toUserData.firstName,
+        transactionId: requesteeTxRef.id,
+        transactionDate: timestamp,
+        transactionType: 'Payment Request',
+        amount: amount,
+        currency: toUserData.currency,
+        requesterName: `${fromUserData.firstName} ${fromUserData.lastName}`,
+        note: note,
+    };
+    sendReceipt(receiptDetails).catch(err => console.error("Failed to send request email:", err));
+    
+    return {
+        id: requesterTxRef.id,
+        ...sharedData,
+        status: 'Pending',
+        type: 'request',
+        name: `${toUserData.firstName} ${toUserData.lastName}`,
+        otherPartyUid: toUserId,
+    };
   };
 
   const declineTransaction = async (payerTxId: string, requesterId: string) => {
@@ -387,23 +436,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             const requestId = payerTxDoc.data().requestId;
             
-            // 1. Delete the payer's transaction record
             transaction.delete(payerTxRef);
             
-            // If there's no requestId (e.g., old data), we can't update the requester.
-            // The payer's request is still removed, which is the primary goal.
             if (!requestId) {
                 console.warn(`No requestId found for transaction ${payerTxId}. Cannot update requester.`);
                 return;
             }
 
-            // 2. Find and update the requester's transaction to "Failed"
             const requesterTxQuery = query(
                 collection(db, "users", requesterId, "transactions"),
                 where("requestId", "==", requestId),
                 limit(1)
             );
-            // This get must be outside the transaction scope to work with runTransaction
             const requesterTxSnapshot = await getDocs(requesterTxQuery);
 
             if (!requesterTxSnapshot.empty) {

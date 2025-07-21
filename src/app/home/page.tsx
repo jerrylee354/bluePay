@@ -88,7 +88,11 @@ export default function HomePage() {
         </div>
         <Card>
             <CardContent className="p-0">
-              {recentTransactions.length > 0 ? (
+              {transactions.length === 0 && !user ? (
+                 <div className="p-8 text-center text-muted-foreground">
+                    Loading transactions...
+                </div>
+              ) : recentTransactions.length > 0 ? (
                 <ul className="divide-y">
                     {recentTransactions.map((tx) => (
                         <li key={tx.id} className="flex items-center p-4 space-x-4">

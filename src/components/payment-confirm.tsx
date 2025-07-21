@@ -15,6 +15,8 @@ import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import imageCompression from 'browser-image-compression';
+import PaymentSuccess from './payment-success';
+import { type Transaction } from '@/lib/data';
 
 const RecipientSkeleton = () => (
     <div className="flex items-center space-x-4">
@@ -59,6 +61,8 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
+    const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
+    const [completedTransaction, setCompletedTransaction] = useState<Transaction | null>(null);
 
     useEffect(() => {
         if (!userId) {
@@ -191,6 +195,7 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
         
         setIsProcessing(true);
         try {
+            let txResult;
             if (mode === 'pay') {
                 if (numericAmount > userData.balance) {
                     toast({
@@ -201,35 +206,24 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                     setIsProcessing(false);
                     return;
                 }
-                await processTransaction({
+                txResult = await processTransaction({
                     fromUserId: user.uid,
                     toUserId: recipient.uid,
                     amount: numericAmount,
                     note,
                     attachmentUrl: attachedImage
                 });
-                toast({
-                    title: '付款成功!',
-                    description: `您已付款給 ${recipient.firstName} ${formatCurrency(numericAmount, userData.currency)}.`,
-                });
             } else { // Request logic
-                 await requestTransaction({
+                 txResult = await requestTransaction({
                     fromUserId: user.uid,
                     toUserId: recipient.uid,
                     amount: numericAmount,
                     note,
                     attachmentUrl: attachedImage,
                  });
-                 toast({
-                    title: "要求已傳送",
-                    description: `您已向 ${recipient.firstName} 要求 ${formatCurrency(numericAmount, userData.currency)}.`,
-                });
             }
-            if (onClose) {
-                onClose();
-            } else {
-                router.push('/');
-            }
+            setCompletedTransaction(txResult);
+            setIsPaymentSuccessful(true);
 
         } catch (error: any) {
             toast({
@@ -256,6 +250,23 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
         } else {
             router.back();
         }
+    }
+    
+    const handleFinish = () => {
+        if (onClose) {
+            onClose();
+        } else {
+            router.push('/home');
+        }
+    }
+
+    if (isPaymentSuccessful && completedTransaction) {
+        return (
+            <PaymentSuccess
+                transaction={completedTransaction}
+                onFinish={handleFinish}
+            />
+        );
     }
 
     return (
