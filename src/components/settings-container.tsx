@@ -34,7 +34,7 @@ const SettingsContainer = ({ page, setPage }: { page: SettingsPage; setPage: (pa
 
     return (
         <div>
-            <DialogHeader className="p-6 pb-4 border-b">
+            <DialogHeader className="p-6 pb-4 border-b rounded-t-lg">
                 <div className="flex items-center gap-4">
                     {page !== 'main' && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBack}>
