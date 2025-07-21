@@ -4,8 +4,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, ShieldCheck, Users, Zap } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -43,7 +42,7 @@ const features = [
         details: {
             title: "堅若磐石的安全承諾",
             description: "我們採用業界領先的端對端加密技術，確保您的每一筆交易資料在傳輸過程中都受到嚴密保護。此外，您的個人資料和財務資訊絕不會被用於廣告或出售給第三方。您的安全是我們的最高準則。",
-            application: "在網路上購買二手物品時，使用 BluePay 進行交易，您無需向陌生人透露您的銀行卡號或個人敏感資訊，大大降低了詐騙風險。"
+            application: "在網路上購買二手物品時，使用 BluePay 进行交易，您無需向陌生人透露您的銀行卡號或個人敏感資訊，大大降低了詐騙風險。"
         }
     }
 ];
@@ -64,35 +63,7 @@ const FeatureItem = ({ feature, onClick }: { feature: Feature, onClick: () => vo
 );
 
 export default function LandingPage() {
-    const [isHeaderButtonVisible, setIsHeaderButtonVisible] = useState(false);
-    const heroButtonRef = useRef<HTMLAnchorElement>(null);
-    const ctaButtonRef = useRef<HTMLAnchorElement>(null);
-    
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (heroButtonRef.current && ctaButtonRef.current) {
-                const heroButtonRect = heroButtonRef.current.getBoundingClientRect();
-                const ctaButtonRect = ctaButtonRef.current.getBoundingClientRect();
-                const viewHeight = window.innerHeight;
-
-                const heroButtonIsOutOfView = heroButtonRect.bottom < 0;
-                const ctaButtonIsInView = ctaButtonRect.top < viewHeight && ctaButtonRect.bottom > 0;
-
-                if (heroButtonIsOutOfView && !ctaButtonIsInView) {
-                    setIsHeaderButtonVisible(true);
-                } else {
-                    setIsHeaderButtonVisible(false);
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        handleScroll(); // Initial check
-
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     return (
         <div className="flex flex-col min-h-dvh bg-white text-gray-800 font-body">
@@ -107,10 +78,7 @@ export default function LandingPage() {
                         <span className="text-2xl font-bold text-gray-900">BluePay</span>
                     </Link>
                     <nav className="flex items-center gap-4">
-                         <Button asChild size="lg" className={cn(
-                             "group transition-all duration-300",
-                             isHeaderButtonVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
-                         )}>
+                         <Button asChild size="lg" className="group transition-all duration-300">
                             <Link href="/login">
                                 開始使用
                                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
@@ -133,7 +101,7 @@ export default function LandingPage() {
                         </p>
                         <div className="mt-10">
                              <Button asChild size="lg" className="h-14 text-lg group">
-                                <Link href="/login" ref={heroButtonRef}>
+                                <Link href="/login">
                                     立即免費開始
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>
@@ -206,7 +174,7 @@ export default function LandingPage() {
                         <p className="mt-4 text-lg text-gray-600">立即加入數百萬用戶的行列，享受無縫、安全的交易。</p>
                         <div className="mt-8">
                              <Button asChild size="lg" className="h-14 text-lg group">
-                                <Link href="/login" ref={ctaButtonRef}>
+                                <Link href="/login">
                                     免費註冊
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>

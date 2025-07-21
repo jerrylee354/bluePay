@@ -92,7 +92,7 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
     }
     
     if (!isAuthenticated) {
-      return null;
+      return <AppLoader />;
     }
     
     if (isWelcomePage) {

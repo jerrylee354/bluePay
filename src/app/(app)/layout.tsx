@@ -1,3 +1,6 @@
+
+"use client";
+
 import AppContent from '@/components/app-content';
 import { AuthProvider } from '@/context/auth-context';
 
