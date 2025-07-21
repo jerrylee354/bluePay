@@ -112,7 +112,7 @@ export default function LandingPage() {
                             <FeatureItem
                                 icon={Lock}
                                 title="銀行級安全防護"
-                                description="您的交易資料經過端到端加密，我們絕不會分享或出售您的資料。"
+                                description="您的交易資料經過端對端加密，我們絕不會分享或出售您的資料。"
                             />
                         </div>
                     </div>
@@ -148,15 +148,16 @@ export default function LandingPage() {
                                     <span>您可以完全控制您的資料，隨時查看或下載。</span>
                                 </li>
                             </ul>
-                            <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-                                <p className="text-center text-sm font-semibold text-gray-700">由劉氏敏集團開發</p>
-                            </div>
-                            <Button asChild variant="link" className="mt-6 p-0 h-auto text-lg text-primary hover:text-primary/80 group">
+                            
+                            <Button asChild variant="link" className="mt-8 p-0 h-auto text-lg text-primary hover:text-primary/80 group">
                                 <Link href="/privacy">
                                     閱讀我們的隱私政策
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </Button>
+                             <div className="mt-8">
+                                <p className="text-sm font-semibold text-gray-500">由劉氏敏集團開發</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -184,4 +185,5 @@ export default function LandingPage() {
             </footer>
         </div>
     );
-}
+
+    
