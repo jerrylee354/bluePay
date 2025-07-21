@@ -13,19 +13,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Check if all required environment variables are present
-const isFirebaseConfigured =
-  firebaseConfig.apiKey &&
-  firebaseConfig.authDomain &&
-  firebaseConfig.projectId &&
-  firebaseConfig.storageBucket &&
-  firebaseConfig.messagingSenderId &&
-  firebaseConfig.appId;
-
-// Initialize Firebase only if configured (i.e., on the client-side with env vars)
-const app = isFirebaseConfigured ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : null;
-const auth = app ? getAuth(app) : null;
-const db = app ? getFirestore(app) : null;
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 
 export { app, auth, db, updateProfile, updateDoc };
