@@ -18,6 +18,8 @@ import { useIsMobile } from '@/hooks/use-is-mobile';
 import {
     Dialog,
     DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import PaymentConfirm from '@/components/payment-confirm';
 
@@ -232,6 +234,9 @@ export default function PayPage() {
 
              <Dialog open={isPayDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="p-0 max-w-md h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Confirm Payment</DialogTitle>
+                    </DialogHeader>
                     {selectedUser && (
                         <PaymentConfirm
                             userId={selectedUser.uid}

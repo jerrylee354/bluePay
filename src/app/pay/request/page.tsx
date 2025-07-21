@@ -21,6 +21,8 @@ import QRCode from 'qrcode.react';
 import {
     Dialog,
     DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import PaymentConfirm from '@/components/payment-confirm';
 
@@ -284,6 +286,9 @@ export default function RequestPage() {
             </div>
             <Dialog open={isRequestDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="p-0 max-w-md h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
+                     <DialogHeader className="sr-only">
+                        <DialogTitle>Request Payment</DialogTitle>
+                    </DialogHeader>
                     {selectedUser && (
                         <PaymentConfirm
                             userId={selectedUser.uid}
