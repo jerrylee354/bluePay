@@ -8,13 +8,13 @@ import { cn } from '@/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 
 const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-    <div className="flex items-start gap-4 p-6 rounded-xl bg-white/5 border border-white/10 shadow-lg backdrop-blur-lg">
+    <div className="flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm">
         <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
             <Icon className="w-6 h-6 text-primary" />
         </div>
         <div>
-            <h3 className="text-lg font-semibold text-gray-100">{title}</h3>
-            <p className="mt-1 text-gray-400">{description}</p>
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <p className="mt-1 text-gray-600">{description}</p>
         </div>
     </div>
 );
@@ -49,8 +49,8 @@ export default function LandingPage() {
     }, []);
 
     return (
-        <div className="flex flex-col min-h-dvh bg-gray-50 text-gray-800 font-body">
-            <header className="sticky top-0 z-50 w-full border-b border-gray-200/10 bg-gray-900/50 backdrop-blur-lg">
+        <div className="flex flex-col min-h-dvh bg-white text-gray-800 font-body">
+            <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-lg">
                 <div className="container flex items-center justify-between h-20 max-w-7xl mx-auto px-4">
                     <Link href="/" className="flex items-center gap-2">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -58,7 +58,7 @@ export default function LandingPage() {
                           <path d="M3 10H21" stroke="#3880ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           <path d="M16 15H16.01" stroke="#3880ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        <span className="text-2xl font-bold text-white">BluePay</span>
+                        <span className="text-2xl font-bold text-gray-900">BluePay</span>
                     </Link>
                     <nav className="flex items-center gap-4">
                          <Button asChild size="lg" className={cn(
@@ -75,14 +75,14 @@ export default function LandingPage() {
             </header>
 
             <main className="flex-1">
-                <section className="relative py-28 md:py-40 text-center overflow-hidden bg-gray-900 text-white">
-                    <div className="absolute inset-0 -z-0 opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.2)_0%,rgba(255,255,255,0)_60%)]"></div>
+                <section className="relative py-28 md:py-40 text-center overflow-hidden bg-white">
+                    <div className="absolute inset-0 -z-0 opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1)_0%,rgba(255,255,255,0)_60%)]"></div>
                     <div className="container relative max-w-4xl mx-auto px-4 z-10">
-                        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-7xl">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-7xl">
                             為現代生活打造的
                             <span className="block text-primary">點對點支付</span>
                         </h1>
-                        <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-300 md:text-xl">
+                        <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 md:text-xl">
                             告別複雜的轉帳流程。使用 BluePay，只需輕點幾下即可向朋友和家人付款或收款。您的安全與隱私是我們的第一要務。
                         </p>
                         <div className="mt-10">
@@ -96,11 +96,11 @@ export default function LandingPage() {
                     </div>
                 </section>
                 
-                 <section id="features" className="py-24 bg-gray-900 text-white">
+                 <section id="features" className="py-24 bg-gray-50">
                     <div className="container max-w-6xl mx-auto px-4">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">一個更聰明、更簡單的支付方式</h2>
-                            <p className="mt-4 text-lg text-gray-400">探索 BluePay 如何讓您的金融生活更輕鬆。</p>
+                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">一個更聰明、更簡單的支付方式</h2>
+                            <p className="mt-4 text-lg text-gray-600">探索 BluePay 如何讓您的金融生活更輕鬆。</p>
                         </div>
                         <div className="grid md:grid-cols-3 gap-8">
                             <FeatureItem
@@ -122,34 +122,34 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section id="privacy-focus" className="py-24 bg-gray-900 text-white">
+                <section id="privacy-focus" className="py-24 bg-white">
                     <div className="container max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
                         <div className="relative flex justify-center items-center p-8">
                              <div className="relative w-72 h-72">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-primary/10"></div>
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full bg-primary/20"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-primary/5"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full bg-primary/10"></div>
                                 <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 text-primary" />
                             </div>
                         </div>
                         <div className="text-left">
-                            <h2 className="text-3xl font-bold tracking-tight">
+                            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
                                 您的隱私，我們的承諾
                             </h2>
-                            <p className="mt-4 text-lg text-gray-400">
+                            <p className="mt-4 text-lg text-gray-600">
                                 在 BluePay，我們相信您的財務資訊應該是私密的。我們設計的平台從一開始就考慮到隱私。
                             </p>
                             <ul className="mt-6 space-y-4">
                                 <li className="flex items-start gap-3">
                                     <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                                    <span>您的交易資料絕不會被用於廣告或出售給第三方。</span>
+                                    <span className="text-gray-700">您的交易資料絕不會被用於廣告或出售給第三方。</span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                                    <span>我們使用最先進的加密技術保護您的每一次轉帳。</span>
+                                    <span className="text-gray-700">我們使用最先進的加密技術保護您的每一次轉帳。</span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                                    <span>您可以完全控制您的資料，隨時查看或下載。</span>
+                                    <span className="text-gray-700">您可以完全控制您的資料，隨時查看或下載。</span>
                                 </li>
                             </ul>
                             
@@ -166,10 +166,10 @@ export default function LandingPage() {
                     </div>
                 </section>
                 
-                <section id="cta" className="py-24 text-center bg-gray-800 text-white">
+                <section id="cta" className="py-24 text-center bg-gray-50">
                     <div className="container max-w-4xl mx-auto px-4">
-                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">準備好體驗更簡單的支付方式了嗎？</h2>
-                        <p className="mt-4 text-lg text-gray-400">立即加入數百萬用戶的行列，享受無縫、安全的交易。</p>
+                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">準備好體驗更簡單的支付方式了嗎？</h2>
+                        <p className="mt-4 text-lg text-gray-600">立即加入數百萬用戶的行列，享受無縫、安全的交易。</p>
                         <div className="mt-8">
                              <Button asChild size="lg" className="h-14 text-lg group">
                                 <Link href="/login" ref={ctaButtonRef}>
@@ -182,7 +182,7 @@ export default function LandingPage() {
                 </section>
             </main>
 
-            <footer className="py-8 border-t border-gray-200/10 bg-gray-900">
+            <footer className="py-8 border-t border-gray-200 bg-white">
                 <div className="container text-center text-gray-500 text-sm max-w-7xl mx-auto px-4">
                     <p>&copy; {new Date().getFullYear()} BluePay. All rights reserved.</p>
                 </div>
