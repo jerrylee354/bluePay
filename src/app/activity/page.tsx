@@ -307,21 +307,21 @@ export default function ActivityPage() {
         </TabsList>
         {isLoading ? <ActivitySkeleton /> : (
             <>
-                <TabsContent value="all">
+                <TabsContent value="all" className="rounded-xl overflow-hidden">
                   <Card>
                     <CardContent className="p-0">
                         <TransactionList transactions={transactionsWithDetails} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} />
                     </CardContent>
                   </Card>
                 </TabsContent>
-                <TabsContent value="payments">
+                <TabsContent value="payments" className="rounded-xl overflow-hidden">
                   <Card>
                     <CardContent className="p-0">
                         <TransactionList transactions={payments} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment}/>
                     </CardContent>
                   </Card>
                 </TabsContent>
-                <TabsContent value="receipts">
+                <TabsContent value="receipts" className="rounded-xl overflow-hidden">
                   <Card>
                     <CardContent className="p-0">
                         <TransactionList transactions={receipts} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment}/>
