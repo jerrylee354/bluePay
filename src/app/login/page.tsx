@@ -8,7 +8,7 @@ import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet, X, AlertCircle } from 'lucide-react';
+import { Wallet, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
 
@@ -59,12 +59,6 @@ export default function LoginPage() {
     return (
         <div className="relative min-h-screen flex flex-col items-center justify-center p-4">
             <LoadingOverlay isLoading={isLoading} />
-            <Link href="/" passHref>
-                <Button variant="ghost" size="icon" className="absolute top-4 right-4 h-10 w-10 sm:h-12 sm:w-12">
-                    <X className="h-6 w-6" />
-                    <span className="sr-only">Close</span>
-                </Button>
-            </Link>
              <div className="w-full max-w-sm space-y-6 p-4 sm:rounded-lg sm:border sm:bg-card sm:p-8 sm:shadow-sm">
                 <Link href="/" className="flex items-center justify-center gap-2">
                     <Wallet className="w-12 h-12 text-primary" />

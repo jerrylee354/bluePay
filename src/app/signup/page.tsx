@@ -53,13 +53,6 @@ export default function SignupPage() {
                 setError('Please enter your email address.');
                 return;
             }
-             if (accountType === 'business') {
-                const domain = email.split('@')[1];
-                if (!domain || ['gmail.com', 'yahoo.com', 'hotmail.com'].includes(domain)) {
-                    setError('Business accounts require a company domain email.');
-                    return;
-                }
-            }
             setIsLoading(true);
             try {
                 const emailExists = await checkEmailExists(email);
