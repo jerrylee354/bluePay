@@ -223,7 +223,7 @@ export default function LandingPage() {
             </footer>
 
             <Dialog open={!!selectedFeature} onOpenChange={(isOpen) => !isOpen && setSelectedFeature(null)}>
-                <DialogContent className="sm:max-w-lg">
+                <DialogContent className="sm:max-w-2xl">
                     {selectedFeature && (
                         <>
                             <DialogHeader>

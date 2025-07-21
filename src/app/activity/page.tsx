@@ -333,7 +333,7 @@ export default function ActivityPage() {
       </Tabs>
 
       <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
                 <DialogTitle className="sr-only">Transaction Details</DialogTitle>
             </DialogHeader>

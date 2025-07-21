@@ -233,8 +233,8 @@ export default function PayPage() {
             </div>
 
              <Dialog open={isPayDialogOpen} onOpenChange={handleDialogClose}>
-                <DialogContent className="p-0 max-w-md h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
-                    <DialogHeader className="sr-only">
+                <DialogContent className="p-0 max-w-3xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
+                     <DialogHeader className="sr-only">
                         <DialogTitle>Confirm Payment</DialogTitle>
                     </DialogHeader>
                     {selectedUser && (
