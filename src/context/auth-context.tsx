@@ -137,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       balance: 0,
       currency: 'USD',
       hasCompletedOnboarding: false,
+      profileStatus: true, // Default profile status to visible
       createdAt: new Date(),
     };
 
@@ -199,17 +200,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const isUsernameSearch = term.startsWith('@');
     
+    const baseQueryConstraints = [where('profileStatus', '==', true)];
+
     if (isUsernameSearch) {
-        const usernameQuery = query(usersRef, where('username', '>=', term), where('username', '<=', `${term}\uf8ff`), limit(5));
+        const usernameQuery = query(usersRef, ...baseQueryConstraints, where('username', '>=', term), where('username', '<=', `${term}\uf8ff`), limit(5));
         const usernameSnapshot = await getDocs(usernameQuery);
         return usernameSnapshot.docs.map(doc => doc.data());
     }
 
-    const emailQuery = query(usersRef, where('email', '>=', term), where('email', '<=', `${term}\uf8ff`), limit(5));
+    const emailQuery = query(usersRef, ...baseQueryConstraints, where('email', '>=', term), where('email', '<=', `${term}\uf8ff`), limit(5));
     
     const firstNameTerm = searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1);
-    const firstNameQuery = query(usersRef, where('firstName', '>=', firstNameTerm), where('firstName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
-    const lastNameQuery = query(usersRef, where('lastName', '>=', firstNameTerm), where('lastName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
+    const firstNameQuery = query(usersRef, ...baseQueryConstraints, where('firstName', '>=', firstNameTerm), where('firstName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
+    const lastNameQuery = query(usersRef, ...baseQueryConstraints, where('lastName', '>=', firstNameTerm), where('lastName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
     
     try {
         const [emailSnapshot, firstNameSnapshot, lastNameSnapshot] = await Promise.all([

@@ -94,43 +94,44 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
         fetchRecipient();
     }, [userId, getUserById]);
     
-    const handleKeypadClick = (value: string) => {
+    const handleKeypadClick = useCallback((value: string) => {
         if (isProcessing) return;
 
-        if (value === '.') {
-            if (!amount.includes('.')) {
-                setAmount(amount + '.');
+        setAmount(prevAmount => {
+            if (value === '.') {
+                if (!prevAmount.includes('.')) {
+                    return prevAmount + '.';
+                }
+                return prevAmount;
             }
-            return;
-        }
+    
+            if (prevAmount === '0') {
+                return value;
+            }
+    
+            const [integerPart, decimalPart] = prevAmount.split('.');
+    
+            if (decimalPart && decimalPart.length >= 2) {
+                return prevAmount; // Limit to 2 decimal places
+            }
+    
+            if (!prevAmount.includes('.') && integerPart.replace(/,/g, '').length >= 9) {
+                return prevAmount; // Limit to 9 integer digits
+            }
+    
+            return prevAmount + value;
+        });
+    }, [isProcessing]);
 
-        if (amount === '0') {
-            setAmount(value);
-            return;
-        }
-
-        const [integerPart, decimalPart] = amount.split('.');
-
-        if (decimalPart && decimalPart.length >= 2) {
-            return; // Limit to 2 decimal places
-        }
-
-        if (!amount.includes('.') && integerPart.replace(/,/g, '').length >= 9) {
-            return; // Limit to 9 integer digits
-        }
-
-        setAmount(amount + value);
-    };
-
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         if (isProcessing) return;
         setAmount(prev => {
             const newAmount = prev.slice(0, -1);
             return newAmount === '' ? '0' : newAmount;
         });
-    };
+    }, [isProcessing]);
 
-    const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
             try {
@@ -157,15 +158,15 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                  toast({ variant: 'destructive', title: "Image Processing Failed", description: `Could not process image: ${error.message}` });
             }
         }
-    };
+    }, [toast]);
 
-    const removeImage = () => {
+    const removeImage = useCallback(() => {
         setAttachedImage(null);
         setImagePreview(null);
         if (imageInputRef.current) {
             imageInputRef.current.value = "";
         }
-    };
+    }, []);
 
 
     const getInitials = (name?: string) => {

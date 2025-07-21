@@ -63,6 +63,21 @@ export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage
         return `@${firstName?.toLowerCase() || 'user'}`;
     }
 
+    const handleProfileStatusChange = async (checked: boolean) => {
+        if (!user) return;
+        setIsLoading(true);
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            await updateDoc(userDocRef, { profileStatus: checked });
+            await refreshUserData();
+            toast({ title: "Profile Status Updated" });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: "Update Failed", description: error.message });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file || !user) return;
@@ -157,10 +172,14 @@ export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage
                     <div>
                          <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-semibold">個人檔案狀態 - 開啟</h3>
+                                <h3 className="text-lg font-semibold">個人檔案狀態 - {userData?.profileStatus ? '開啟' : '關閉'}</h3>
                                 <p className="text-sm text-muted-foreground max-w-md">允許任何人透過搜尋你的個人檔案找到你，並付款給你。</p>
                             </div>
-                            <Switch id="profile-status" defaultChecked />
+                            <Switch 
+                                id="profile-status" 
+                                checked={userData?.profileStatus ?? true}
+                                onCheckedChange={handleProfileStatusChange}
+                            />
                          </div>
                     </div>
                 </div>
