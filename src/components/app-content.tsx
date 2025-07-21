@@ -48,12 +48,15 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
     const [isIdle, setIsIdle] = useState(false);
 
     const handleIdle = () => {
-        setIsIdle(true);
+        if(isAuthenticated) {
+            setIsIdle(true);
+        }
     };
 
     useIdleTimeout({
         onIdle: handleIdle,
-        timeout: 180000, // 3 minutes
+        activeTimeout: 180000, // 3 minutes
+        inactiveTimeout: 120000, // 2 minutes
         isIdle: !isAuthenticated || isLoading,
     });
     
