@@ -200,19 +200,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const isUsernameSearch = term.startsWith('@');
     
-    const baseQueryConstraints = [where('profileStatus', '==', true)];
-
     if (isUsernameSearch) {
-        const usernameQuery = query(usersRef, ...baseQueryConstraints, where('username', '>=', term), where('username', '<=', `${term}\uf8ff`), limit(5));
+        const usernameQuery = query(usersRef, where('username', '>=', term), where('username', '<=', `${term}\uf8ff`), limit(5));
         const usernameSnapshot = await getDocs(usernameQuery);
-        return usernameSnapshot.docs.map(doc => doc.data());
+        return usernameSnapshot.docs
+            .map(doc => doc.data())
+            .filter(user => user.profileStatus === true);
     }
 
-    const emailQuery = query(usersRef, ...baseQueryConstraints, where('email', '>=', term), where('email', '<=', `${term}\uf8ff`), limit(5));
+    const emailQuery = query(usersRef, where('email', '>=', term), where('email', '<=', `${term}\uf8ff`), limit(5));
     
     const firstNameTerm = searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1);
-    const firstNameQuery = query(usersRef, ...baseQueryConstraints, where('firstName', '>=', firstNameTerm), where('firstName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
-    const lastNameQuery = query(usersRef, ...baseQueryConstraints, where('lastName', '>=', firstNameTerm), where('lastName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
+    const firstNameQuery = query(usersRef, where('firstName', '>=', firstNameTerm), where('firstName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
+    const lastNameQuery = query(usersRef, where('lastName', '>=', firstNameTerm), where('lastName', '<=', `${firstNameTerm}\uf8ff`), limit(5));
     
     try {
         const [emailSnapshot, firstNameSnapshot, lastNameSnapshot] = await Promise.all([
@@ -223,9 +223,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         const usersMap = new Map<string, DocumentData>();
         
-        emailSnapshot.forEach(doc => usersMap.set(doc.id, doc.data()));
-        firstNameSnapshot.forEach(doc => usersMap.set(doc.id, doc.data()));
-        lastNameSnapshot.forEach(doc => usersMap.set(doc.id, doc.data()));
+        const processSnapshot = (snapshot: any) => {
+             snapshot.forEach((doc: any) => {
+                const data = doc.data();
+                if (data.profileStatus === true) {
+                    usersMap.set(doc.id, data);
+                }
+            });
+        }
+
+        processSnapshot(emailSnapshot);
+        processSnapshot(firstNameSnapshot);
+        processSnapshot(lastNameSnapshot);
 
         return Array.from(usersMap.values());
     } catch (error) {
