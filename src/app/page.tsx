@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle, Lock, Users, Zap, Link as LinkIcon, Search, Send } from 'lucide-react';
+import { ArrowRight, CheckCircle, Lock, Users, Zap, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
@@ -18,34 +18,13 @@ const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementTy
     </div>
 );
 
-const StepItem = ({ icon: Icon, step, title, description }: { icon: React.ElementType, step: string, title: string, description: string }) => (
-    <div className="flex flex-col items-center text-center">
-        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
-            <span className="text-2xl font-bold">{step}</span>
-        </div>
-        <Icon className="w-10 h-10 text-primary mb-4" />
-        <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
-        <p className="mt-2 text-gray-500">{description}</p>
-    </div>
-);
-
 export default function LandingPage() {
     return (
         <div className="flex flex-col min-h-dvh bg-gray-50 text-gray-800 font-body">
             <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-lg">
                 <div className="container flex items-center justify-between h-20 max-w-7xl mx-auto px-4">
                     <Link href="/" className="flex items-center gap-2">
-                         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 32C24.8366 32 32 24.8366 32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32Z" fill="url(#paint0_linear_1_2)"/>
-                            <path d="M20.8255 10.8988C20.2087 10.2783 19.1171 10.2783 18.5003 10.8988L13.8835 15.5456C13.5751 15.8561 13.5751 16.3662 13.8835 16.6767L18.5003 21.3235C19.1171 21.944 20.2087 21.944 20.8255 21.3235C21.4423 20.703 21.4423 19.6053 20.8255 18.9848L17.6908 16.1111L20.8255 13.2375C21.4423 12.617 21.4423 11.5193 20.8255 10.8988Z" fill="white"/>
-                            <path d="M13.1118 10.8988C12.495 10.2783 11.4034 10.2783 10.7866 10.8988C10.1698 11.5193 10.1698 12.617 10.7866 13.2375L13.9213 16.1111L10.7866 18.9848C10.1698 19.6053 10.1698 20.703 10.7866 21.3235C11.4034 21.944 12.495 21.944 13.1118 21.3235L17.7286 16.6767C18.037 16.3662 18.037 15.8561 17.7286 15.5456L13.1118 10.8988Z" fill="white"/>
-                            <defs>
-                            <linearGradient id="paint0_linear_1_2" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                            <stop stopColor="#2563EB"/>
-                            <stop offset="1" stopColor="#3B82F6"/>
-                            </linearGradient>
-                            </defs>
-                        </svg>
+                        <Wallet className="w-8 h-8 text-primary" />
                         <span className="text-2xl font-bold text-gray-900">BluePay</span>
                     </Link>
                     <nav className="flex items-center gap-4">
