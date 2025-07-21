@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, Lock, Users, Zap, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState, useEffect, useRef } from 'react';
 
 const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
     <div className="flex items-start gap-4">
@@ -19,6 +20,34 @@ const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementTy
 );
 
 export default function LandingPage() {
+    const [isHeaderButtonVisible, setIsHeaderButtonVisible] = useState(false);
+    const heroButtonRef = useRef<HTMLAnchorElement>(null);
+    const ctaButtonRef = useRef<HTMLAnchorElement>(null);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (heroButtonRef.current && ctaButtonRef.current) {
+                const heroButtonRect = heroButtonRef.current.getBoundingClientRect();
+                const ctaButtonRect = ctaButtonRef.current.getBoundingClientRect();
+                const viewHeight = window.innerHeight;
+
+                const heroButtonIsOutOfView = heroButtonRect.bottom < 0;
+                const ctaButtonIsInView = ctaButtonRect.top < viewHeight && ctaButtonRect.bottom > 0;
+
+                if (heroButtonIsOutOfView && !ctaButtonIsInView) {
+                    setIsHeaderButtonVisible(true);
+                } else {
+                    setIsHeaderButtonVisible(false);
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll(); // Initial check
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <div className="flex flex-col min-h-dvh bg-gray-50 text-gray-800 font-body">
             <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-lg">
@@ -28,7 +57,10 @@ export default function LandingPage() {
                         <span className="text-2xl font-bold text-gray-900">BluePay</span>
                     </Link>
                     <nav className="flex items-center gap-4">
-                         <Button asChild size="lg" className="group">
+                         <Button asChild size="lg" className={cn(
+                             "group transition-all duration-300",
+                             isHeaderButtonVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+                         )}>
                             <Link href="/login">
                                 開始使用
                                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
@@ -51,7 +83,7 @@ export default function LandingPage() {
                         </p>
                         <div className="mt-10">
                              <Button asChild size="lg" className="h-14 text-lg group">
-                                <Link href="/login">
+                                <Link href="/login" ref={heroButtonRef}>
                                     立即免費開始
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>
@@ -86,9 +118,9 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <section id="privacy-focus" className="py-24 bg-gray-50">
+                <section id="privacy-focus" className="py-24 bg-white">
                     <div className="container max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-                        <div className="relative flex justify-center items-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl">
+                        <div className="relative flex justify-center items-center p-8">
                              <div className="relative w-72 h-72">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-primary/10"></div>
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full bg-primary/20"></div>
@@ -126,13 +158,13 @@ export default function LandingPage() {
                     </div>
                 </section>
                 
-                <section id="cta" className="py-24 text-center bg-white">
+                <section id="cta" className="py-24 text-center bg-gray-50">
                     <div className="container max-w-4xl mx-auto px-4">
                         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">準備好體驗更簡單的支付方式了嗎？</h2>
                         <p className="mt-4 text-lg text-gray-600">立即加入數百萬用戶的行列，享受無縫、安全的交易。</p>
                         <div className="mt-8">
                              <Button asChild size="lg" className="h-14 text-lg group">
-                                <Link href="/login">
+                                <Link href="/login" ref={ctaButtonRef}>
                                     免費註冊
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>
