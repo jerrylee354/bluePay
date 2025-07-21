@@ -148,6 +148,9 @@ export default function LandingPage() {
                                     <span>您可以完全控制您的資料，隨時查看或下載。</span>
                                 </li>
                             </ul>
+                            <div className="mt-8 p-4 bg-gray-100 rounded-lg">
+                                <p className="text-center text-sm font-semibold text-gray-700">由劉氏敏集團開發</p>
+                            </div>
                             <Button asChild variant="link" className="mt-6 p-0 h-auto text-lg text-primary hover:text-primary/80 group">
                                 <Link href="/privacy">
                                     閱讀我們的隱私政策
