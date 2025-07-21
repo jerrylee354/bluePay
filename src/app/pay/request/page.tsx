@@ -213,7 +213,7 @@ export default function RequestPage() {
                 <div className="w-full max-w-xs">
                     <Card>
                         <CardContent className="p-0">
-                             <Link href="/pay/group" className="block hover:bg-muted/50 transition-colors rounded-xl">
+                             <Link href="/pay/group" className="block hover:bg-muted/50 transition-colors">
                                 <div className="flex items-center gap-4 p-4">
                                     <div className="p-3 bg-primary/10 rounded-lg">
                                         <Users className="w-6 h-6 text-primary" />

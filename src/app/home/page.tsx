@@ -62,7 +62,7 @@ export default function HomePage() {
         )}
       </header>
 
-      <Card className="w-full shadow-lg bg-primary text-primary-foreground rounded-xl">
+      <Card className="w-full shadow-lg bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="text-sm font-normal text-primary-foreground/80">
             Total Balance

@@ -83,21 +83,20 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
 
     }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage, isPublicRoute]);
     
-    // Show loader for all private app routes if auth state is loading
-    if (isLoading && !isAuthRoute && !isWelcomePage && !isPublicRoute) {
+    if (isLoading && !isAuthRoute && !isPublicRoute) {
         return <AppLoader />;
     }
 
-    // Allow public, auth, and welcome pages to render without full auth-check flicker.
-    // The useEffect will handle redirection once auth state is known.
-    if (isPublicRoute || isAuthRoute || isWelcomePage) {
+    if (isAuthRoute || isPublicRoute) {
         return <>{children}</>;
     }
     
-    // If we've passed loading and the user is still not authenticated on a private route,
-    // we return null to prevent content flash before redirection.
     if (!isAuthenticated) {
       return null;
+    }
+    
+    if (isWelcomePage) {
+        return <>{children}</>;
     }
 
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.startsWith(route));

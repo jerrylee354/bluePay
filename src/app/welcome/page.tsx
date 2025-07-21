@@ -16,8 +16,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import AppContent from '@/components/app-content';
 
-export default function WelcomePage() {
+function WelcomeContent() {
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [isFadingOut, setIsFadingOut] = useState(false);
@@ -282,5 +283,13 @@ export default function WelcomePage() {
                 </Card>
             </div>
         </>
+    );
+}
+
+export default function WelcomePage() {
+    return (
+        <AppContent>
+            <WelcomeContent />
+        </AppContent>
     );
 }
