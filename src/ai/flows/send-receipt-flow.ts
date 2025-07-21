@@ -125,5 +125,6 @@ export async function sendReceipt(details: ReceiptDetails): Promise<void> {
         console.log(`Receipt email sent to ${details.toEmail}`);
     } catch (error) {
         console.error(`Error in sendReceiptFlow for ${details.toEmail}:`, error);
+        throw error; // Re-throw the error to be caught by the calling function
     }
 }

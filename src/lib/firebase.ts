@@ -5,12 +5,12 @@ import { getFirestore, updateDoc } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAu9OYsRVms6Dlrdermq5PLh2kMWeDrPNU",
-  authDomain: "bluepay-fojq8.firebaseapp.com",
-  projectId: "bluepay-fojq8",
-  storageBucket: "bluepay-fojq8.appspot.com",
-  messagingSenderId: "623887467932",
-  appId: "1:623887467932:web:9f5a3d57efd0a295907459"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialize Firebase for client-side
@@ -20,3 +20,4 @@ const db = getFirestore(app);
 
 
 export { app, auth, db, updateProfile, updateDoc };
+
