@@ -100,7 +100,7 @@ export default function WelcomePage() {
             toast({ title: "Setup Complete!", description: "Welcome to BluePay." });
             
             setIsFadingOut(true);
-            setTimeout(() => router.push('/'), 500);
+            setTimeout(() => router.push('/home'), 500);
 
         } catch (error: any) {
             toast({ variant: 'destructive', title: "Setup Failed", description: "Something went wrong. Please try again." });

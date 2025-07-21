@@ -12,6 +12,7 @@ import { useIsMobile } from '@/hooks/use-is-mobile';
 const authRoutes = ['/login', '/signup', '/terms', '/privacy'];
 const fullScreenRoutes = ['/pay/confirm'];
 const welcomeRoute = '/welcome';
+const publicRoutes = ['/'];
 
 const AppLoader = () => (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -44,36 +45,46 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
     
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
     const isWelcomePage = pathname.startsWith(welcomeRoute);
+    const isPublicRoute = publicRoutes.some(route => pathname === route);
 
     useEffect(() => {
         if (isLoading) return;
+        
+        const isAppRoute = !isAuthRoute && !isWelcomePage && !isPublicRoute;
 
-        if (!isAuthenticated && !isAuthRoute && !isWelcomePage) {
+        if (!isAuthenticated && isAppRoute) {
             router.push('/login');
         } else if (isAuthenticated) {
-            if (userData && !userData.hasCompletedOnboarding && !isWelcomePage) {
+            if (isPublicRoute) {
+                router.push('/home');
+            } else if (userData && !userData.hasCompletedOnboarding && !isWelcomePage) {
                 router.push('/welcome');
             } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute || isWelcomePage)) {
-                router.push('/');
+                router.push('/home');
             }
         }
 
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage, isPublicRoute]);
     
-    if (isLoading || (!isAuthenticated && !isAuthRoute)) {
-        // Show loader if loading, or if not authenticated and not on an auth/welcome route
-        // This prevents flashes of content for unauthenticated users.
-        if (isWelcomePage && !isAuthenticated) return null; // Don't show loader on welcome if not logged in yet, let it handle its own state
+    // Show loader for all private app routes if auth state is loading
+    if (isLoading && !isAuthRoute && !isWelcomePage && !isPublicRoute) {
         return <AppLoader />;
     }
-    
-    const isFullScreenPage = fullScreenRoutes.some(route => pathname.startsWith(route));
 
-    // Render children directly for auth pages, welcome page, or if user is authenticated but data is not yet available
-    if (isAuthRoute || isWelcomePage || !userData) {
-        return <main className="h-screen">{children}</main>;
+    // Allow public, auth, and welcome pages to render without full auth-check flicker.
+    // The useEffect will handle redirection once auth state is known.
+    if (isPublicRoute || isAuthRoute || isWelcomePage) {
+        return <>{children}</>;
     }
     
+    // If we've passed loading and the user is still not authenticated on a private route,
+    // we return null to prevent content flash before redirection.
+    if (!isAuthenticated) {
+      return null;
+    }
+
+    const isFullScreenPage = fullScreenRoutes.some(route => pathname.startsWith(route));
+
     if (isMobile && isFullScreenPage) {
          return <main className="h-screen">{children}</main>;
     }

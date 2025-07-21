@@ -40,7 +40,7 @@ export default function LoginPage() {
                 title: "Login Successful",
                 description: "Welcome back!",
             });
-            router.push('/');
+            router.push('/home');
         } catch (error: any) {
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                 setError("Invalid email or password. Please try again.");
@@ -61,10 +61,10 @@ export default function LoginPage() {
         <div className="flex min-h-screen flex-col items-center justify-center p-4">
             <LoadingOverlay isLoading={isLoading} />
              <div className="w-full max-w-sm space-y-6 p-4 sm:rounded-lg sm:border sm:bg-card sm:p-8 sm:shadow-sm">
-                <div className="flex items-center justify-center gap-2">
+                <Link href="/" className="flex items-center justify-center gap-2">
                     <Wallet className="w-12 h-12 text-primary" />
                     <span className="text-4xl font-bold text-foreground">BluePay</span>
-                </div>
+                </Link>
                 <div className="space-y-4">
                     <h1 className="sr-only">Log In</h1>
                     <form onSubmit={handleSubmit} className="space-y-4">

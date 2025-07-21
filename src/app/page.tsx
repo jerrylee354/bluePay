@@ -1,120 +1,99 @@
 
 "use client";
 
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
-import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type Transaction } from "@/lib/data";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/auth-context";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useIsMobile } from "@/hooks/use-is-mobile";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Wallet, ShieldCheck, Lock, Users } from 'lucide-react';
 
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
+const FeatureCard = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
+    <div className="flex flex-col items-center p-6 text-center bg-card rounded-xl shadow-sm border">
+        <div className="p-3 mb-4 rounded-full bg-primary/10">
+            <Icon className="w-8 h-8 text-primary" />
+        </div>
+        <h3 className="mb-2 text-xl font-semibold">{title}</h3>
+        <p className="text-muted-foreground">{description}</p>
+    </div>
+);
 
-const TransactionIcon = ({ type }: { type: Transaction["type"] }) => {
-  if (type === "payment") {
+export default function LandingPage() {
     return (
-      <div className="p-2 bg-destructive/10 rounded-full">
-        <ArrowUpRight className="w-5 h-5 text-destructive" />
-      </div>
-    );
-  }
-  return (
-    <div className="p-2 bg-accent/10 rounded-full">
-      <ArrowDownLeft className="w-5 h-5 text-accent" />
-    </div>
-  );
-};
-
-export default function Home() {
-  const { user, userData, transactions } = useAuth();
-  const recentTransactions = transactions.slice(0, 4);
-  const isMobile = useIsMobile();
-
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return 'U';
-    return email.charAt(0).toUpperCase();
-  }
-
-  return (
-    <div className="space-y-8">
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-muted-foreground">Welcome Back,</p>
-          <h1 className="text-2xl font-bold text-foreground">{userData?.firstName || user?.email || 'User'}</h1>
-        </div>
-        {isMobile && (
-          <Link href="/settings">
-              <Avatar className="h-12 w-12 cursor-pointer">
-                <AvatarImage src={userData?.photoURL || ""} alt="User Avatar" />
-                <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
-              </Avatar>
-          </Link>
-        )}
-      </header>
-
-      <Card className="w-full shadow-lg bg-primary text-primary-foreground rounded-xl">
-        <CardHeader>
-          <CardTitle className="text-sm font-normal text-primary-foreground/80">
-            Total Balance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {userData ? (
-            <p className="text-4xl font-bold tracking-tight">
-              {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
-            </p>
-          ) : (
-            <Skeleton className="h-10 w-48 bg-primary/20" />
-          )}
-        </CardContent>
-      </Card>
-      
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Activity</h2>
-          <Link href="/activity" className="text-sm font-medium text-primary hover:underline">
-            View All
-          </Link>
-        </div>
-        <Card>
-            <CardContent className="p-0">
-              {recentTransactions.length > 0 ? (
-                <ul className="divide-y">
-                    {recentTransactions.map((tx) => (
-                        <li key={tx.id} className="flex items-center p-4 space-x-4">
-                            <TransactionIcon type={tx.type} />
-                            <div className="flex-1">
-                                <p className="font-semibold">{tx.name}</p>
-                                <p className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleDateString()}</p>
-                            </div>
-                            <p className={cn(
-                                "font-bold",
-                                tx.type === 'payment' ? 'text-destructive' : 'text-accent'
-                            )}>
-                                {tx.type === 'payment' ? '-' : '+'}
-                                {formatCurrency(tx.amount, userData?.currency || 'USD')}
-                            </p>
-                        </li>
-                    ))}
-                </ul>
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                    No recent transactions.
+        <div className="flex flex-col min-h-screen bg-background">
+            <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
+                 <div className="container flex items-center justify-between h-16 max-w-5xl mx-auto px-4">
+                    <div className="flex items-center gap-2">
+                        <Wallet className="w-8 h-8 text-primary" />
+                        <span className="text-2xl font-bold text-foreground">BluePay</span>
+                    </div>
+                     <nav className="flex items-center gap-4">
+                        <Button asChild>
+                            <Link href="/login">開始使用</Link>
+                        </Button>
+                    </nav>
                 </div>
-              )}
-            </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+            </header>
+
+            <main className="flex-1">
+                <section className="py-20 text-center">
+                    <div className="container max-w-3xl mx-auto px-4">
+                        <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl">
+                            簡單、快速、安全的點對點支付
+                        </h1>
+                        <p className="mt-6 text-lg text-muted-foreground md:text-xl">
+                            告別複雜的轉帳流程。使用 BluePay，只需輕點幾下即可向朋友和家人付款或收款。
+                        </p>
+                        <div className="mt-8">
+                            <Button asChild size="lg" className="h-14 text-lg">
+                                <Link href="/login">立即開始使用</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="features" className="py-20 bg-muted/50">
+                     <div className="container grid gap-8 md:grid-cols-3 max-w-5xl mx-auto px-4">
+                        <FeatureCard 
+                            icon={Lock}
+                            title="銀行級安全"
+                            description="您的資料經過端到端加密，確保您的資金和個人資訊安全。"
+                        />
+                        <FeatureCard 
+                            icon={Users}
+                            title="輕鬆社交支付"
+                            description="透過使用者名稱輕鬆找到朋友。無需交換敏感的銀行詳細資訊。"
+                        />
+                        <FeatureCard 
+                            icon={ShieldCheck}
+                            title="隱私至上"
+                            description="我們絕不會分享您的交易資料。您可以完全控制您的個人資訊。"
+                        />
+                    </div>
+                </section>
+                
+                 <section id="privacy-focus" className="py-20">
+                    <div className="container max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
+                        <div className="text-center md:text-left">
+                            <h2 className="text-3xl font-bold tracking-tight">您的隱私，我們的承諾</h2>
+                             <p className="mt-4 text-lg text-muted-foreground">
+                                在 BluePay，我們相信您的財務資訊應該是私密的。我們設計的平台從一開始就考慮到隱私。您的交易資料絕不會被用於廣告或出售給第三方。您可以放心地進行交易，因為知道您的資料受到保護。
+                            </p>
+                            <Button asChild variant="outline" className="mt-6">
+                                <Link href="/privacy">閱讀我們的隱私政策</Link>
+                            </Button>
+                        </div>
+                        <div className="flex justify-center">
+                            <div className="relative p-8 bg-card border rounded-xl shadow-lg">
+                                <ShieldCheck className="w-32 h-32 text-primary" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <footer className="py-8 border-t bg-muted/50">
+                <div className="container text-center text-muted-foreground text-sm max-w-5xl mx-auto px-4">
+                    <p>&copy; {new Date().getFullYear()} BluePay. All rights reserved.</p>
+                </div>
+            </footer>
+        </div>
+    );
 }

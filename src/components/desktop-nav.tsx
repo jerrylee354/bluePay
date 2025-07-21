@@ -28,7 +28,7 @@ import SettingsContainer, { type SettingsPage } from './settings-container';
 
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/activity", label: "Activity", icon: History },
   { href: "/pay", label: "Pay", icon: CircleDollarSign },
   { href: "/wallet", label: "Wallet", icon: WalletIcon },
@@ -36,7 +36,7 @@ const navItems = [
 
 const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
     const pathname = usePathname();
-    const isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href);
+    const isActive = pathname.startsWith(item.href);
 
     return (
         <TooltipProvider delayDuration={0}>
@@ -94,7 +94,7 @@ export default function DesktopNav() {
     >
       <div className="flex flex-col items-center gap-2">
         <Link 
-            href="/" 
+            href="/home" 
             className={cn(
                 "flex items-center h-12 w-full px-4 font-semibold",
                 isExpanded ? "justify-start gap-4" : "justify-center"
