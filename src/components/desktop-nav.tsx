@@ -22,13 +22,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Dialog,
     DialogContent,
+    DialogHeader,
+    DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
 import SettingsContainer, { type SettingsPage } from './settings-container';
 import { Dictionary } from '@/dictionaries';
 
 
-export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary['settings'] }) {
+export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary }) {
   const { user, userData, logout } = useAuth();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [settingsPage, setSettingsPage] = React.useState<SettingsPage>('main');
@@ -40,6 +42,15 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
     { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
     { href: "/wallet", label: dictionary.wallet, icon: WalletIcon },
   ];
+
+  const pageConfig: Record<SettingsPage, { title: string; backPage?: SettingsPage }> = {
+      main: { title: settingsDictionary.settings.title },
+      profile: { title: settingsDictionary.settings.profile.title, backPage: 'main' },
+      security: { title: settingsDictionary.settings.security.title, backPage: 'main' },
+      privacy: { title: settingsDictionary.settings.privacy.title, backPage: 'main' },
+      notifications: { title: settingsDictionary.settings.notifications.title, backPage: 'main' },
+      'edit-username': { title: settingsDictionary.settings.profile.editUsername, backPage: 'profile'},
+  };
 
   const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
       const pathname = usePathname();
@@ -134,7 +145,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                     </Avatar>
                     <div className={cn("flex flex-col items-start text-left transition-all duration-200", isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden")}>
                         <p className="font-semibold text-sm leading-tight whitespace-nowrap">{userData?.firstName || "User"}</p>
-                        <p className="text-xs text-muted-foreground leading-tight">{settingsDictionary.title}</p>
+                        <p className="text-xs text-muted-foreground leading-tight">{settingsDictionary.settings.title}</p>
                     </div>
                   </button>
                 </DialogTrigger>
@@ -142,8 +153,9 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                   <SettingsContainer 
                     page={settingsPage} 
                     setPage={setSettingsPage} 
-                    dictionary={{...settingsDictionary, logout: "Log Out"}} // Pass full dictionary structure
+                    dictionary={settingsDictionary}
                     onLogout={handleLogout}
+                    isDialog={true}
                   />
                 </DialogContent>
           </Dialog>
