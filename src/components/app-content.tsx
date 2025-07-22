@@ -6,41 +6,15 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
-import { Skeleton } from './ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
 import { type Dictionary } from '@/dictionaries';
-import { cn } from '@/lib/utils';
 
-
-const AppLoader = () => (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
-        <div className="w-full max-w-md space-y-8 p-4">
-             <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-8 w-32" />
-                </div>
-                <Skeleton className="h-12 w-12 rounded-full" />
-            </div>
-            <Skeleton className="h-28 w-full rounded-xl" />
-            <div>
-                <Skeleton className="h-8 w-48 mb-4" />
-                <div className="space-y-2">
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                </div>
-            </div>
-        </div>
-    </div>
-);
 
 export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { isAuthenticated, isLoading, userData, logout } = useAuth();
+    const { isAuthenticated, isLoading, logout } = useAuth();
     const pathname = usePathname();
-    const router = useRouter();
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
     
@@ -58,48 +32,12 @@ export default function AppContent({ children, dictionary }: { children: React.R
     });
     
     const publicRoutes = ['/', '/terms', '/privacy'];
-    const authRoutes = ['/login', '/signup', '/welcome'];
-    const isPublicRoute = publicRoutes.includes(pathname);
-    const isAuthRoute = authRoutes.includes(pathname);
-    const isAppRoute = !isPublicRoute && !isAuthRoute;
+    const authRoutes = ['/login', 'signup', '/welcome'];
+    const isPublicRoute = publicRoutes.includes(pathname) || authRoutes.some(p => pathname.includes(p));
 
-    React.useEffect(() => {
-        if (isLoading) return;
-
-        if (!isAuthenticated && isAppRoute) {
-            router.push(`/login`);
-        } else if (isAuthenticated) {
-            if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
-                router.push(`/welcome`);
-            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute || pathname === '/')) {
-                router.push('/home');
-            }
-        }
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAppRoute, isAuthRoute]);
-    
-    // If the auth state is loading and we are on an app route, show the loader.
-    if (isLoading && isAppRoute) {
-        return <AppLoader />;
-    }
-    
-    // This prevents a flash of the home page for unauthenticated users on app routes.
-    if (!isAuthenticated && isAppRoute) {
-      return <AppLoader />;
-    }
-
-    // This prevents a flash of the auth pages for authenticated users.
-    if (isAuthenticated && isAuthRoute) {
-        return <AppLoader />;
-    }
-    
-    // Don't render a layout for public or auth routes.
-    if (isPublicRoute || isAuthRoute) {
+    // If the page is public, don't render any specific app layout.
+    if (isPublicRoute) {
         return <>{children}</>;
-    }
-
-    // Wait for the mobile check to complete to prevent hydration mismatch.
-    if (isMobile === undefined) {
-        return <AppLoader />;
     }
     
     const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
@@ -145,3 +83,4 @@ export default function AppContent({ children, dictionary }: { children: React.R
         </div>
     );
 }
+

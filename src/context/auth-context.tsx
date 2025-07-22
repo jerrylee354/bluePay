@@ -66,6 +66,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const setCookie = (name: string, value: string, days: number) => {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
+const eraseCookie = (name: string) => {   
+    document.cookie = name+'=; Max-Age=-99999999; path=/;';  
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userData, setUserData] = useState<DocumentData | null>(null);
@@ -76,13 +90,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   const getCurrentLocale = (): Locale => {
-    // A simple way to get locale from path if you use it, e.g. /en/home
-    // For this app, we're not using path-based locales anymore.
-    // The logic is now in `layout.tsx` based on headers.
-    // This function can be simplified or used to get locale from a cookie if needed.
-    return (document.documentElement.lang as Locale) || i18n.defaultLocale;
+    const localeFromPath = pathname.split('/')[1] as Locale;
+    return i18n.locales.includes(localeFromPath) ? localeFromPath : i18n.defaultLocale;
   }
-
 
   const refreshUserData = useCallback(async () => {
     if (auth.currentUser) {
@@ -98,8 +108,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       setIsLoading(true);
       setUser(user);
-      
+
       if (user) {
+        const token = await user.getIdToken();
+        setCookie('firebaseIdToken', token, 1);
+
         const userDocRef = doc(db, "users", user.uid);
 
         const unsubUser = onSnapshot(userDocRef, (doc) => {
@@ -132,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
 
       } else {
+        eraseCookie('firebaseIdToken');
         setUserData(null);
         setTransactions([]);
         setWalletItems([]);
@@ -169,8 +183,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    const locale = getCurrentLocale();
     await signOut(auth);
-    router.push(`/login`);
+    eraseCookie('firebaseIdToken');
+    // Instead of router.push, we'll use window.location to trigger a full refresh
+    // ensuring the middleware can correctly redirect.
+    window.location.href = `/${locale}/login`;
   };
   
   const checkEmailExists = async (email: string) => {
