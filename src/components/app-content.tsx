@@ -86,14 +86,6 @@ export default function AppContent({ children, dictionary }: { children: React.R
         return <AppLoader />;
     }
     
-    // Public routes and auth routes are rendered without the app shell
-    if (isPublicRoute || isAuthRoute || pathname === '/welcome') {
-        const pageName = pathname.split('/').pop() || 'landing';
-        // @ts-ignore
-        const pageDictionary = dictionary[pageName] || dictionary;
-        return <>{React.cloneElement(children as React.ReactElement, { dictionary: pageDictionary })}</>;
-    }
-    
     if (!isAuthenticated && isAppRoute) {
       return <AppLoader />;
     }
@@ -105,7 +97,8 @@ export default function AppContent({ children, dictionary }: { children: React.R
         setIsIdle(false);
     };
     
-    const pageKey = pathname.split('/')[1] as keyof Dictionary;
+    const pageKey = pathname.split('/')[1] || 'landing';
+    // @ts-ignore
     const pageDictionary = dictionary[pageKey] || dictionary;
 
     const childrenWithProps = React.Children.map(children, child => {
@@ -115,6 +108,12 @@ export default function AppContent({ children, dictionary }: { children: React.R
         }
         return child;
     });
+
+    // Public routes and auth routes are rendered without the app shell
+    if (isPublicRoute || isAuthRoute || pathname === '/welcome') {
+        return <>{childrenWithProps}</>;
+    }
+
 
     if (isMobile && isFullScreenPage) {
          return (

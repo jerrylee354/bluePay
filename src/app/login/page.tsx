@@ -22,8 +22,8 @@ const SeparatorWithText = ({text}: {text: string}) => (
     </div>
 );
 
-export default function LoginPage({ dictionary }: { dictionary: Dictionary['login'] }) {
-    const d = dictionary;
+export default function LoginPage({ dictionary }: { dictionary: Dictionary }) {
+    const d = dictionary.login;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { login } = useAuth();
