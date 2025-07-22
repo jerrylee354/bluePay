@@ -11,10 +11,12 @@ import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { type SettingsPage } from '@/components/settings-container';
+import { Dictionary } from '@/dictionaries';
 
-export default function EditUsernamePage({ setPage }: { setPage?: (page: SettingsPage) => void }) {
+export default function EditUsernamePage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) {
     const { user, userData, refreshUserData, checkUsernameExists } = useAuth();
     const { toast } = useToast();
+    const d = dictionary.profile;
     
     const originalUsername = userData?.username || '';
     const [username, setUsername] = useState(originalUsername.replace(/^@/, ''));
@@ -35,12 +37,12 @@ export default function EditUsernamePage({ setPage }: { setPage?: (page: Setting
     const handleSave = async () => {
         setError(null);
         if (!user) {
-            toast({ variant: 'destructive', title: 'Authentication Error' });
+            toast({ variant: 'destructive', title: d.authError });
             return;
         }
 
         if (!username || username.length < 3) {
-            setError('Username must be at least 3 characters long.');
+            setError(d.usernameLengthError);
             return;
         }
 
@@ -50,7 +52,7 @@ export default function EditUsernamePage({ setPage }: { setPage?: (page: Setting
         if (finalUsername !== originalUsername) {
             const isTaken = await checkUsernameExists(finalUsername);
             if (isTaken) {
-                setError('This username is already taken. Please choose another.');
+                setError(d.usernameTakenError);
                 setIsLoading(false);
                 return;
             }
@@ -60,12 +62,12 @@ export default function EditUsernamePage({ setPage }: { setPage?: (page: Setting
             const userDocRef = doc(db, 'users', user.uid);
             await updateDoc(userDocRef, { username: finalUsername });
             await refreshUserData();
-            toast({ title: 'Username Updated!', description: 'Your new username has been saved.' });
+            toast({ title: d.usernameUpdated, description: d.usernameSaved });
             if (setPage) {
               setPage('profile');
             }
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Update Failed', description: error.message });
+            toast({ variant: 'destructive', title: d.updateFailed, description: error.message });
         } finally {
             setIsLoading(false);
         }
@@ -76,7 +78,7 @@ export default function EditUsernamePage({ setPage }: { setPage?: (page: Setting
             <LoadingOverlay isLoading={isLoading} />
              <div className="flex items-center justify-end mb-6">
                  <Button onClick={handleSave} disabled={isLoading || !username || `@${(username || '')}` === originalUsername}>
-                    儲存
+                    {d.save}
                 </Button>
             </div>
 
@@ -97,7 +99,7 @@ export default function EditUsernamePage({ setPage }: { setPage?: (page: Setting
                     </div>
                 )}
                 <p className="text-sm text-muted-foreground">
-                    Your username must be unique and at least 3 characters long. It can only contain letters, numbers, underscores, and periods.
+                    {d.usernameDescription}
                 </p>
             </div>
         </div>

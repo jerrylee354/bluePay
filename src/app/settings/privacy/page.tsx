@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FileText, Database, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { SettingsPage } from '@/components/settings-container';
+import { Dictionary } from '@/dictionaries';
 
 const SettingsListItem = ({ icon: Icon, title, description, isExternalLink = false, onClick }: { icon: React.ElementType, title: string, description: string, isExternalLink?: boolean, onClick?: () => void }) => (
     <div 
@@ -23,12 +24,10 @@ const SettingsListItem = ({ icon: Icon, title, description, isExternalLink = fal
 );
 
 
-export default function PrivacySettingsPage({ setPage }: { setPage?: (page: SettingsPage) => void }) {
+export default function PrivacySettingsPage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) {
+    const d = dictionary.privacy;
     
     const handleNavigation = (page: string) => {
-        // This is a placeholder for now.
-        // In a real app, you might navigate to a new dialog page
-        // or open a link in a new tab.
         if (page === '/privacy') {
             window.open(page, '_blank');
         }
@@ -38,19 +37,19 @@ export default function PrivacySettingsPage({ setPage }: { setPage?: (page: Sett
         <div className="space-y-6">
              <Card>
                 <CardHeader>
-                    <CardTitle>Manage Your Data</CardTitle>
+                    <CardTitle>{d.manageData.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="divide-y p-0">
                     <SettingsListItem
                         icon={Database}
-                        title="Manage your data"
-                        description="Download or delete your account data."
+                        title={d.manageData.manage}
+                        description={d.manageData.manageDescription}
                         onClick={() => alert("Feature coming soon!")}
                     />
                      <SettingsListItem
                         icon={FileText}
-                        title="Privacy Policy"
-                        description="Read our privacy policy."
+                        title={d.manageData.policy}
+                        description={d.manageData.policyDescription}
                         onClick={() => handleNavigation('/privacy')}
                     />
                 </CardContent>

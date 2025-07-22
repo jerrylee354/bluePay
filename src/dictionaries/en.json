@@ -185,18 +185,65 @@
     },
     "settings": {
         "title": "Settings",
+        "logout": "Log Out",
         "profile": {
             "title": "Edit Profile",
-            "editUsername": "Edit Username"
+            "editUsername": "Edit Username",
+            "profileInfo": "Profile Information",
+            "yourUsername": "Your Username",
+            "profileStatus": "Profile Status",
+            "statusOn": "On",
+            "statusOff": "Off",
+            "profileStatusDescription": "Allow anyone to find you by searching your profile and pay you.",
+            "changeAvatar": "Change profile picture",
+            "statusUpdated": "Profile Status Updated",
+            "updateFailed": "Update Failed",
+            "avatarUpdated": "Avatar Updated!",
+            "avatarSaved": "Your new avatar has been saved.",
+            "databaseError": "Database Error",
+            "avatarSaveError": "Could not save avatar",
+            "fileReadFailed": "File Read Failed",
+            "fileReadError": "Could not read the selected file.",
+            "imageProcessFailed": "Image Processing Failed",
+            "imageProcessError": "Could not process image",
+            "save": "Save",
+            "authError": "Authentication Error",
+            "usernameLengthError": "Username must be at least 3 characters long.",
+            "usernameTakenError": "This username is already taken. Please choose another.",
+            "usernameUpdated": "Username Updated!",
+            "usernameSaved": "Your new username has been saved.",
+            "usernameDescription": "Your username must be unique and at least 3 characters long. It can only contain letters, numbers, underscores, and periods."
         },
         "security": {
-            "title": "Login & Security"
+            "title": "Login & Security",
+            "login": {
+                "title": "Login",
+                "changePassword": "Change Password",
+                "lastChanged": "Last changed on 12/01/2024",
+                "changeButton": "Change"
+            },
+            "security": {
+                "title": "Security",
+                "twoFactorAuth": "Two-Factor Authentication",
+                "twoFactorDescription": "For added security, require a code to log in."
+            }
         },
         "privacy": {
-            "title": "Data & Privacy"
+            "title": "Data & Privacy",
+            "manageData": {
+                "title": "Manage Your Data",
+                "manage": "Manage your data",
+                "manageDescription": "Download or delete your account data.",
+                "policy": "Privacy Policy",
+                "policyDescription": "Read our privacy policy."
+            }
         },
         "notifications": {
-            "title": "Notification Preferences"
+            "title": "Notification Preferences",
+            "push": "Push Notifications",
+            "pushDescription": "Receive alerts about your account activity.",
+            "email": "Email Notifications",
+            "emailDescription": "Get promotional and account-related emails."
         }
     },
     "status": {

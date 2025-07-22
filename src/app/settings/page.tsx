@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, Shield, Eye, Bell, LogOut, ChevronRight } from 'lucide-react';
 import type { SettingsPage } from '@/components/settings-container';
+import { Dictionary } from '@/dictionaries';
 
 const SettingsListItem = ({ icon: Icon, text, onClick }: { icon: React.ElementType, text: string, onClick: () => void }) => (
     <div onClick={onClick} className="flex items-center p-4 hover:bg-muted/50 rounded-lg cursor-pointer transition-colors">
@@ -15,7 +16,7 @@ const SettingsListItem = ({ icon: Icon, text, onClick }: { icon: React.ElementTy
     </div>
 );
 
-export default function SettingsPage({ setPage }: { setPage?: (page: SettingsPage) => void }) {
+export default function SettingsPage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) {
     const { logout } = useAuth();
     
     const handleNavigation = (page: SettingsPage) => {
@@ -28,15 +29,15 @@ export default function SettingsPage({ setPage }: { setPage?: (page: SettingsPag
         <div className="space-y-6">
              <Card>
                 <CardContent className="p-2">
-                    <SettingsListItem icon={User} text="編輯個人檔案" onClick={() => handleNavigation('profile')} />
+                    <SettingsListItem icon={User} text={dictionary.profile.title} onClick={() => handleNavigation('profile')} />
                 </CardContent>
             </Card>
 
             <Card>
                 <CardContent className="p-2">
-                    <SettingsListItem icon={Shield} text="登入和安全性" onClick={() => handleNavigation('security')} />
-                    <SettingsListItem icon={Eye} text="資料與隱私權" onClick={() => handleNavigation('privacy')} />
-                    <SettingsListItem icon={Bell} text="通知偏好設定" onClick={() => handleNavigation('notifications')} />
+                    <SettingsListItem icon={Shield} text={dictionary.security.title} onClick={() => handleNavigation('security')} />
+                    <SettingsListItem icon={Eye} text={dictionary.privacy.title} onClick={() => handleNavigation('privacy')} />
+                    <SettingsListItem icon={Bell} text={dictionary.notifications.title} onClick={() => handleNavigation('notifications')} />
                 </CardContent>
             </Card>
 
@@ -44,7 +45,7 @@ export default function SettingsPage({ setPage }: { setPage?: (page: SettingsPag
                 <CardContent className="p-2">
                      <div className="flex items-center p-4 hover:bg-destructive/10 rounded-lg cursor-pointer transition-colors" onClick={logout}>
                         <LogOut className="w-6 h-6 mr-4 text-destructive" />
-                        <span className="flex-1 text-base font-medium text-destructive">登出</span>
+                        <span className="flex-1 text-base font-medium text-destructive">{dictionary.logout}</span>
                     </div>
                 </CardContent>
             </Card>

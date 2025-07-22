@@ -15,6 +15,7 @@ import { doc } from 'firebase/firestore';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import imageCompression from 'browser-image-compression';
 import { type SettingsPage } from '@/components/settings-container';
+import { Dictionary } from '@/dictionaries';
 
 
 const ProfileInfoItem = ({ label, value, isEditable = false, onClick }: { label: string, value: string, isEditable?: boolean, onClick?: () => void }) => {
@@ -36,9 +37,10 @@ const ProfileInfoItem = ({ label, value, isEditable = false, onClick }: { label:
 };
 
 
-export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage) => void }) {
+export default function ProfilePage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) {
     const { user, userData, refreshUserData } = useAuth();
     const { toast } = useToast();
+    const d = dictionary.profile;
     
     const [isLoading, setIsLoading] = useState(false);
     const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -70,9 +72,9 @@ export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage
             const userDocRef = doc(db, 'users', user.uid);
             await updateDoc(userDocRef, { profileStatus: checked });
             await refreshUserData();
-            toast({ title: "Profile Status Updated" });
+            toast({ title: d.statusUpdated });
         } catch (error: any) {
-            toast({ variant: 'destructive', title: "Update Failed", description: error.message });
+            toast({ variant: 'destructive', title: d.updateFailed, description: error.message });
         } finally {
             setIsLoading(false);
         }
@@ -102,22 +104,22 @@ export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage
                     const userDocRef = doc(db, 'users', user.uid);
                     await updateDoc(userDocRef, { photoURL: dataUrl });
                     await refreshUserData();
-                    toast({ title: "Avatar Updated!", description: "Your new avatar has been saved." });
+                    toast({ title: d.avatarUpdated, description: d.avatarSaved });
                 } catch (dbError: any) {
-                    toast({ variant: 'destructive', title: "Database Error", description: `Could not save avatar: ${dbError.message}` });
+                    toast({ variant: 'destructive', title: d.databaseError, description: `${d.avatarSaveError}: ${dbError.message}` });
                     console.error("Firestore Update Error:", dbError);
                 } finally {
                     setIsLoading(false);
                 }
             };
             reader.onerror = (error) => {
-                toast({ variant: 'destructive', title: "File Read Failed", description: "Could not read the selected file." });
+                toast({ variant: 'destructive', title: d.fileReadFailed, description: d.fileReadError });
                 console.error("FileReader Error:", error);
                 setIsLoading(false);
             };
 
         } catch (error: any) {
-             toast({ variant: 'destructive', title: "Image Processing Failed", description: `Could not process image: ${error.message}` });
+             toast({ variant: 'destructive', title: d.imageProcessFailed, description: `${d.imageProcessError}: ${error.message}` });
              console.error("Avatar Compression Error:", error);
              setIsLoading(false);
         } finally {
@@ -142,7 +144,7 @@ export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage
                         <button 
                             className="absolute bottom-1 right-1 bg-muted text-muted-foreground p-2 rounded-full border-2 border-background transition-all group-hover:bg-primary group-hover:text-primary-foreground" 
                             onClick={() => avatarInputRef.current?.click()}
-                            aria-label="Change profile picture"
+                            aria-label={d.changeAvatar}
                         >
                             <Camera className="w-4 h-4"/>
                         </button>
@@ -158,10 +160,10 @@ export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage
                 
                 <div className="space-y-6">
                     <div>
-                        <h3 className="text-lg font-semibold mb-2">個人檔案資料</h3>
+                        <h3 className="text-lg font-semibold mb-2">{d.profileInfo}</h3>
                         <div className="divide-y">
                             <ProfileInfoItem 
-                                label="你的用戶名稱" 
+                                label={d.yourUsername}
                                 value={getDisplayUsername()} 
                                 isEditable 
                                 onClick={() => handleNavigation('edit-username')}
@@ -172,8 +174,8 @@ export default function ProfilePage({ setPage }: { setPage?: (page: SettingsPage
                     <div>
                          <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-semibold">個人檔案狀態 - {userData?.profileStatus ? '開啟' : '關閉'}</h3>
-                                <p className="text-sm text-muted-foreground max-w-md">允許任何人透過搜尋你的個人檔案找到你，並付款給你。</p>
+                                <h3 className="text-lg font-semibold">{d.profileStatus} - {userData?.profileStatus ? d.statusOn : d.statusOff}</h3>
+                                <p className="text-sm text-muted-foreground max-w-md">{d.profileStatusDescription}</p>
                             </div>
                             <Switch 
                                 id="profile-status" 

@@ -5,6 +5,7 @@ import { Bell, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import type { SettingsPage } from '@/components/settings-container';
+import { Dictionary } from '@/dictionaries';
 
 const SettingsListItem = ({ icon: Icon, title, description, action }: { icon: React.ElementType, title: string, description: string, action: React.ReactNode }) => (
     <div className="flex items-center p-4">
@@ -18,21 +19,22 @@ const SettingsListItem = ({ icon: Icon, title, description, action }: { icon: Re
 );
 
 
-export default function NotificationSettingsPage({ setPage }: { setPage?: (page: SettingsPage) => void }) {
+export default function NotificationSettingsPage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) {
+    const d = dictionary.notifications;
     return (
         <div className="space-y-6">
             <Card>
                 <CardContent className="divide-y p-0">
                    <SettingsListItem 
                         icon={Bell}
-                        title="Push Notifications"
-                        description="Receive alerts about your account activity."
+                        title={d.push}
+                        description={d.pushDescription}
                         action={<Switch id="push-notifications" defaultChecked />}
                    />
                    <SettingsListItem 
                         icon={Mail}
-                        title="Email Notifications"
-                        description="Get promotional and account-related emails."
+                        title={d.email}
+                        description={d.emailDescription}
                         action={<Switch id="email-notifications" defaultChecked />}
                    />
                 </CardContent>
