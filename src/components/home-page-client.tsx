@@ -51,7 +51,13 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
       <header className="flex items-center justify-between">
         <div>
           <p className="text-muted-foreground">{d.welcome}</p>
-          <h1 className="text-2xl font-bold text-foreground">{userData?.firstName || user?.email || 'User'}</h1>
+          {userData?.firstName ? (
+            <h1 key="username" className="text-2xl font-bold text-foreground animate-fade-in-up">
+              {userData.firstName}
+            </h1>
+          ) : (
+            <Skeleton className="h-8 w-32 mt-1" />
+          )}
         </div>
         {isMobile && (
           <Link href="/settings">
@@ -71,7 +77,7 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
         </CardHeader>
         <CardContent>
           {userData ? (
-            <p className="text-4xl font-bold tracking-tight">
+            <p key="balance" className="text-4xl font-bold tracking-tight animate-fade-in-up">
               {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
             </p>
           ) : (
