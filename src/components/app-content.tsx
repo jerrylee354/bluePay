@@ -1,9 +1,9 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { AuthProvider as FirebaseAuthProvider, useAuth as useFirebaseAuth } from '@/context/auth-context';
+import { useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
 import { Skeleton } from './ui/skeleton';
@@ -12,7 +12,8 @@ import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
 import { type Dictionary } from '@/dictionaries';
 
-const authRoutes = ['/login', '/signup', '/terms', '/privacy', '/welcome'];
+const authRoutes = ['/login', '/signup'];
+const publicRoutes = ['/', '/terms', '/privacy'];
 const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
 
 
@@ -40,7 +41,7 @@ const AppLoader = () => (
 );
 
 export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { isAuthenticated, isLoading, userData, logout } = useFirebaseAuth();
+    const { isAuthenticated, isLoading, userData, logout } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
@@ -60,60 +61,40 @@ export default function AppContent({ children, dictionary }: { children: React.R
     });
     
     const isAuthRoute = authRoutes.some(route => pathname === route);
-    const isPublicRoute = pathname === `/`;
+    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+    const isAppRoute = !isAuthRoute && !isPublicRoute;
 
-
-    useEffect(() => {
+    React.useEffect(() => {
         if (isLoading) return;
-        
-        const isAppRoute = !isAuthRoute && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
             router.push(`/login`);
         } else if (isAuthenticated) {
-            if (isPublicRoute) {
+             if (isPublicRoute) {
                  router.push(`/home`);
             } else if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
                 router.push(`/welcome`);
-            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute && pathname !== '/privacy' && pathname !== '/terms')) {
-                router.push(`/home`);
+            } else if (userData && userData.hasCompletedOnboarding && pathname === '/welcome') {
+                router.push('/home');
+            } else if (isAuthRoute) {
+                 router.push(`/home`);
             }
         }
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isPublicRoute]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAppRoute, isPublicRoute, isAuthRoute]);
     
-    if (isLoading && !isAuthRoute && !isPublicRoute) {
+    if (isLoading && isAppRoute) {
         return <AppLoader />;
     }
-
-    if (isPublicRoute) {
-        return <>{children}</>
+    
+    // Public routes and auth routes are rendered without the app shell
+    if (isPublicRoute || isAuthRoute || pathname === '/welcome') {
+        const pageName = pathname.split('/').pop() || 'landing';
+        // @ts-ignore
+        const pageDictionary = dictionary[pageName] || dictionary;
+        return <>{React.cloneElement(children as React.ReactElement, { dictionary: pageDictionary })}</>;
     }
     
-    // Auth routes (login, signup) and other special pages have their own layouts
-    if (isAuthRoute) {
-        let pageDictionary: Dictionary[keyof Dictionary] | undefined;
-        
-        if (pathname === '/login') {
-            pageDictionary = dictionary.login;
-        } else if (pathname === '/signup') {
-            pageDictionary = dictionary.signup;
-        } else if (pathname === '/pay/group') {
-            pageDictionary = dictionary.pay;
-        }
-        // For /terms, /privacy, /welcome, they dont receive dictionary props from here.
-        // /welcome uses AuthProvider directly. /terms and /privacy are static.
-        
-         const childrenWithProps = React.Children.map(children, child => {
-            if (React.isValidElement(child) && pageDictionary) {
-              // @ts-ignore
-              return React.cloneElement(child, { dictionary: pageDictionary });
-            }
-            return child;
-          });
-          return <>{childrenWithProps}</>;
-    }
-    
-    if (!isAuthenticated) {
+    if (!isAuthenticated && isAppRoute) {
       return <AppLoader />;
     }
 
@@ -124,10 +105,13 @@ export default function AppContent({ children, dictionary }: { children: React.R
         setIsIdle(false);
     };
     
+    const pageKey = pathname.split('/')[1] as keyof Dictionary;
+    const pageDictionary = dictionary[pageKey] || dictionary;
+
     const childrenWithProps = React.Children.map(children, child => {
         if (React.isValidElement(child)) {
             // @ts-ignore
-            return React.cloneElement(child, { dictionary });
+            return React.cloneElement(child, { dictionary: pageDictionary });
         }
         return child;
     });

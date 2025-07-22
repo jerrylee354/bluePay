@@ -1,9 +1,11 @@
+
 import Link from 'next/link';
 import { Users, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dictionary } from '@/dictionaries';
 
-export default function GroupPayPage({ dictionary }: { dictionary: Dictionary['pay']}) {
+export default function GroupPayPage({ dictionary }: { dictionary: Dictionary}) {
+    const d = dictionary.pay;
     return (
         <div className="space-y-6">
             <header className="relative flex items-center justify-center h-14">
@@ -13,14 +15,14 @@ export default function GroupPayPage({ dictionary }: { dictionary: Dictionary['p
                          <span className="sr-only">Back to Pay</span>
                     </Button>
                 </Link>
-                <h1 className="text-xl font-semibold">{dictionary.groupPayment}</h1>
+                <h1 className="text-xl font-semibold">{d.groupPayment}</h1>
             </header>
             <div className="flex flex-col items-center justify-center space-y-4 text-center p-8 bg-secondary rounded-xl min-h-[300px]">
                 <Users className="w-16 h-16 text-muted-foreground" />
-                <p className="text-muted-foreground">{dictionary.featureUnderConstruction}</p>
+                <p className="text-muted-foreground">{d.featureUnderConstruction}</p>
             </div>
             <Button className="w-full">
-                {dictionary.createNewGroup}
+                {d.createNewGroup}
             </Button>
         </div>
     );

@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Wallet, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
-import { Dictionary } from '@/dictionaries';
+import { type Dictionary } from '@/dictionaries';
 
 
 const SeparatorWithText = ({text}: {text: string}) => (
@@ -23,6 +23,7 @@ const SeparatorWithText = ({text}: {text: string}) => (
 );
 
 export default function LoginPage({ dictionary }: { dictionary: Dictionary['login'] }) {
+    const d = dictionary;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { login } = useAuth();
@@ -38,20 +39,20 @@ export default function LoginPage({ dictionary }: { dictionary: Dictionary['logi
         try {
             await login(email, password);
             toast({
-                title: dictionary.loginSuccessTitle,
-                description: dictionary.loginSuccessDescription,
+                title: d.loginSuccessTitle,
+                description: d.loginSuccessDescription,
             });
             router.push('/home');
         } catch (error: any) {
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                setError(dictionary.loginErrorDescription);
+                setError(d.loginErrorDescription);
             } else {
                 setError(error.message);
             }
             toast({
                 variant: "destructive",
-                title: dictionary.loginErrorTitle,
-                description: dictionary.loginErrorDescription,
+                title: d.loginErrorTitle,
+                description: d.loginErrorDescription,
             });
         } finally {
             setIsLoading(false);
@@ -67,12 +68,12 @@ export default function LoginPage({ dictionary }: { dictionary: Dictionary['logi
                     <span className="text-4xl font-bold text-foreground">BluePay</span>
                 </Link>
                 <div className="space-y-4">
-                    <h1 className="sr-only">{dictionary.title}</h1>
+                    <h1 className="sr-only">{d.title}</h1>
                     <form onSubmit={handleSubmit} className="space-y-4">
                          <Input
                             id="email"
                             type="email"
-                            placeholder={dictionary.emailPlaceholder}
+                            placeholder={d.emailPlaceholder}
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -82,7 +83,7 @@ export default function LoginPage({ dictionary }: { dictionary: Dictionary['logi
                          <Input 
                             id="password" 
                             type="password"
-                            placeholder={dictionary.passwordPlaceholder} 
+                            placeholder={d.passwordPlaceholder} 
                             required 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -92,7 +93,7 @@ export default function LoginPage({ dictionary }: { dictionary: Dictionary['logi
                         {error && (
                             <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>{dictionary.loginErrorTitle}</AlertTitle>
+                                <AlertTitle>{d.loginErrorTitle}</AlertTitle>
                                 <AlertDescription>
                                     {error}
                                 </AlertDescription>
@@ -100,17 +101,17 @@ export default function LoginPage({ dictionary }: { dictionary: Dictionary['logi
                         )}
                         <div className="text-sm">
                             <Link href="#" className="font-medium text-primary hover:text-primary/90">
-                                {dictionary.forgotPassword}
+                                {d.forgotPassword}
                             </Link>
                         </div>
                         <Button type="submit" className="w-full h-12 text-lg font-bold" disabled={isLoading}>
-                           {dictionary.loginButton}
+                           {d.loginButton}
                         </Button>
                     </form>
                 </div>
-                <SeparatorWithText text={dictionary.or} />
+                <SeparatorWithText text={d.or} />
                 <Button variant="outline" className="w-full h-12 text-lg font-bold" onClick={() => router.push('/signup')} disabled={isLoading}>
-                    {dictionary.signupButton}
+                    {d.signupButton}
                 </Button>
             </div>
         </div>

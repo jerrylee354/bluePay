@@ -15,9 +15,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
+import { Dictionary } from '@/dictionaries';
 
 
-export default function SignupPage() {
+export default function SignupPage({ dictionary }: { dictionary: Dictionary }) {
+    const d = dictionary.signup;
     const [step, setStep] = useState(1);
     const [accountType, setAccountType] = useState<'personal' | 'business' | null>(null);
     const [email, setEmail] = useState('');
@@ -43,26 +45,26 @@ export default function SignupPage() {
         
         if (step === 1) {
             if (!accountType) {
-                setError('Please select an account type to continue.');
+                setError(d.selectTypeError);
                 return;
             }
         }
         
         if (step === 2) { 
             if (!email) {
-                setError('Please enter your email address.');
+                setError(d.emailRequiredError);
                 return;
             }
             setIsLoading(true);
             try {
                 const emailExists = await checkEmailExists(email);
                 if (emailExists) {
-                    setError('This email address is already in use.');
+                    setError(d.emailExistsError);
                     setIsLoading(false);
                     return;
                 }
             } catch (err) {
-                 setError('Failed to validate email. Please try again.');
+                 setError(d.emailValidateError);
                  setIsLoading(false);
                  return;
             } finally {
@@ -72,18 +74,18 @@ export default function SignupPage() {
         
         if (step === 3) { 
             if (password.length < 6) {
-                setError('Password must be at least 6 characters long.');
+                setError(d.passwordLengthError);
                 return;
             }
             if (password !== confirmPassword) {
-                setError('Passwords do not match.');
+                setError(d.passwordMismatchError);
                 return;
             }
         }
         
         if (step === 4) { 
             if (!firstName || !lastName) {
-                setError('Please enter your first and last name.');
+                setError(d.nameRequiredError);
                 return;
             }
         }
@@ -97,7 +99,7 @@ export default function SignupPage() {
         const isSubmitStep = (accountType === 'personal' && step === 5) || (accountType === 'business' && step === 6);
         if (isSubmitStep) {
             if (!agreedToTerms) {
-                setError('You must agree to the terms to continue.');
+                setError(d.termsRequiredError);
                 return;
             }
             handleSubmit();
@@ -116,7 +118,7 @@ export default function SignupPage() {
     
     const handleSubmit = async () => {
         if (!agreedToTerms) {
-            setError('You must agree to the terms to continue.');
+            setError(d.termsRequiredError);
             return;
         }
 
@@ -135,19 +137,19 @@ export default function SignupPage() {
 
             await signup(email, password, additionalData);
             toast({
-                title: "Signup Successful",
-                description: "Your account has been created.",
+                title: d.signupSuccessTitle,
+                description: d.signupSuccessDescription,
             });
             router.push('/welcome');
         } catch (err: any) {
             if (err.code === 'auth/email-already-in-use') {
-                 setError('This email address is already in use.');
+                 setError(d.emailExistsError);
                  setStep(2); 
             } else if (err.code === 'auth/weak-password') {
-                 setError('Password is too weak. Please use at least 6 characters.');
+                 setError(d.weakPasswordError);
                  setStep(3); 
             } else {
-                 setError(err.message || "An unexpected error occurred.");
+                 setError(err.message || d.genericError);
                  setStep(1);
             }
         } finally {
@@ -164,16 +166,16 @@ export default function SignupPage() {
                             <Label htmlFor="personal" className="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:border-primary has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5 transition-colors">
                                 <User className="w-8 h-8 text-primary" />
                                 <div className="flex-1">
-                                    <p className="font-semibold">Personal</p>
-                                    <p className="text-sm text-muted-foreground">For individuals to send & receive money.</p>
+                                    <p className="font-semibold">{d.personalAccount}</p>
+                                    <p className="text-sm text-muted-foreground">{d.personalDescription}</p>
                                 </div>
                                 <RadioGroupItem value="personal" id="personal" />
                             </Label>
                              <Label htmlFor="business" className="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:border-primary has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5 transition-colors">
                                 <Building className="w-8 h-8 text-primary" />
                                 <div className="flex-1">
-                                    <p className="font-semibold">Business</p>
-                                    <p className="text-sm text-muted-foreground">For companies to manage payments.</p>
+                                    <p className="font-semibold">{d.businessAccount}</p>
+                                    <p className="text-sm text-muted-foreground">{d.businessDescription}</p>
                                 </div>
                                 <RadioGroupItem value="business" id="business" />
                             </Label>
@@ -189,11 +191,11 @@ export default function SignupPage() {
             case 2:
                 return (
                     <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-center">What's your email?</h2>
+                        <h2 className="text-xl font-semibold text-center">{d.emailTitle}</h2>
                         <Input
                             id="email"
                             type="email"
-                            placeholder="Email address"
+                            placeholder={d.emailPlaceholder}
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -211,11 +213,11 @@ export default function SignupPage() {
             case 3:
                 return (
                     <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-center">Create a password</h2>
+                        <h2 className="text-xl font-semibold text-center">{d.passwordTitle}</h2>
                         <Input
                             id="password"
                             type="password"
-                            placeholder="Password (min. 6 characters)"
+                            placeholder={d.passwordPlaceholder}
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -225,7 +227,7 @@ export default function SignupPage() {
                         <Input
                             id="confirmPassword"
                             type="password"
-                            placeholder="Confirm password"
+                            placeholder={d.confirmPasswordPlaceholder}
                             required
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -243,11 +245,11 @@ export default function SignupPage() {
             case 4:
                 return (
                     <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-center">What's your name?</h2>
+                        <h2 className="text-xl font-semibold text-center">{d.nameTitle}</h2>
                         <Input
                             id="firstName"
                             type="text"
-                            placeholder="First Name"
+                            placeholder={d.firstNamePlaceholder}
                             required
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
@@ -257,7 +259,7 @@ export default function SignupPage() {
                          <Input
                             id="lastName"
                             type="text"
-                            placeholder="Last Name"
+                            placeholder={d.lastNamePlaceholder}
                             required
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
@@ -276,12 +278,12 @@ export default function SignupPage() {
                 if (accountType === 'business') {
                      return (
                         <div className="space-y-4">
-                            <h2 className="text-xl font-semibold text-center">Business Information</h2>
-                            <p className="text-center text-sm text-muted-foreground">This helps us verify your business.</p>
+                            <h2 className="text-xl font-semibold text-center">{d.businessInfoTitle}</h2>
+                            <p className="text-center text-sm text-muted-foreground">{d.businessInfoDescription}</p>
                             <Input
                                 id="businessId"
                                 type="text"
-                                placeholder="Business ID / Tax ID (Optional)"
+                                placeholder={d.businessIdPlaceholder}
                                 value={businessId}
                                 onChange={(e) => setBusinessId(e.target.value)}
                                 disabled={isLoading}
@@ -298,12 +300,10 @@ export default function SignupPage() {
                 }
                 return (
                      <div className="space-y-6">
-                        <h2 className="text-xl font-semibold text-center">One last step</h2>
+                        <h2 className="text-xl font-semibold text-center">{d.finalStepTitle}</h2>
                          <div className="flex items-start space-x-3 p-4 border rounded-md">
                             <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(checked) => setAgreedToTerms(Boolean(checked))} className="mt-1" />
-                            <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
-                                By creating an account, you agree to BluePay's <Link href="/terms" className="font-medium text-primary hover:underline" target="_blank">Terms of Service</Link> and <Link href="/privacy" className="font-medium text-primary hover:underline" target="_blank">Privacy Policy</Link>.
-                            </Label>
+                            <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: d.termsAgreement.replace('<1>', '<a href="/terms" class="font-medium text-primary hover:underline" target="_blank">').replace('</1>', '</a>').replace('<3>', '<a href="/privacy" class="font-medium text-primary hover:underline" target="_blank">').replace('</3>', '</a>') }} />
                         </div>
                         {error && (
                             <div className="flex items-center justify-center gap-2 text-sm text-destructive pt-2">
@@ -316,12 +316,10 @@ export default function SignupPage() {
             case 6: 
                  return (
                     <div className="space-y-6">
-                        <h2 className="text-xl font-semibold text-center">Terms & Privacy</h2>
+                        <h2 className="text-xl font-semibold text-center">{d.finalStepTitle}</h2>
                         <div className="flex items-start space-x-3 p-4 border rounded-md">
                             <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(checked) => setAgreedToTerms(Boolean(checked))} className="mt-1" />
-                            <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
-                                By creating an account, you agree to BluePay's <Link href="/terms" className="font-medium text-primary hover:underline" target="_blank">Terms of Service</Link> and <Link href="/privacy" className="font-medium text-primary hover:underline" target="_blank">Privacy Policy</Link>.
-                            </Label>
+                            <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: d.termsAgreement.replace('<1>', '<a href="/terms" class="font-medium text-primary hover:underline" target="_blank">').replace('</1>', '</a>').replace('<3>', '<a href="/privacy" class="font-medium text-primary hover:underline" target="_blank">').replace('</3>', '</a>') }} />
                         </div>
                         {error && (
                              <div className="flex items-center justify-center gap-2 text-sm text-destructive pt-2">
@@ -357,8 +355,8 @@ export default function SignupPage() {
                                     <span className="text-4xl font-bold text-foreground">BluePay</span>
                                 </div>
                                 <div className="space-y-1">
-                                    <h1 className="text-2xl font-bold">Join BluePay</h1>
-                                    <p className="text-muted-foreground">Choose your account type to get started.</p>
+                                    <h1 className="text-2xl font-bold">{d.joinTitle}</h1>
+                                    <p className="text-muted-foreground">{d.chooseAccountType}</p>
                                 </div>
                             </div>
                          )}
@@ -372,7 +370,7 @@ export default function SignupPage() {
                              <div className="flex gap-4 pt-4">
                                 {step > 1 && (
                                      <Button variant="outline" onClick={handlePrevStep} className="w-full h-12" disabled={isLoading} type="button">
-                                        Back
+                                        {d.backButton}
                                     </Button>
                                 )}
                                 <Button 
@@ -384,7 +382,7 @@ export default function SignupPage() {
                                     } 
                                     type="submit"
                                 >
-                                    {isFinalStep ? 'Create Account' : 'Continue'}
+                                    {isFinalStep ? d.createAccountButton : d.continueButton}
                                 </Button>
                             </div>
                         </form>
@@ -394,13 +392,13 @@ export default function SignupPage() {
                  <p className="text-center text-sm text-muted-foreground mt-6">
                     {step > 1 ? (
                          <button onClick={() => { setStep(1); setAccountType(null); setError(''); }} className="font-medium text-primary hover:underline">
-                            Start Over
+                            {d.startOver}
                         </button>
                     ) : (
                         <>
-                           Already have an account?{' '}
+                           {d.alreadyHaveAccount}{' '}
                            <Link href="/login" className="font-medium text-primary hover:underline">
-                                Log In
+                                {d.logInLink}
                            </Link>
                         </>
                     )}

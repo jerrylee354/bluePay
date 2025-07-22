@@ -1,4 +1,4 @@
-
+import React from 'react';
 import AppContent from '@/components/app-content';
 import { AuthProvider } from '@/context/auth-context';
 import './globals.css';
@@ -40,6 +40,8 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Code+Pro&display=swap" rel="stylesheet" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.ico?favicon.56766c03.ico" sizes="48x48" type="image/x-icon" />
       </head>
       <body className="font-body antialiased bg-background">
         <AuthProvider>

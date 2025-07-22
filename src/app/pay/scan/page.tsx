@@ -11,7 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dictionary } from '@/dictionaries';
 
-export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary['pay']['scanQrCode']}) {
+export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary}) {
+    const d = dictionary.pay.scanQrCode;
     const router = useRouter();
     const { toast } = useToast();
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -33,8 +34,8 @@ export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary['
                 setHasCameraPermission(false);
                 toast({
                     variant: 'destructive',
-                    title: dictionary.cameraAccessDeniedTitle,
-                    description: dictionary.cameraAccessDeniedDescription,
+                    title: d.cameraAccessDeniedTitle,
+                    description: d.cameraAccessDeniedDescription,
                 });
             }
         };
@@ -47,7 +48,7 @@ export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary['
                 stream.getTracks().forEach(track => track.stop());
             }
         };
-    }, [toast, dictionary]);
+    }, [toast, d]);
 
     useEffect(() => {
         if (!hasCameraPermission || scanResult || isProcessing) return;
@@ -93,17 +94,17 @@ export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary['
                 if (url.pathname.includes('/pay/confirm') && url.searchParams.has('userId')) {
                      router.push(url.pathname + url.search);
                 } else {
-                    throw new Error(dictionary.invalidQrError);
+                    throw new Error(d.invalidQrError);
                 }
             } catch (e) {
-                toast({ variant: 'destructive', title: dictionary.invalidQrTitle, description: dictionary.invalidQrError });
+                toast({ variant: 'destructive', title: d.invalidQrTitle, description: d.invalidQrError });
                 setTimeout(() => {
                     setScanResult(null);
                     setIsProcessing(false);
                 }, 2000);
             }
         }
-    }, [scanResult, toast, router, isProcessing, dictionary]);
+    }, [scanResult, toast, router, isProcessing, d]);
 
     return (
         <div className="space-y-6">
@@ -114,7 +115,7 @@ export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary['
                         <span className="sr-only">Back to Pay</span>
                     </Button>
                 </Link>
-                <h1 className="text-xl font-semibold">{dictionary.title}</h1>
+                <h1 className="text-xl font-semibold">{d.title}</h1>
             </header>
             <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-secondary flex items-center justify-center">
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
@@ -124,14 +125,14 @@ export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary['
              {hasCameraPermission === false && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{dictionary.cameraAccessRequiredTitle}</AlertTitle>
+                    <AlertTitle>{d.cameraAccessRequiredTitle}</AlertTitle>
                     <AlertDescription>
-                        {dictionary.cameraAccessRequiredDescription}
+                        {d.cameraAccessRequiredDescription}
                     </AlertDescription>
                 </Alert>
             )}
             <p className="text-center text-muted-foreground">
-                {scanResult ? dictionary.processing : dictionary.alignQrCode}
+                {scanResult ? d.processing : d.alignQrCode}
             </p>
         </div>
     );

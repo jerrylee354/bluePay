@@ -1,4 +1,3 @@
-
 import LandingPage from '@/app/(app)/page';
 import { getDictionary } from '@/dictionaries';
 import { type Locale, i18n } from '@/i18n';
