@@ -10,9 +10,8 @@ import { Skeleton } from './ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
-import { type Locale } from '../i18n';
+import { type Locale, i18n } from '@/i18n';
 import { getDictionary, type Dictionary } from '@/dictionaries';
-import { i18n } from '../i18n';
 
 const authRoutes = ['/login', '/signup', '/terms', '/privacy', '/welcome'];
 const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
@@ -79,14 +78,14 @@ function AppContentInternal({ children }: { children: React.ReactNode }) {
         const isAppRoute = !isAuthRoute && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
-            router.push(`/${locale}/login`);
+            router.push(`/login`);
         } else if (isAuthenticated) {
             if (isPublicRoute) {
-                 router.push(`/${locale}/home`);
+                 router.push(`/home`);
             } else if (userData && !userData.hasCompletedOnboarding && !pathname.endsWith('/welcome')) {
-                router.push(`/${locale}/welcome`);
+                router.push(`/welcome`);
             } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute && !pathname.endsWith('/privacy') && !pathname.endsWith('/terms'))) {
-                router.push(`/${locale}/home`);
+                router.push(`/home`);
             }
         }
     }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isPublicRoute, locale]);
