@@ -1,20 +1,29 @@
 
-"use client";
+import WalletPageClient from '@/components/wallet-page-client';
+import { getDictionary } from '@/dictionaries';
+import { i18n, type Locale } from '@/i18n';
+import { headers } from 'next/headers';
+import { match as matchLocale } from '@formatjs/intl-localematcher';
+import Negotiator from 'negotiator';
 
-import { Wallet as WalletIcon } from 'lucide-react';
-import { Dictionary } from '@/dictionaries';
+function getLocale(): Locale {
+  const negotiatorHeaders: Record<string, string> = {};
+  headers().forEach((value, key) => (negotiatorHeaders[key] = value));
 
-export default function WalletPage({ dictionary }: { dictionary: Dictionary}) {
-    const d = dictionary.wallet;
-    return (
-        <div className="space-y-6">
-            <header>
-                <h1 className="text-3xl font-bold">{d.title}</h1>
-            </header>
-             <div className="flex flex-col items-center justify-center space-y-4 text-center p-8 bg-secondary rounded-xl min-h-[300px]">
-                <WalletIcon className="w-16 h-16 text-muted-foreground" />
-                <p className="text-muted-foreground">{d.underConstruction}</p>
-            </div>
-        </div>
-    );
+  // @ts-ignore locales are readonly
+  const locales: string[] = i18n.locales;
+
+  let languages = new Negotiator({ headers: negotiatorHeaders }).languages(
+    locales
+  );
+
+  const locale = matchLocale(languages, locales, i18n.defaultLocale);
+
+  return locale as Locale;
+}
+
+export default async function WalletPage() {
+  const lang = getLocale();
+  const dictionary = await getDictionary(lang);
+  return <WalletPageClient dictionary={dictionary} />;
 }
