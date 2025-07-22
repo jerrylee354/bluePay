@@ -1,15 +1,13 @@
 
 "use client";
 
-import { Bell, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import type { SettingsPage } from '@/components/settings-container';
 import { Dictionary } from '@/dictionaries';
 
-const SettingsListItem = ({ icon: Icon, title, description, action }: { icon: React.ElementType, title: string, description: string, action: React.ReactNode }) => (
+const SettingsListItem = ({ title, description, action }: { title: string, description: string, action: React.ReactNode }) => (
     <div className="flex items-center p-4">
-        <Icon className="w-6 h-6 mr-4 text-muted-foreground" />
         <div className="flex-1">
             <p className="font-medium">{title}</p>
             <p className="text-sm text-muted-foreground">{description}</p>
@@ -21,21 +19,23 @@ const SettingsListItem = ({ icon: Icon, title, description, action }: { icon: Re
 
 export default function NotificationSettingsPage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) {
     const d = dictionary.notifications;
+
     return (
         <div className="space-y-6">
             <Card>
+                <CardHeader>
+                    <CardTitle>{d.title}</CardTitle>
+                </CardHeader>
                 <CardContent className="divide-y p-0">
                    <SettingsListItem 
-                        icon={Bell}
                         title={d.push}
                         description={d.pushDescription}
-                        action={<Switch id="push-notifications" defaultChecked />}
+                        action={<Switch id="push-switch" defaultChecked />}
                    />
                    <SettingsListItem 
-                        icon={Mail}
                         title={d.email}
                         description={d.emailDescription}
-                        action={<Switch id="email-notifications" defaultChecked />}
+                        action={<Switch id="email-switch" defaultChecked />}
                    />
                 </CardContent>
             </Card>
