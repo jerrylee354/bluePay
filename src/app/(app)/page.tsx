@@ -53,8 +53,12 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
 
     type Feature = typeof features[0];
 
-    const FeatureItem = ({ feature, onClick }: { feature: Feature, onClick: () => void }) => (
-        <button onClick={onClick} className="text-left flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-primary hover:bg-primary/5 transition-all duration-300 h-full">
+    const FeatureItem = ({ feature, onClick, delay }: { feature: Feature, onClick: () => void, delay: string }) => (
+        <button 
+            onClick={onClick} 
+            className="text-left flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-primary hover:bg-primary/5 transition-all duration-300 h-full opacity-0 animate-fade-in-up"
+            style={{ animationDelay: delay }}
+        >
             <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
                 <feature.icon className="w-6 h-6 text-primary" />
             </div>
@@ -97,7 +101,7 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
 
     return (
         <div className="flex flex-col min-h-dvh bg-white text-gray-800 font-body">
-            <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-lg">
+            <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-lg animate-fade-in-down">
                 <div className="container flex items-center justify-between h-20 max-w-7xl mx-auto px-4">
                     <Link href="/" className="flex items-center gap-2">
                         <Wallet className="w-8 h-8 text-primary" />
@@ -121,13 +125,15 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
                 <section className="relative py-28 md:py-40 text-center overflow-hidden bg-white">
                     <div className="absolute inset-0 -z-0 opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1)_0%,rgba(255,255,255,0)_60%)]"></div>
                     <div className="container relative max-w-4xl mx-auto px-4 z-10">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-7xl"
+                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-7xl opacity-0 animate-fade-in-down"
                             dangerouslySetInnerHTML={{ __html: dictionary.heroTitle }}
+                            style={{ animationDelay: '0.2s' }}
                         ></h1>
-                        <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 md:text-xl">
+                        <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 md:text-xl opacity-0 animate-fade-in-down"
+                           style={{ animationDelay: '0.4s' }}>
                             {dictionary.heroSubtitle}
                         </p>
-                        <div className="mt-10" ref={heroCtaRef}>
+                        <div className="mt-10 opacity-0 animate-fade-in-up" ref={heroCtaRef} style={{ animationDelay: '0.6s' }}>
                              <Button asChild size="lg" className="h-14 text-lg group">
                                 <Link href="/login">
                                     {dictionary.heroCta}
@@ -140,13 +146,13 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
                 
                  <section id="features" className="py-24 bg-gray-50">
                     <div className="container max-w-6xl mx-auto px-4">
-                        <div className="text-center mb-16">
+                        <div className="text-center mb-16 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{dictionary.featuresTitle}</h2>
                             <p className="mt-4 text-lg text-gray-600">{dictionary.featuresSubtitle}</p>
                         </div>
                         <div className="grid md:grid-cols-3 gap-8">
                             {features.map((feature, index) => (
-                                <FeatureItem key={index} feature={feature} onClick={() => setSelectedFeature(feature)} />
+                                <FeatureItem key={index} feature={feature} onClick={() => setSelectedFeature(feature)} delay={`${0.4 + index * 0.2}s`} />
                             ))}
                         </div>
                     </div>
@@ -154,14 +160,14 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
 
                 <section id="privacy-focus" className="py-24 bg-white">
                     <div className="container max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-                        <div className="relative flex justify-center items-center p-8">
+                        <div className="relative flex justify-center items-center p-8 opacity-0 animate-fade-in-right" style={{ animationDelay: '0.2s' }}>
                              <div className="relative w-72 h-72">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-primary/5"></div>
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full bg-primary/10"></div>
                                 <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 text-primary" />
                             </div>
                         </div>
-                        <div className="text-left">
+                        <div className="text-left opacity-0 animate-fade-in-left" style={{ animationDelay: '0.4s' }}>
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900">
                                 {dictionary.privacy.title}
                             </h2>
@@ -197,7 +203,7 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
                 </section>
                 
                 <section id="cta" className="py-24 text-center bg-gray-50">
-                    <div className="container max-w-4xl mx-auto px-4">
+                    <div className="container max-w-4xl mx-auto px-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{dictionary.bottomCta.title}</h2>
                         <p className="mt-4 text-lg text-gray-600">{dictionary.bottomCta.subtitle}</p>
                         <div className="mt-8" ref={footerCtaRef}>
@@ -232,7 +238,7 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="pt-4">
-                                <h4 className="font-semibold text-gray-800">{dictionary.featureModal.application}:</h4>
+                                <h4 className="font-semibold text-gray-800">{dictionary.featureModal.application}</h4>
                                 <p className="mt-2 text-gray-600 bg-gray-100 p-4 rounded-lg border border-gray-200">
                                     {selectedFeature.details.application}
                                 </p>
