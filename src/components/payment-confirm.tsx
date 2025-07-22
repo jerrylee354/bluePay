@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { DocumentData } from 'firebase/firestore';
 import { ChevronLeft, Delete, X, Image as ImageIcon, FileText } from 'lucide-react';
@@ -44,15 +44,17 @@ const KeypadButton = ({ value, letters, onClick }: { value: string, letters?: st
 );
 
 interface PaymentConfirmProps {
-    userId: string | null;
-    mode: 'pay' | 'request' | string;
     isDialog?: boolean;
     onClose?: () => void;
     dictionary: Dictionary;
+    userIdFromDialog?: string | null;
+    modeFromDialog?: 'pay' | 'request' | string;
 }
 
-export default function PaymentConfirm({ userId, mode, isDialog = false, onClose, dictionary }: PaymentConfirmProps) {
+export default function PaymentConfirm({ isDialog = false, onClose, dictionary, userIdFromDialog, modeFromDialog }: PaymentConfirmProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    
     const { getUserById, processTransaction, requestTransaction, user, userData } = useAuth();
     const { toast } = useToast();
     const isMobile = useIsMobile();
@@ -70,6 +72,9 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
     const [completedTransaction, setCompletedTransaction] = useState<Transaction | null>(null);
+    
+    const userId = isDialog ? userIdFromDialog : searchParams.get('userId');
+    const mode = isDialog ? (modeFromDialog || 'pay') : (searchParams.get('mode') || 'pay');
 
     useEffect(() => {
         if (!userId) {
@@ -78,8 +83,10 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
             return;
         }
 
+        setError(null);
+        setIsLoading(true);
+
         const fetchRecipient = async () => {
-            setIsLoading(true);
             try {
                 const recipientData = await getUserById(userId);
                 if (recipientData) {
@@ -288,6 +295,7 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
             <PaymentSuccess
                 transaction={completedTransaction}
                 onFinish={handleFinish}
+                dictionary={dictionary}
             />
         );
     }
@@ -391,7 +399,7 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                  <Button 
                     className="h-12 md:h-14 rounded-full text-lg font-bold w-full"
                     onClick={handlePayment}
-                    disabled={isProcessing || isLoading || parseFloat(amount) <= 0}
+                    disabled={isProcessing || isLoading || !recipient || parseFloat(amount) <= 0}
                 >
                     {mode === 'pay' ? '下一步' : '要求'}
                 </Button>
@@ -418,11 +426,16 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                 <Content />
             </div>
 
-            <div className={cn("flex-shrink-0", { "hidden md:block": !isMobile })}>
-                 <Keypad />
-            </div>
+             {isMobile && (
+                <div className="flex-shrink-0">
+                    <Keypad />
+                </div>
+            )}
+             {!isMobile && (
+                <div className="flex-shrink-0">
+                    <Keypad />
+                </div>
+            )}
         </div>
     );
 }
-
-    

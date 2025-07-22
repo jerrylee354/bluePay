@@ -7,6 +7,8 @@ import { useAuth } from "@/context/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Dictionary } from "@/dictionaries";
+
 
 const AnimatedCheckmark = () => (
     <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
@@ -40,7 +42,7 @@ const DetailRow = ({ label, value }: { label: string; value: string | React.Reac
 );
 
 
-export default function PaymentSuccess({ transaction, onFinish }: { transaction: Transaction, onFinish: () => void }) {
+export default function PaymentSuccess({ transaction, onFinish, dictionary }: { transaction: Transaction, onFinish: () => void, dictionary: Dictionary }) {
     const { userData } = useAuth();
     const currency = userData?.currency || 'USD';
 

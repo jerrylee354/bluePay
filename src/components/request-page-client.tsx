@@ -301,16 +301,16 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
 
             <Dialog open={isRequestDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="p-0 max-w-3xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
-                     <DialogHeader className="sr-only">
+                    <DialogHeader className="sr-only">
                         <DialogTitle>Confirm Request</DialogTitle>
                     </DialogHeader>
                     {selectedUser && (
                         <PaymentConfirm
-                            userId={selectedUser.uid}
-                            mode="request"
                             isDialog={true}
                             onClose={handleDialogClose}
                             dictionary={dictionary}
+                            userIdFromDialog={selectedUser.uid}
+                            modeFromDialog="request"
                         />
                     )}
                 </DialogContent>

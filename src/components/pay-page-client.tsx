@@ -233,16 +233,16 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
 
              <Dialog open={isPayDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="p-0 max-w-3xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
-                     <DialogHeader className="sr-only">
+                    <DialogHeader className="sr-only">
                         <DialogTitle>Confirm Payment</DialogTitle>
                     </DialogHeader>
                     {selectedUser && (
                         <PaymentConfirm
-                            userId={selectedUser.uid}
-                            mode="pay"
                             isDialog={true}
                             onClose={handleDialogClose}
                             dictionary={dictionary}
+                            userIdFromDialog={selectedUser.uid}
+                            modeFromDialog="pay"
                         />
                     )}
                 </DialogContent>
