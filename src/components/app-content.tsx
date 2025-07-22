@@ -13,10 +13,8 @@ import { IdleTimeoutDialog } from './idle-timeout-dialog';
 import { type Locale } from '../../i18n';
 import { getDictionary, type Dictionary } from '@/dictionaries';
 
-const authRoutes = ['/login', '/signup', '/terms', '/privacy'];
-const fullScreenRoutes = ['/pay/confirm'];
-const welcomeRoute = '/welcome';
-const publicRoute = '/';
+const authRoutes = ['/login', '/signup', '/terms', '/privacy', '/welcome'];
+const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
 
 
 const AppLoader = () => (
@@ -69,38 +67,44 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
     });
     
     const isAuthRoute = authRoutes.some(route => pathname.endsWith(route));
-    const isWelcomePage = pathname.endsWith(welcomeRoute);
     const isPublicRoute = pathname === `/${locale}` || pathname === '/';
 
 
     useEffect(() => {
         if (isLoading) return;
         
-        const isAppRoute = !isAuthRoute && !isWelcomePage && !isPublicRoute;
+        const isAppRoute = !isAuthRoute && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
             router.push('/login');
         } else if (isAuthenticated) {
             if (isPublicRoute) {
                 router.push('/home');
-            } else if (userData && !userData.hasCompletedOnboarding && !isWelcomePage) {
+            } else if (userData && !userData.hasCompletedOnboarding && !pathname.endsWith('/welcome')) {
                 router.push('/welcome');
-            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute || isWelcomePage)) {
+            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute && !pathname.endsWith('/privacy') && !pathname.endsWith('/terms'))) {
                 router.push('/home');
             }
         }
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage, isPublicRoute, locale]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isPublicRoute, locale]);
     
     if (isLoading && !isAuthRoute && !isPublicRoute) {
         return <AppLoader />;
     }
 
-    if (isAuthRoute || isPublicRoute) {
+    // Public routes (landing page) are handled by src/app/[lang]/page.tsx now
+    if (isPublicRoute) {
+        return <>{children}</>
+    }
+    
+    // Auth routes (login, signup) and welcome page
+    if (isAuthRoute) {
         if(dictionary){
+            const pageName = pathname.substring(pathname.lastIndexOf('/') + 1) as keyof Dictionary;
              const childrenWithProps = React.Children.map(children, child => {
                 if (React.isValidElement(child)) {
                   // @ts-ignore
-                  return React.cloneElement(child, { dictionary: dictionary[isAuthRoute ? 'login' : 'landing'] });
+                  return React.cloneElement(child, { dictionary: dictionary[pageName] || dictionary.login });
                 }
                 return child;
               });
@@ -111,10 +115,6 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
     
     if (!isAuthenticated) {
       return <AppLoader />;
-    }
-    
-    if (isWelcomePage) {
-        return <>{children}</>;
     }
 
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.endsWith(route));
@@ -127,26 +127,12 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
     if (!dictionary) {
         return <AppLoader />;
     }
-
-    const childrenWithProps = React.Children.map(children, child => {
-        if (React.isValidElement(child)) {
-            // @ts-ignore
-            if (child.type.name.includes('Page')) {
-                 const pageName = child.type.name.replace('Page', '').toLowerCase();
-                 // @ts-ignore
-                 const pageDictionary = dictionary[pageName];
-                 if (pageDictionary) {
-                    // @ts-ignore
-                    return React.cloneElement(child, { dictionary: pageDictionary });
-                 }
-            }
-        }
-        return child;
-    });
+    
+    const childrenWithProps = children;
 
     if (isMobile && isFullScreenPage) {
          return (
-            <main className="h-screen">
+            <main className="h-screen bg-background">
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 {childrenWithProps}
             </main>
