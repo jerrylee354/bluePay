@@ -203,7 +203,6 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
         
         setIsProcessing(true);
         try {
-            let txResult;
             if (mode === 'pay') {
                 if (numericAmount > userData.balance) {
                     toast({
@@ -214,7 +213,7 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                     setIsProcessing(false);
                     return;
                 }
-                txResult = await processTransaction({
+                await processTransaction({
                     fromUserId: user.uid,
                     toUserId: recipient.uid,
                     amount: numericAmount,
@@ -223,7 +222,7 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                     locale: dictionary.locale as 'en' | 'zh-TW',
                 });
             } else { // Request logic
-                 txResult = await requestTransaction({
+                 await requestTransaction({
                     fromUserId: user.uid,
                     toUserId: recipient.uid,
                     amount: numericAmount,
@@ -232,7 +231,21 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                     locale: dictionary.locale as 'en' | 'zh-TW',
                  });
             }
-            setCompletedTransaction(txResult);
+
+            const mockTransaction: Transaction = {
+                id: 'temp-' + Date.now(),
+                type: mode === 'pay' ? 'payment' : 'receipt',
+                status: mode === 'pay' ? 'Completed' : 'Pending',
+                date: new Date().toISOString(),
+                amount: numericAmount,
+                description: note,
+                attachmentUrl: attachedImage,
+                name: `${recipient.firstName} ${recipient.lastName}`,
+                otherPartyUid: recipient.uid,
+                otherParty: recipient,
+            };
+
+            setCompletedTransaction(mockTransaction);
             setIsPaymentSuccessful(true);
 
         } catch (error: any) {

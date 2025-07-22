@@ -57,8 +57,8 @@ interface AuthContextType {
   searchUsers: (searchTerm: string) => Promise<DocumentData[]>;
   getUserByUsername: (username: string) => Promise<DocumentData | null>;
   getUserById: (userId: string) => Promise<DocumentData | null>;
-  processTransaction: (params: ProcessTransactionParams) => Promise<Transaction>;
-  requestTransaction: (params: RequestTransactionParams) => Promise<Transaction>;
+  processTransaction: (params: ProcessTransactionParams) => Promise<void>;
+  requestTransaction: (params: RequestTransactionParams) => Promise<void>;
   declineTransaction: (params: DeclineTransactionParams) => Promise<void>;
   isLoading: boolean;
   refreshUserData: () => Promise<void>;
@@ -207,7 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const getUserById = async (userId: string) => {
       if (!userId) return null;
       const userDocRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(docRef);
+      const docSnap = await getDoc(userDocRef);
       return docSnap.exists() ? docSnap.data() : null;
   };
 
@@ -262,16 +262,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, requestId, locale }: ProcessTransactionParams): Promise<Transaction> => {
+  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, requestId, locale }: ProcessTransactionParams): Promise<void> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
-    let finalTransaction: Transaction | null = null;
     let fromUserData: DocumentData | null = null;
     let toUserData: DocumentData | null = null;
     const dictionary = await getDictionary(locale);
     
     try {
-      await runTransaction(db, async (transaction) => {
+      const { finalTransactionId } = await runTransaction(db, async (transaction) => {
         const fromUserDoc = await transaction.get(fromUserRef);
         const toUserDoc = await transaction.get(toUserRef);
 
@@ -294,6 +293,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         const now = new Date();
         const timestamp = now.toISOString();
+        let finalId;
 
         if (requestId) {
             const payerTransactionRef = doc(db, "users", fromUserId, "transactions", requestId);
@@ -309,18 +309,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 transaction.update(requesterTxDoc.ref, { status: dictionary.status.Completed });
             }
             transaction.update(payerTransactionRef, { status: dictionary.status.Completed });
-            finalTransaction = {
-                id: requestId,
-                type: 'payment',
-                status: dictionary.status.Completed,
-                date: timestamp,
-                amount,
-                description: note,
-                attachmentUrl,
-                name: `${toUserData.firstName} ${toUserData.lastName}`,
-                otherPartyUid: toUserId,
-            };
-
+            finalId = requestId;
         } else {
              const sharedRequestId = doc(collection(db, "dummy")).id;
              const sharedTxData = {
@@ -349,25 +338,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 currency: toUserData.currency,
                 otherPartyUid: fromUserId,
             });
-            
-            finalTransaction = {
-                id: senderTransactionRef.id,
-                ...sharedTxData,
-                type: 'payment',
-                name: `${toUserData.firstName} ${toUserData.lastName}`,
-            };
+            finalId = senderTransactionRef.id;
         }
+        return { finalTransactionId: finalId };
       });
       
-      if (!finalTransaction || !fromUserData || !toUserData) {
+      if (!fromUserData || !toUserData) {
           throw new Error("Transaction could not be finalized.");
       }
       
       const receiptDetails: ReceiptDetails = {
           toEmail: fromUserData.email,
           toName: fromUserData.firstName,
-          transactionId: finalTransaction.id,
-          transactionDate: finalTransaction.date,
+          transactionId: finalTransactionId,
+          transactionDate: new Date().toISOString(),
           transactionType: 'Payment Sent',
           amount: amount,
           currency: fromUserData.currency,
@@ -376,8 +360,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       
       await sendReceipt(receiptDetails);
-
-      return finalTransaction;
 
     } catch (e) {
       console.error("Transaction failed: ", e);
@@ -388,7 +370,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, locale }: RequestTransactionParams): Promise<Transaction> => {
+  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, locale }: RequestTransactionParams): Promise<void> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     const dictionary = await getDictionary(locale);
@@ -452,15 +434,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     
     await sendReceipt(receiptDetails);
-    
-    return {
-        id: requesterTxRef.id,
-        ...sharedData,
-        status: dictionary.status.Pending,
-        type: 'request',
-        name: `${toUserData.firstName} ${toUserData.lastName}`,
-        otherPartyUid: toUserId,
-    };
   };
 
   const declineTransaction = async ({ payerTxId, requesterId, locale }: DeclineTransactionParams) => {
