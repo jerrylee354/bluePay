@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, X, User, Shield, Eye, Bell, LogOut } from 'lucide-react';
 import { Dictionary } from '@/dictionaries';
-import { useAuth } from '@/context/auth-context';
 import { Card, CardContent } from '@/components/ui/card';
 import ProfilePage from '@/app/[lang]/settings/profile/page';
 import SecurityPage from '@/app/[lang]/settings/security/page';
@@ -89,14 +88,12 @@ export default function SettingsContainer({ dictionary, onLogout, onClose }: { d
                             </CardContent>
                         </Card>
 
-                        <Card>
-                            <CardContent className="p-2">
-                                <div className="flex items-center p-4 hover:bg-destructive/10 rounded-lg cursor-pointer transition-colors" onClick={onLogout}>
-                                    <LogOut className="w-6 h-6 mr-4 text-destructive" />
-                                    <span className="flex-1 text-base font-medium text-destructive">{dictionary.logout}</span>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div className="pt-4">
+                             <Button variant="destructive" className="w-full h-12 text-base" onClick={onLogout}>
+                                <LogOut className="mr-2 h-5 w-5" />
+                                {dictionary.settings.logout}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>
