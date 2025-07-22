@@ -10,12 +10,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dictionary } from '@/dictionaries';
 
 interface IdleTimeoutDialogProps {
     onConfirm: () => void;
+    dictionary: Dictionary['idleTimeout'];
 }
 
-export function IdleTimeoutDialog({ onConfirm }: IdleTimeoutDialogProps) {
+export function IdleTimeoutDialog({ onConfirm, dictionary }: IdleTimeoutDialogProps) {
     return (
         <AlertDialog open={true}>
             <AlertDialogContent>
@@ -23,12 +25,12 @@ export function IdleTimeoutDialog({ onConfirm }: IdleTimeoutDialogProps) {
                     <div className="flex justify-center mb-4">
                         <AlertTriangle className="h-16 w-16 text-destructive" />
                     </div>
-                    <AlertDialogTitle className="text-center">工作階段已過時</AlertDialogTitle>
+                    <AlertDialogTitle className="text-center">{dictionary.title}</AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
-                        為保護您的帳戶安全，由於您長時間未活動，我們已將您登出。
+                        {dictionary.description}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogAction onClick={onConfirm}>確定</AlertDialogAction>
+                <AlertDialogAction onClick={onConfirm}>{dictionary.confirm}</AlertDialogAction>
             </AlertDialogContent>
         </AlertDialog>
     );

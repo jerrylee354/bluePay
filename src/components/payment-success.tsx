@@ -44,7 +44,7 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
     const { userData } = useAuth();
     const currency = userData?.currency || 'USD';
 
-    const titleText = transaction.type === 'payment' ? '付款成功' : '要求已傳送';
+    const titleText = transaction.type === 'payment' ? 'Payment Successful' : 'Request Sent';
     
     const getInitials = (name?: string) => {
         if (!name) return '?';
@@ -110,7 +110,7 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
                                 <AvatarFallback>{getInitials(transaction.name)}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="text-muted-foreground text-sm">{transaction.type === 'payment' ? '付款給' : '已向...要求'}</p>
+                                <p className="text-muted-foreground text-sm">{transaction.type === 'payment' ? 'Paid to' : 'Requested from'}</p>
                                 <p className="font-semibold text-lg">{transaction.name}</p>
                             </div>
                         </div>
@@ -118,14 +118,14 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
                         <Separator className="my-6" />
 
                         <div className="space-y-1 text-left">
-                            <DetailRow label="交易日期" value={formatDate(transaction.date)} />
-                            <DetailRow label="交易狀態" value={transaction.status} />
-                             <DetailRow label="交易 ID" value={<span className="font-mono text-xs">{transaction.id}</span>} />
+                            <DetailRow label="Transaction Date" value={formatDate(transaction.date)} />
+                            <DetailRow label="Transaction Status" value={transaction.status} />
+                             <DetailRow label="Transaction ID" value={<span className="font-mono text-xs">{transaction.id}</span>} />
                         </div>
                         
                         {transaction.description && (
                             <div className="mt-6 text-left bg-muted/50 p-3 rounded-md">
-                                <p className="text-sm text-muted-foreground">附註:</p>
+                                <p className="text-sm text-muted-foreground">Note:</p>
                                 <p className="text-sm">{transaction.description}</p>
                             </div>
                         )}
@@ -133,7 +133,7 @@ export default function PaymentSuccess({ transaction, onFinish }: { transaction:
                     </CardContent>
                 </Card>
                 <div className="w-full max-w-md mt-6">
-                    <Button onClick={onFinish} className="w-full h-12 text-lg">完成</Button>
+                    <Button onClick={onFinish} className="w-full h-12 text-lg">Done</Button>
                 </div>
             </div>
         </>

@@ -287,9 +287,6 @@ function WelcomeContent() {
 }
 
 export default function WelcomePage() {
-    return (
-        <AppContent>
-            <WelcomeContent />
-        </AppContent>
-    );
+    // We don't need AppContent here as it will be handled by the root layout now
+    return <WelcomeContent />;
 }

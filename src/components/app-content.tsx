@@ -98,7 +98,18 @@ export default function AppContent({ children, locale }: { children: React.React
     }
 
     if (isAuthRoute || isPublicRoute || isRoot) {
-        return <>{children}</>;
+        // Here we need to pass the dictionary down to the auth/public pages
+        if(dictionary){
+             const childrenWithProps = React.Children.map(children, child => {
+                if (React.isValidElement(child)) {
+                  // @ts-ignore
+                  return React.cloneElement(child, { dictionary: dictionary });
+                }
+                return child;
+              });
+              return <>{childrenWithProps}</>;
+        }
+        return <AppLoader/>
     }
     
     if (!isAuthenticated) {
@@ -106,6 +117,8 @@ export default function AppContent({ children, locale }: { children: React.React
     }
     
     if (isWelcomePage) {
+        // Welcome page might need dictionary too, let's handle it inside the page itself for now
+        // or pass it down if needed. Since it's self-contained, it should be fine.
         return <>{children}</>;
     }
 
@@ -123,7 +136,7 @@ export default function AppContent({ children, locale }: { children: React.React
     if (isMobile && isFullScreenPage) {
          return (
             <main className="h-screen">
-                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} />}
+                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 {children}
             </main>
          );
@@ -132,7 +145,7 @@ export default function AppContent({ children, locale }: { children: React.React
     if (isMobile) {
         return (
             <div className="relative flex min-h-screen w-full flex-col items-center">
-                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} />}
+                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 <div className="w-full max-w-lg bg-background h-screen flex flex-col">
                     <main className="flex-1 overflow-y-auto p-4 mb-24">
                         {children}
@@ -145,7 +158,7 @@ export default function AppContent({ children, locale }: { children: React.React
 
     return (
         <div className="flex min-h-screen">
-            {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} />}
+            {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
             <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary.settings} />
             <main className="flex-1 p-8">
                <div className="mx-auto max-w-5xl">
