@@ -139,7 +139,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                     </div>
                   </button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl p-0 max-h-[90vh] flex flex-col">
+                <DialogContent className="max-w-3xl p-0 max-h-[90vh] flex flex-col">
                   <SettingsContainer
                     dictionary={settingsDictionary}
                     onLogout={handleLogout}
