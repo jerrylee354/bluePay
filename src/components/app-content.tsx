@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useAuth } from '@/context/auth-context';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { AuthProvider as FirebaseAuthProvider, useAuth as useFirebaseAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
 import { Skeleton } from './ui/skeleton';
@@ -16,7 +16,8 @@ import { getDictionary, type Dictionary } from '@/dictionaries';
 const authRoutes = ['/login', '/signup', '/terms', '/privacy'];
 const fullScreenRoutes = ['/pay/confirm'];
 const welcomeRoute = '/welcome';
-const publicRoutes = ['/'];
+const publicRoute = '/';
+
 
 const AppLoader = () => (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -41,15 +42,14 @@ const AppLoader = () => (
     </div>
 );
 
-export default function AppContent({ children, locale }: { children: React.ReactNode, locale: Locale }) {
-    const { isAuthenticated, isLoading, userData, logout } = useAuth();
+function AppContentInternal({ children, locale }: { children: React.ReactNode, locale: Locale }) {
+    const { isAuthenticated, isLoading, userData, logout } = useFirebaseAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
     const [dictionary, setDictionary] = useState<Dictionary | null>(null);
-    
     const [isIdle, setIsIdle] = useState(false);
-    
+
     useEffect(() => {
         getDictionary(locale).then(setDictionary);
     }, [locale]);
@@ -70,40 +70,37 @@ export default function AppContent({ children, locale }: { children: React.React
     
     const isAuthRoute = authRoutes.some(route => pathname.endsWith(route));
     const isWelcomePage = pathname.endsWith(welcomeRoute);
-    const isPublicRoute = publicRoutes.some(route => pathname === `/${locale}`);
-    const isRoot = pathname === '/';
+    const isPublicRoute = pathname === `/${locale}` || pathname === '/';
 
 
     useEffect(() => {
-        if (isLoading || isRoot) return;
+        if (isLoading) return;
         
         const isAppRoute = !isAuthRoute && !isWelcomePage && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
-            router.push(`/${locale}/login`);
+            router.push('/login');
         } else if (isAuthenticated) {
             if (isPublicRoute) {
-                router.push(`/${locale}/home`);
+                router.push('/home');
             } else if (userData && !userData.hasCompletedOnboarding && !isWelcomePage) {
-                router.push(`/${locale}/welcome`);
+                router.push('/welcome');
             } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute || isWelcomePage)) {
-                router.push(`/${locale}/home`);
+                router.push('/home');
             }
         }
-
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage, isPublicRoute, locale, isRoot]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage, isPublicRoute, locale]);
     
     if (isLoading && !isAuthRoute && !isPublicRoute) {
         return <AppLoader />;
     }
 
-    if (isAuthRoute || isPublicRoute || isRoot) {
-        // Here we need to pass the dictionary down to the auth/public pages
+    if (isAuthRoute || isPublicRoute) {
         if(dictionary){
              const childrenWithProps = React.Children.map(children, child => {
                 if (React.isValidElement(child)) {
                   // @ts-ignore
-                  return React.cloneElement(child, { dictionary: dictionary });
+                  return React.cloneElement(child, { dictionary: dictionary[isAuthRoute ? 'login' : 'landing'] });
                 }
                 return child;
               });
@@ -117,8 +114,6 @@ export default function AppContent({ children, locale }: { children: React.React
     }
     
     if (isWelcomePage) {
-        // Welcome page might need dictionary too, let's handle it inside the page itself for now
-        // or pass it down if needed. Since it's self-contained, it should be fine.
         return <>{children}</>;
     }
 
@@ -133,11 +128,27 @@ export default function AppContent({ children, locale }: { children: React.React
         return <AppLoader />;
     }
 
+    const childrenWithProps = React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+            // @ts-ignore
+            if (child.type.name.includes('Page')) {
+                 const pageName = child.type.name.replace('Page', '').toLowerCase();
+                 // @ts-ignore
+                 const pageDictionary = dictionary[pageName];
+                 if (pageDictionary) {
+                    // @ts-ignore
+                    return React.cloneElement(child, { dictionary: pageDictionary });
+                 }
+            }
+        }
+        return child;
+    });
+
     if (isMobile && isFullScreenPage) {
          return (
             <main className="h-screen">
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
-                {children}
+                {childrenWithProps}
             </main>
          );
     }
@@ -148,7 +159,7 @@ export default function AppContent({ children, locale }: { children: React.React
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 <div className="w-full max-w-lg bg-background h-screen flex flex-col">
                     <main className="flex-1 overflow-y-auto p-4 mb-24">
-                        {children}
+                        {childrenWithProps}
                     </main>
                     <BottomNav dictionary={dictionary.nav} />
                 </div>
@@ -162,9 +173,19 @@ export default function AppContent({ children, locale }: { children: React.React
             <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary.settings} />
             <main className="flex-1 p-8">
                <div className="mx-auto max-w-5xl">
-                    {children}
+                    {childrenWithProps}
                </div>
             </main>
         </div>
     );
+}
+
+export default function AppContent({ children, locale }: { children: React.ReactNode, locale: Locale }) {
+    return (
+        <FirebaseAuthProvider>
+            <AppContentInternal locale={locale}>
+                {children}
+            </AppContentInternal>
+        </FirebaseAuthProvider>
+    )
 }
