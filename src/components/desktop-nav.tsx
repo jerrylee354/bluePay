@@ -29,7 +29,7 @@ import { Dictionary } from '@/dictionaries';
 
 
 export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary['settings'] }) {
-  const { user, userData } = useAuth();
+  const { user, userData, logout } = useAuth();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [settingsPage, setSettingsPage] = React.useState<SettingsPage>('main');
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -43,7 +43,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
 
   const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
       const pathname = usePathname();
-      const isActive = pathname === item.href;
+      const isActive = pathname.startsWith(item.href);
 
       return (
           <TooltipProvider delayDuration={0}>
@@ -82,6 +82,11 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
     if (!open) {
       setTimeout(() => setSettingsPage('main'), 200);
     }
+  }
+
+  const handleLogout = () => {
+    handleDialogChange(false);
+    logout();
   }
 
   return (
@@ -133,8 +138,13 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                     </div>
                   </button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl p-0">
-                  <SettingsContainer page={settingsPage} setPage={setSettingsPage} dictionary={{...settingsDictionary, settings: settingsDictionary } as any} />
+                <DialogContent className="sm:max-w-2xl p-0 max-h-[90vh] flex flex-col">
+                  <SettingsContainer 
+                    page={settingsPage} 
+                    setPage={setSettingsPage} 
+                    dictionary={{...settingsDictionary, logout: "Log Out"}} // Pass full dictionary structure
+                    onLogout={handleLogout}
+                  />
                 </DialogContent>
           </Dialog>
       </div>

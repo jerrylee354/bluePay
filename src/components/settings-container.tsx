@@ -15,7 +15,7 @@ import { Dictionary } from '@/dictionaries';
 
 export type SettingsPage = 'main' | 'profile' | 'security' | 'privacy' | 'notifications' | 'edit-username';
 
-const SettingsContainer = ({ page, setPage, dictionary }: { page: SettingsPage; setPage: (page: SettingsPage) => void, dictionary: Dictionary }) => {
+const SettingsContainer = ({ page, setPage, dictionary, onLogout }: { page: SettingsPage; setPage: (page: SettingsPage) => void, dictionary: Dictionary, onLogout: () => void }) => {
     
     const pageConfig: Record<SettingsPage, { title: string; component: React.ComponentType<any>; backPage?: SettingsPage }> = {
         main: { title: dictionary.settings.title, component: SettingsPage },
@@ -35,8 +35,8 @@ const SettingsContainer = ({ page, setPage, dictionary }: { page: SettingsPage; 
     }
 
     return (
-        <div>
-            <DialogHeader className="p-6 pb-4 border-b rounded-t-lg">
+        <div className="flex flex-col h-full">
+            <DialogHeader className="p-6 pb-4 border-b rounded-t-lg flex-shrink-0">
                 <div className="flex items-center gap-4">
                     {page !== 'main' && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBack}>
@@ -47,8 +47,8 @@ const SettingsContainer = ({ page, setPage, dictionary }: { page: SettingsPage; 
                     <DialogTitle>{title}</DialogTitle>
                 </div>
             </DialogHeader>
-            <div className="p-6">
-                <PageComponent setPage={setPage} dictionary={dictionary} />
+            <div className="p-6 overflow-y-auto flex-grow">
+                <PageComponent setPage={setPage} dictionary={dictionary} onLogout={onLogout} />
             </div>
         </div>
     );

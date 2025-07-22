@@ -16,8 +16,7 @@ const SettingsListItem = ({ icon: Icon, text, onClick }: { icon: React.ElementTy
     </div>
 );
 
-export default function SettingsPage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary }) {
-    const { logout } = useAuth();
+export default function SettingsPage({ setPage, dictionary, onLogout }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary, onLogout: () => void }) {
     const d = dictionary.settings;
     
     const handleNavigation = (page: SettingsPage) => {
@@ -44,9 +43,9 @@ export default function SettingsPage({ setPage, dictionary }: { setPage?: (page:
 
              <Card>
                 <CardContent className="p-2">
-                     <div className="flex items-center p-4 hover:bg-destructive/10 rounded-lg cursor-pointer transition-colors" onClick={logout}>
+                     <div className="flex items-center p-4 hover:bg-destructive/10 rounded-lg cursor-pointer transition-colors" onClick={onLogout}>
                         <LogOut className="w-6 h-6 mr-4 text-destructive" />
-                        <span className="flex-1 text-base font-medium text-destructive">{dictionary.settings.logout}</span>
+                        <span className="flex-1 text-base font-medium text-destructive">{dictionary.logout}</span>
                     </div>
                 </CardContent>
             </Card>
