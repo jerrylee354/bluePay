@@ -22,6 +22,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Dialog,
     DialogContent,
+    DialogHeader,
+    DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
 import SettingsContainer from './settings-container';
@@ -140,6 +142,9 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                   </button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl p-0 max-h-[90vh] flex flex-col">
+                  <DialogHeader className="sr-only">
+                    <DialogTitle>{settingsDictionary.settings.title}</DialogTitle>
+                  </DialogHeader>
                   <SettingsContainer
                     dictionary={settingsDictionary}
                     onLogout={handleLogout}

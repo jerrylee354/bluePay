@@ -366,20 +366,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           throw new Error("Transaction could not be finalized.");
       }
       
-      const receiptDetails: ReceiptDetails = {
-          toEmail: fromUserData.email,
-          toName: fromUserData.firstName,
-          transactionId: finalTransactionId,
-          transactionDate: new Date().toISOString(),
-          transactionType: 'Payment Sent',
-          amount: amount,
-          currency: fromUserData.currency,
-          recipientName: `${toUserData.firstName} ${toUserData.lastName}`,
-          note: note,
-      };
-      
-      await sendReceipt(receiptDetails);
-
     } catch (e) {
       console.error("Transaction failed: ", e);
       if (e instanceof Error) {
@@ -439,20 +425,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     
     await batch.commit();
-
-    const receiptDetails: ReceiptDetails = {
-        toEmail: fromUserData.email,
-        toName: fromUserData.firstName,
-        transactionId: requesterTxRef.id,
-        transactionDate: timestamp,
-        transactionType: 'Payment Request Sent',
-        amount: amount,
-        currency: fromUserData.currency,
-        recipientName: `${toUserData.firstName} ${toUserData.lastName}`,
-        note: note,
-    };
-    
-    await sendReceipt(receiptDetails);
   };
 
   const declineTransaction = async ({ payerTxId, requesterId, locale }: DeclineTransactionParams) => {
