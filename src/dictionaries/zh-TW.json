@@ -1,0 +1,118 @@
+
+{
+    "landing": {
+        "getStarted": "開始使用",
+        "heroTitle": "為現代生活打造的<span class=\"block text-primary\">點對點支付</span>",
+        "heroSubtitle": "告別複雜的轉帳流程。使用 BluePay，只需輕點幾下即可向朋友和家人付款或收款。您的安全與隱私是我們的第一要務。",
+        "heroCta": "立即免費開始",
+        "featuresTitle": "一個更聰明、更簡單的支付方式",
+        "featuresSubtitle": "探索 BluePay 如何讓您的金融生活更輕鬆。",
+        "features": [
+            {
+                "title": "即時交易",
+                "description": "轉帳和收款都在瞬間完成，無需等待。體驗前所未有的流暢支付。",
+                "details": {
+                    "title": "快如閃電的即時交易",
+                    "description": "忘記銀行轉帳的漫長等待。BluePay 的技術讓您的資金在幾秒鐘內從您的帳戶到達您朋友的帳戶。無論是白天還是半夜，週末還是假日，交易都能即時完成。",
+                    "application": "和朋友聚餐後，用 BluePay 即時分攤帳單，無需等待任何人找零或隔天轉帳。"
+                }
+            },
+            {
+                "title": "輕鬆社交支付",
+                "description": "透過使用者名稱輕鬆找到朋友並進行轉帳。無需再交換敏感且冗長的銀行詳細資訊。",
+                "details": {
+                    "title": "為社交而生的支付方式",
+                    "description": "您只需要知道朋友的 BluePay 使用者名稱，就可以安全地向他們付款或收款。這不僅保護了雙方的銀行帳戶隱私，也讓支付過程像傳送訊息一樣簡單自然。",
+                    "application": "在辦公室團購下午茶時，同事們只需透過您的 BluePay 使用者名稱就能輕鬆付款給您，無需一個個加銀行好友。"
+                }
+            },
+            {
+                "title": "銀行級安全防護",
+                "description": "您的交易資料經過端對端加密，我們絕不會分享或出售您的資料。",
+                "details": {
+                    "title": "堅若磐石的安全承諾",
+                    "description": "我們採用業界領先的端對端加密技術，確保您的每一筆交易資料在傳輸過程中都受到嚴密保護。此外，您的個人資料和財務資訊絕不會被用於廣告或出售給第三方。您的安全是我們的最高準則。",
+                    "application": "在網路上購買二手物品時，使用 BluePay进行交易，您無需向陌生人透露您的銀行卡號或個人敏感資訊，大大降低了詐騙風險。"
+                }
+            }
+        ],
+        "privacy": {
+            "title": "您的隱私，我們的承諾",
+            "description": "在 BluePay，我們相信您的財務資訊應該是私密的。我們設計的平台從一開始就考慮到隱私。",
+            "points": [
+                "您的交易資料絕不會被用於廣告或出售給第三方。",
+                "我們使用最先進的加密技術保護您的每一次轉帳。",
+                "您可以完全控制您的資料，隨時查看或下載。"
+            ],
+            "cta": "閱讀我們的隱私政策",
+            "developer": "由劉氏敏集團開發"
+        },
+        "bottomCta": {
+            "title": "準備好體驗更簡單的支付方式了嗎？",
+            "subtitle": "立即加入數百萬用戶的行列，享受無縫、安全的交易。",
+            "cta": "免費註冊"
+        },
+        "footer": "版權所有。",
+        "featureModal": {
+            "application": "日常生活應用："
+        }
+    },
+    "login": {
+        "title": "登入",
+        "emailPlaceholder": "電子郵件",
+        "passwordPlaceholder": "密碼",
+        "loginErrorTitle": "登入錯誤",
+        "loginErrorDescription": "電子郵件或密碼無效，請再試一次。",
+        "forgotPassword": "忘記密碼？",
+        "loginButton": "登入",
+        "or": "或",
+        "signupButton": "註冊",
+        "loginSuccessTitle": "登入成功",
+        "loginSuccessDescription": "歡迎回來！"
+    },
+    "signup": {
+        "joinTitle": "加入 BluePay",
+        "chooseAccountType": "選擇您的帳戶類型以開始。",
+        "personalAccount": "個人帳戶",
+        "personalDescription": "適用於個人收付款。",
+        "businessAccount": "商業帳戶",
+        "businessDescription": "適用於公司管理支付。",
+        "selectTypeError": "請選擇一個帳戶類型以繼續。",
+        "emailTitle": "您的電子郵件是？",
+        "emailPlaceholder": "電子郵件地址",
+        "emailRequiredError": "請輸入您的電子郵件地址。",
+        "emailExistsError": "這個電子郵件地址已經被使用。",
+        "emailValidateError": "驗證電子郵件失敗，請再試一次。",
+        "passwordTitle": "建立一個密碼",
+        "passwordPlaceholder": "密碼（至少6個字元）",
+        "confirmPasswordPlaceholder": "確認密碼",
+        "passwordLengthError": "密碼長度至少需要6個字元。",
+        "passwordMismatchError": "密碼不相符。",
+        "nameTitle": "您的姓名是？",
+        "firstNamePlaceholder": "名字",
+        "lastNamePlaceholder": "姓氏",
+        "nameRequiredError": "請輸入您的名字和姓氏。",
+        "businessInfoTitle": "商業資訊",
+        "businessInfoDescription": "這有助於我們驗證您的業務。",
+        "businessIdPlaceholder": "商業ID／稅務ID（選填）",
+        "finalStepTitle": "最後一步",
+        "termsAgreement": "建立帳戶即表示您同意 BluePay 的<1>服務條款</1>和<3>隱私權政策</3>。",
+        "termsRequiredError": "您必須同意條款才能繼續。",
+        "createAccountButton": "建立帳戶",
+        "continueButton": "繼續",
+        "backButton": "返回",
+        "startOver": "重新開始",
+        "alreadyHaveAccount": "已經有帳戶了？",
+        "logInLink": "登入",
+        "signupSuccessTitle": "註冊成功",
+        "signupSuccessDescription": "您的帳戶已成功建立。",
+        "weakPasswordError": "密碼強度不足，請至少使用6個字元。",
+        "genericError": "發生未預期的錯誤。"
+    },
+    "status": {
+        "Completed": "已完成",
+        "Failed": "失敗",
+        "Pending": "待處理",
+        "Requested": "已請求"
+    }
+}

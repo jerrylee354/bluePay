@@ -25,50 +25,52 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import SettingsContainer, { type SettingsPage } from './settings-container';
+import { Dictionary } from '@/dictionaries';
 
 
-const navItems = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/activity", label: "Activity", icon: History },
-  { href: "/pay", label: "Pay", icon: CircleDollarSign },
-  { href: "/wallet", label: "Wallet", icon: WalletIcon },
-];
-
-const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
-    const pathname = usePathname();
-    const isActive = pathname.startsWith(item.href);
-
-    return (
-        <TooltipProvider delayDuration={0}>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Link
-                        href={item.href}
-                        className={cn(
-                            "flex items-center h-12 w-full px-4 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                            isExpanded ? "justify-start gap-4" : "justify-center",
-                            isActive && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-                        )}
-                    >
-                        <item.icon className="h-6 w-6 shrink-0" />
-                        <span className={cn("transition-all duration-200", isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden")}>{item.label}</span>
-                    </Link>
-                </TooltipTrigger>
-                {!isExpanded && (
-                    <TooltipContent side="right" sideOffset={5}>
-                        {item.label}
-                    </TooltipContent>
-                )}
-            </Tooltip>
-        </TooltipProvider>
-    )
-}
-
-export default function DesktopNav() {
+export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary['settings'] }) {
   const { user, userData } = useAuth();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [settingsPage, setSettingsPage] = React.useState<SettingsPage>('main');
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  
+  const navItems = [
+    { href: "/home", label: dictionary.home, icon: Home },
+    { href: "/activity", label: dictionary.activity, icon: History },
+    { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
+    { href: "/wallet", label: dictionary.wallet, icon: WalletIcon },
+  ];
+
+  const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
+      const pathname = usePathname();
+      const isActive = pathname.endsWith(item.href);
+
+      return (
+          <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                  <TooltipTrigger asChild>
+                      <Link
+                          href={item.href}
+                          className={cn(
+                              "flex items-center h-12 w-full px-4 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                              isExpanded ? "justify-start gap-4" : "justify-center",
+                              isActive && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                          )}
+                      >
+                          <item.icon className="h-6 w-6 shrink-0" />
+                          <span className={cn("transition-all duration-200", isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden")}>{item.label}</span>
+                      </Link>
+                  </TooltipTrigger>
+                  {!isExpanded && (
+                      <TooltipContent side="right" sideOffset={5}>
+                          {item.label}
+                      </TooltipContent>
+                  )}
+              </Tooltip>
+          </TooltipProvider>
+      )
+  }
+
 
   const getInitials = (email: string | null | undefined) => {
     if (!email) return "U";
@@ -78,7 +80,6 @@ export default function DesktopNav() {
   const handleDialogChange = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
-      // Reset to main settings page when dialog is closed
       setTimeout(() => setSettingsPage('main'), 200);
     }
   }
@@ -128,12 +129,12 @@ export default function DesktopNav() {
                     </Avatar>
                     <div className={cn("flex flex-col items-start text-left transition-all duration-200", isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden")}>
                         <p className="font-semibold text-sm leading-tight whitespace-nowrap">{userData?.firstName || "User"}</p>
-                        <p className="text-xs text-muted-foreground leading-tight">Settings</p>
+                        <p className="text-xs text-muted-foreground leading-tight">{dictionary.settings}</p>
                     </div>
                   </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-2xl p-0">
-                  <SettingsContainer page={settingsPage} setPage={setSettingsPage} />
+                  <SettingsContainer page={settingsPage} setPage={setSettingsPage} dictionary={settingsDictionary} />
                 </DialogContent>
           </Dialog>
       </div>

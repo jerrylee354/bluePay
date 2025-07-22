@@ -14,57 +14,57 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
+import { type Dictionary } from '@/dictionaries';
 
 
-const features = [
-    {
-        icon: Zap,
-        title: "即時交易",
-        description: "轉帳和收款都在瞬間完成，無需等待。體驗前所未有的流暢支付。",
-        details: {
-            title: "快如閃電的即時交易",
-            description: "忘記銀行轉帳的漫長等待。BluePay 的技術讓您的資金在幾秒鐘內從您的帳戶到達您朋友的帳戶。無論是白天還是半夜，週末還是假日，交易都能即時完成。",
-            application: "和朋友聚餐後，用 BluePay 即時分攤帳單，無需等待任何人找零或隔天轉帳。"
+export default function LandingPage({ dictionary }: { dictionary: Dictionary['landing'] }) {
+    const features = [
+        {
+            icon: Zap,
+            title: dictionary.features[0].title,
+            description: dictionary.features[0].description,
+            details: {
+                title: dictionary.features[0].details.title,
+                description: dictionary.features[0].details.description,
+                application: dictionary.features[0].details.application
+            }
+        },
+        {
+            icon: Users,
+            title: dictionary.features[1].title,
+            description: dictionary.features[1].description,
+            details: {
+                title: dictionary.features[1].details.title,
+                description: dictionary.features[1].details.description,
+                application: dictionary.features[1].details.application
+            }
+        },
+        {
+            icon: ShieldCheck,
+            title: dictionary.features[2].title,
+            description: dictionary.features[2].description,
+            details: {
+                title: dictionary.features[2].details.title,
+                description: dictionary.features[2].details.description,
+                application: dictionary.features[2].details.application
+            }
         }
-    },
-    {
-        icon: Users,
-        title: "輕鬆社交支付",
-        description: "透過使用者名稱輕鬆找到朋友並進行轉帳。無需再交換敏感且冗長的銀行詳細資訊。",
-        details: {
-            title: "為社交而生的支付方式",
-            description: "您只需要知道朋友的 BluePay 使用者名稱，就可以安全地向他們付款或收款。這不僅保護了雙方的銀行帳戶隱私，也讓支付過程像傳送訊息一樣簡單自然。",
-            application: "在辦公室團購下午茶時，同事們只需透過您的 BluePay 使用者名稱就能輕鬆付款給您，無需一個個加銀行好友。"
-        }
-    },
-    {
-        icon: ShieldCheck,
-        title: "銀行級安全防護",
-        description: "您的交易資料經過端對端加密，我們絕不會分享或出售您的資料。",
-        details: {
-            title: "堅若磐石的安全承諾",
-            description: "我們採用業界領先的端對端加密技術，確保您的每一筆交易資料在傳輸過程中都受到嚴密保護。此外，您的個人資料和財務資訊絕不會被用於廣告或出售給第三方。您的安全是我們的最高準則。",
-            application: "在網路上購買二手物品時，使用 BluePay进行交易，您無需向陌生人透露您的銀行卡號或個人敏感資訊，大大降低了詐騙風險。"
-        }
-    }
-];
+    ];
 
-type Feature = typeof features[0];
+    type Feature = typeof features[0];
 
+    const FeatureItem = ({ feature, onClick }: { feature: Feature, onClick: () => void }) => (
+        <button onClick={onClick} className="text-left flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-primary hover:bg-primary/5 transition-all duration-300 h-full">
+            <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
+                <feature.icon className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+                <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+                <p className="mt-1 text-gray-600">{feature.description}</p>
+            </div>
+        </button>
+    );
 
-const FeatureItem = ({ feature, onClick }: { feature: Feature, onClick: () => void }) => (
-    <button onClick={onClick} className="text-left flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-primary hover:bg-primary/5 transition-all duration-300">
-        <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
-            <feature.icon className="w-6 h-6 text-primary" />
-        </div>
-        <div>
-            <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
-            <p className="mt-1 text-gray-600">{feature.description}</p>
-        </div>
-    </button>
-);
-
-export default function LandingPage() {
     const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
     const [showStickyButton, setShowStickyButton] = useState(false);
     const router = useRouter();
@@ -73,7 +73,6 @@ export default function LandingPage() {
     const footerCtaRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Check if the app is running in standalone mode (PWA)
         if (window.matchMedia('(display-mode: standalone)').matches) {
             router.push('/home');
         }
@@ -85,7 +84,7 @@ export default function LandingPage() {
 
             const heroCtaBottom = heroCtaRef.current.getBoundingClientRect().bottom;
             const footerCtaTop = footerCtaRef.current.getBoundingClientRect().top;
-            const headerHeight = 80; // height of the header
+            const headerHeight = 80;
 
             const shouldShow = heroCtaBottom < headerHeight && footerCtaTop > window.innerHeight;
             setShowStickyButton(shouldShow);
@@ -110,7 +109,7 @@ export default function LandingPage() {
                     )}>
                          <Button asChild size="lg" className="group transition-all duration-300">
                             <Link href="/login">
-                                開始使用
+                                {dictionary.getStarted}
                                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                             </Link>
                         </Button>
@@ -122,17 +121,16 @@ export default function LandingPage() {
                 <section className="relative py-28 md:py-40 text-center overflow-hidden bg-white">
                     <div className="absolute inset-0 -z-0 opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1)_0%,rgba(255,255,255,0)_60%)]"></div>
                     <div className="container relative max-w-4xl mx-auto px-4 z-10">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-7xl">
-                            為現代生活打造的
-                            <span className="block text-primary">點對點支付</span>
-                        </h1>
+                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-7xl"
+                            dangerouslySetInnerHTML={{ __html: dictionary.heroTitle }}
+                        ></h1>
                         <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 md:text-xl">
-                            告別複雜的轉帳流程。使用 BluePay，只需輕點幾下即可向朋友和家人付款或收款。您的安全與隱私是我們的第一要務。
+                            {dictionary.heroSubtitle}
                         </p>
                         <div className="mt-10" ref={heroCtaRef}>
                              <Button asChild size="lg" className="h-14 text-lg group">
                                 <Link href="/login">
-                                    立即免費開始
+                                    {dictionary.heroCta}
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </Button>
@@ -143,8 +141,8 @@ export default function LandingPage() {
                  <section id="features" className="py-24 bg-gray-50">
                     <div className="container max-w-6xl mx-auto px-4">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">一個更聰明、更簡單的支付方式</h2>
-                            <p className="mt-4 text-lg text-gray-600">探索 BluePay 如何讓您的金融生活更輕鬆。</p>
+                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{dictionary.featuresTitle}</h2>
+                            <p className="mt-4 text-lg text-gray-600">{dictionary.featuresSubtitle}</p>
                         </div>
                         <div className="grid md:grid-cols-3 gap-8">
                             {features.map((feature, index) => (
@@ -165,34 +163,34 @@ export default function LandingPage() {
                         </div>
                         <div className="text-left">
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                                您的隱私，我們的承諾
+                                {dictionary.privacy.title}
                             </h2>
                             <p className="mt-4 text-lg text-gray-600">
-                                在 BluePay，我們相信您的財務資訊應該是私密的。我們設計的平台從一開始就考慮到隱私。
+                                {dictionary.privacy.description}
                             </p>
                             <ul className="mt-6 space-y-4">
                                 <li className="flex items-start gap-3">
                                     <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                                    <span className="text-gray-700">您的交易資料絕不會被用於廣告或出售給第三方。</span>
+                                    <span className="text-gray-700">{dictionary.privacy.points[0]}</span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                                    <span className="text-gray-700">我們使用最先進的加密技術保護您的每一次轉帳。</span>
+                                    <span className="text-gray-700">{dictionary.privacy.points[1]}</span>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
-                                    <span className="text-gray-700">您可以完全控制您的資料，隨時查看或下載。</span>
+                                    <span className="text-gray-700">{dictionary.privacy.points[2]}</span>
                                 </li>
                             </ul>
                             
                             <Button asChild variant="link" className="mt-8 p-0 h-auto text-lg text-primary hover:text-primary/80 group">
                                 <Link href="/privacy">
-                                    閱讀我們的隱私政策
+                                    {dictionary.privacy.cta}
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </Button>
                              <div className="mt-8">
-                                <p className="text-sm font-semibold text-gray-500">由劉氏敏集團開發</p>
+                                <p className="text-sm font-semibold text-gray-500">{dictionary.privacy.developer}</p>
                             </div>
                         </div>
                     </div>
@@ -200,12 +198,12 @@ export default function LandingPage() {
                 
                 <section id="cta" className="py-24 text-center bg-gray-50">
                     <div className="container max-w-4xl mx-auto px-4">
-                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">準備好體驗更簡單的支付方式了嗎？</h2>
-                        <p className="mt-4 text-lg text-gray-600">立即加入數百萬用戶的行列，享受無縫、安全的交易。</p>
+                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{dictionary.bottomCta.title}</h2>
+                        <p className="mt-4 text-lg text-gray-600">{dictionary.bottomCta.subtitle}</p>
                         <div className="mt-8" ref={footerCtaRef}>
                              <Button asChild size="lg" className="h-14 text-lg group">
                                 <Link href="/login">
-                                    免費註冊
+                                    {dictionary.bottomCta.cta}
                                     <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </Button>
@@ -216,7 +214,7 @@ export default function LandingPage() {
 
             <footer className="py-8 border-t border-gray-200 bg-white">
                 <div className="container text-center text-gray-500 text-sm max-w-7xl mx-auto px-4">
-                    <p>&copy; {new Date().getFullYear()} BluePay. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} BluePay. {dictionary.footer}</p>
                 </div>
             </footer>
 
@@ -234,7 +232,7 @@ export default function LandingPage() {
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="pt-4">
-                                <h4 className="font-semibold text-gray-800">日常生活應用：</h4>
+                                <h4 className="font-semibold text-gray-800">{dictionary.featureModal.application}:</h4>
                                 <p className="mt-2 text-gray-600 bg-gray-100 p-4 rounded-lg border border-gray-200">
                                     {selectedFeature.details.application}
                                 </p>

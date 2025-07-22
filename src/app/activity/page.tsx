@@ -3,7 +3,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { ArrowUpRight, ArrowDownLeft, CheckCircle2, XCircle, Circle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type Transaction } from "@/lib/data";
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
+import { Dictionary } from '@/dictionaries';
 
 
 function formatCurrency(amount: number, currency: string) {
@@ -43,13 +43,17 @@ function formatDateHeader(dateString: string) {
 }
 
 const statusStyles: { [key: string]: string } = {
-    Completed: "bg-green-100 text-green-700 hover:bg-green-100",
-    Failed: "bg-red-100 text-red-700 hover:bg-red-100",
-    Pending: "bg-gray-100 text-gray-700 hover:bg-gray-100",
-    Requested: "bg-gray-100 text-gray-700 hover:bg-gray-100",
+    "Completed": "bg-green-100 text-green-700 hover:bg-green-100",
+    "已完成": "bg-green-100 text-green-700 hover:bg-green-100",
+    "Failed": "bg-red-100 text-red-700 hover:bg-red-100",
+    "失敗": "bg-red-100 text-red-700 hover:bg-red-100",
+    "Pending": "bg-gray-100 text-gray-700 hover:bg-gray-100",
+    "待處理": "bg-gray-100 text-gray-700 hover:bg-gray-100",
+    "Requested": "bg-gray-100 text-gray-700 hover:bg-gray-100",
+    "已請求": "bg-gray-100 text-gray-700 hover:bg-gray-100",
 };
 
-const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPayment }: { tx: Transaction, currency: string, onClick: () => void, onAvatarClick: (e: React.MouseEvent) => void, onConfirmPayment: (tx: Transaction) => void }) => {
+const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPayment, dictionary }: { tx: Transaction, currency: string, onClick: () => void, onAvatarClick: (e: React.MouseEvent) => void, onConfirmPayment: (tx: Transaction) => void, dictionary: Dictionary['activity'] }) => {
     
     const getInitials = (name?: string) => {
         if (!name) return '?';
@@ -58,15 +62,7 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
     
     const statusStyle = statusStyles[tx.status] || statusStyles['Pending'];
 
-    const isPaymentRequest = tx.status === 'Requested' && tx.type === 'payment';
-    
-    const statusText = {
-        Pending: '待處理',
-        Completed: '已完成',
-        Failed: '失敗',
-        Requested: '已請求'
-    }[tx.status] || tx.status;
-
+    const isPaymentRequest = tx.status === dictionary.status.requested && tx.type === 'payment';
 
     return (
         <li className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-muted/50" onClick={isPaymentRequest ? undefined : onClick}>
@@ -78,11 +74,11 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
                 <p className="font-semibold">{tx.name}</p>
                  {isPaymentRequest ? (
                     <Button size="sm" className="h-8" onClick={() => onConfirmPayment(tx)}>
-                        確認付款
+                        {dictionary.confirmPayment}
                     </Button>
                  ) : (
                     <Badge variant="outline" className={cn("border-none", statusStyle)}>
-                        {statusText}
+                        {tx.status}
                     </Badge>
                  )}
             </div>
@@ -94,17 +90,16 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
     );
 };
 
-const TransactionList = ({ transactions, currency, onTransactionClick, onConfirmPayment }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, onConfirmPayment: (tx: Transaction) => void }) => {
+const TransactionList = ({ transactions, currency, onTransactionClick, onConfirmPayment, dictionary }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, onConfirmPayment: (tx: Transaction) => void, dictionary: Dictionary['activity'] }) => {
     
     const handleAvatarClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // Profile page functionality removed
     }
 
     if (transactions.length === 0) {
         return (
             <div className="p-8 text-center text-muted-foreground">
-                No transactions found.
+                {dictionary.noTransactions}
             </div>
         );
     }
@@ -139,6 +134,7 @@ const TransactionList = ({ transactions, currency, onTransactionClick, onConfirm
                                 onClick={() => onTransactionClick(tx)} 
                                 onConfirmPayment={onConfirmPayment}
                                 onAvatarClick={(e) => handleAvatarClick(e)}
+                                dictionary={dictionary}
                             />
                         ))}
                     </ul>
@@ -148,7 +144,7 @@ const TransactionList = ({ transactions, currency, onTransactionClick, onConfirm
     );
 }
 
-export default function ActivityPage() {
+export default function ActivityPage({ dictionary }: { dictionary: Dictionary }) {
   const { transactions, userData, getUserById, user, processTransaction, declineTransaction } = useAuth();
   const currency = userData?.currency || 'USD';
   const { toast } = useToast();
@@ -213,8 +209,8 @@ export default function ActivityPage() {
     if (txToConfirm.amount > userData.balance) {
         toast({
             variant: "destructive",
-            title: "Insufficient Funds",
-            description: "You do not have enough balance to complete this payment.",
+            title: dictionary.activity.insufficientFundsTitle,
+            description: dictionary.activity.insufficientFundsDescription,
         });
         setTxToConfirm(null);
         return;
@@ -229,17 +225,18 @@ export default function ActivityPage() {
             note: txToConfirm.description,
             attachmentUrl: txToConfirm.attachmentUrl,
             requestId: txToConfirm.id,
+            locale: dictionary.locale as 'en' | 'zh-TW',
         });
 
         toast({
-            title: "Payment Successful",
-            description: `You have paid ${formatCurrency(txToConfirm.amount, currency)} to ${txToConfirm.name}.`,
+            title: dictionary.activity.paymentSuccessTitle,
+            description: `${dictionary.activity.paymentSuccessDescription} ${formatCurrency(txToConfirm.amount, currency)} to ${txToConfirm.name}.`,
         });
     } catch (error: any) {
         toast({
             variant: "destructive",
-            title: "Payment Failed",
-            description: error.message || "An unexpected error occurred.",
+            title: dictionary.activity.paymentFailedTitle,
+            description: error.message || dictionary.activity.genericError,
         });
     } finally {
         setIsConfirming(false);
@@ -251,16 +248,20 @@ export default function ActivityPage() {
       if (!txToConfirm || !user) return;
       setIsConfirming(true);
       try {
-          await declineTransaction(txToConfirm.id, txToConfirm.otherPartyUid);
+          await declineTransaction({
+            payerTxId: txToConfirm.id,
+            requesterId: txToConfirm.otherPartyUid,
+            locale: dictionary.locale as 'en' | 'zh-TW',
+          });
           toast({
-              title: "Request Declined",
-              description: `You have declined the payment request from ${txToConfirm.name}.`,
+              title: dictionary.activity.requestDeclinedTitle,
+              description: `${dictionary.activity.requestDeclinedDescription} ${txToConfirm.name}.`,
           });
       } catch (error: any) {
           toast({
               variant: "destructive",
-              title: "Decline Failed",
-              description: error.message || "An unexpected error occurred.",
+              title: dictionary.activity.declineFailedTitle,
+              description: error.message || dictionary.activity.genericError,
           });
       } finally {
           setIsConfirming(false);
@@ -297,34 +298,34 @@ export default function ActivityPage() {
     <div className="space-y-6">
       <LoadingOverlay isLoading={isConfirming} />
       <header>
-        <h1 className="text-3xl font-bold">Activity</h1>
+        <h1 className="text-3xl font-bold">{dictionary.activity.title}</h1>
       </header>
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="payments">Sent</TabsTrigger>
-          <TabsTrigger value="receipts">Received</TabsTrigger>
+          <TabsTrigger value="all">{dictionary.activity.tabs.all}</TabsTrigger>
+          <TabsTrigger value="payments">{dictionary.activity.tabs.sent}</TabsTrigger>
+          <TabsTrigger value="receipts">{dictionary.activity.tabs.received}</TabsTrigger>
         </TabsList>
         {isLoading ? <ActivitySkeleton /> : (
             <>
                 <TabsContent value="all" className="rounded-xl overflow-hidden">
                   <Card>
                     <CardContent className="p-0">
-                        <TransactionList transactions={transactionsWithDetails} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} />
+                        <TransactionList transactions={transactionsWithDetails} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity} />
                     </CardContent>
                   </Card>
                 </TabsContent>
                 <TabsContent value="payments" className="rounded-xl overflow-hidden">
                   <Card>
                     <CardContent className="p-0">
-                        <TransactionList transactions={payments} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment}/>
+                        <TransactionList transactions={payments} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 <TabsContent value="receipts" className="rounded-xl overflow-hidden">
                   <Card>
                     <CardContent className="p-0">
-                        <TransactionList transactions={receipts} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment}/>
+                        <TransactionList transactions={receipts} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -338,7 +339,7 @@ export default function ActivityPage() {
                 <DialogTitle className="sr-only">Transaction Details</DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto px-6 pb-6">
-                {selectedTx && <TransactionDetails transaction={selectedTx} />}
+                {selectedTx && <TransactionDetails transaction={selectedTx} dictionary={dictionary.transactionDetails} />}
             </div>
         </DialogContent>
       </Dialog>
@@ -347,22 +348,20 @@ export default function ActivityPage() {
         <AlertDialog open={!!txToConfirm} onOpenChange={() => setTxToConfirm(null)}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle className="text-center">Confirm Payment</AlertDialogTitle>
+                    <AlertDialogTitle className="text-center">{dictionary.activity.confirmPaymentTitle}</AlertDialogTitle>
                     <AlertDialogDescription asChild>
                          <div className="flex flex-col items-center text-center space-y-4 py-4">
                              <Avatar className="h-16 w-16">
                                 <AvatarImage src={txToConfirm.otherParty?.photoURL} alt={txToConfirm.name} />
                                 <AvatarFallback>{txToConfirm.name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <p>
-                                Do you want to pay <span className="font-bold">{formatCurrency(txToConfirm.amount, currency)}</span> to <span className="font-bold">{txToConfirm.name}</span>?
-                            </p>
+                            <p dangerouslySetInnerHTML={{ __html: dictionary.activity.confirmPaymentDescription.replace('{amount}', formatCurrency(txToConfirm.amount, currency)).replace('{name}', txToConfirm.name) }} />
                         </div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={executeDecline}>Decline</AlertDialogCancel>
-                    <AlertDialogAction onClick={executePaymentConfirmation}>Confirm & Pay</AlertDialogAction>
+                    <AlertDialogCancel onClick={executeDecline}>{dictionary.activity.decline}</AlertDialogCancel>
+                    <AlertDialogAction onClick={executePaymentConfirmation}>{dictionary.activity.confirmAndPay}</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

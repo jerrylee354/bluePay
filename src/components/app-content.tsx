@@ -10,6 +10,8 @@ import { Skeleton } from './ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
+import { type Locale } from '../../i18n';
+import { getDictionary, type Dictionary } from '@/dictionaries';
 
 const authRoutes = ['/login', '/signup', '/terms', '/privacy'];
 const fullScreenRoutes = ['/pay/confirm'];
@@ -39,13 +41,19 @@ const AppLoader = () => (
     </div>
 );
 
-export default function AppContent({ children }: { children: React.ReactNode }) {
+export default function AppContent({ children, locale }: { children: React.ReactNode, locale: Locale }) {
     const { isAuthenticated, isLoading, userData, logout } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
+    const [dictionary, setDictionary] = useState<Dictionary | null>(null);
     
     const [isIdle, setIsIdle] = useState(false);
+    
+    useEffect(() => {
+        getDictionary(locale).then(setDictionary);
+    }, [locale]);
+
 
     const handleIdle = () => {
         if(isAuthenticated) {
@@ -60,34 +68,36 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
         isIdle: !isAuthenticated || isLoading,
     });
     
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
-    const isWelcomePage = pathname.startsWith(welcomeRoute);
-    const isPublicRoute = publicRoutes.some(route => pathname === route);
+    const isAuthRoute = authRoutes.some(route => pathname.endsWith(route));
+    const isWelcomePage = pathname.endsWith(welcomeRoute);
+    const isPublicRoute = publicRoutes.some(route => pathname === `/${locale}`);
+    const isRoot = pathname === '/';
+
 
     useEffect(() => {
-        if (isLoading) return;
+        if (isLoading || isRoot) return;
         
         const isAppRoute = !isAuthRoute && !isWelcomePage && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
-            router.push('/login');
+            router.push(`/${locale}/login`);
         } else if (isAuthenticated) {
             if (isPublicRoute) {
-                router.push('/home');
+                router.push(`/${locale}/home`);
             } else if (userData && !userData.hasCompletedOnboarding && !isWelcomePage) {
-                router.push('/welcome');
+                router.push(`/${locale}/welcome`);
             } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute || isWelcomePage)) {
-                router.push('/home');
+                router.push(`/${locale}/home`);
             }
         }
 
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage, isPublicRoute]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isWelcomePage, isPublicRoute, locale, isRoot]);
     
     if (isLoading && !isAuthRoute && !isPublicRoute) {
         return <AppLoader />;
     }
 
-    if (isAuthRoute || isPublicRoute) {
+    if (isAuthRoute || isPublicRoute || isRoot) {
         return <>{children}</>;
     }
     
@@ -99,12 +109,16 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
         return <>{children}</>;
     }
 
-    const isFullScreenPage = fullScreenRoutes.some(route => pathname.startsWith(route));
+    const isFullScreenPage = fullScreenRoutes.some(route => pathname.endsWith(route));
 
      const handleConfirmIdle = () => {
         logout();
         setIsIdle(false);
     };
+
+    if (!dictionary) {
+        return <AppLoader />;
+    }
 
     if (isMobile && isFullScreenPage) {
          return (
@@ -123,7 +137,7 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
                     <main className="flex-1 overflow-y-auto p-4 mb-24">
                         {children}
                     </main>
-                    <BottomNav />
+                    <BottomNav dictionary={dictionary.nav} />
                 </div>
             </div>
         );
@@ -132,7 +146,7 @@ export default function AppContent({ children }: { children: React.ReactNode }) 
     return (
         <div className="flex min-h-screen">
             {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} />}
-            <DesktopNav />
+            <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary.settings} />
             <main className="flex-1 p-8">
                <div className="mx-auto max-w-5xl">
                     {children}

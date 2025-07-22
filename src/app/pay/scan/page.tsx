@@ -10,8 +10,9 @@ import { ChevronLeft, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Dictionary } from '@/dictionaries';
 
-export default function ScanToPayPage() {
+export default function ScanToPayPage({ dictionary }: { dictionary: Dictionary['pay']['scanQrCode']}) {
     const router = useRouter();
     const { toast } = useToast();
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -33,8 +34,8 @@ export default function ScanToPayPage() {
                 setHasCameraPermission(false);
                 toast({
                     variant: 'destructive',
-                    title: 'Camera Access Denied',
-                    description: 'Please enable camera permissions in your browser settings to use this feature.',
+                    title: dictionary.cameraAccessDeniedTitle,
+                    description: dictionary.cameraAccessDeniedDescription,
                 });
             }
         };
@@ -47,7 +48,7 @@ export default function ScanToPayPage() {
                 stream.getTracks().forEach(track => track.stop());
             }
         };
-    }, [toast]);
+    }, [toast, dictionary]);
 
     useEffect(() => {
         if (!hasCameraPermission || scanResult || isProcessing) return;
@@ -93,17 +94,17 @@ export default function ScanToPayPage() {
                 if (url.pathname.includes('/pay/confirm') && url.searchParams.has('userId')) {
                      router.push(url.pathname + url.search);
                 } else {
-                    throw new Error("QR code is not a valid payment link.");
+                    throw new Error(dictionary.invalidQrError);
                 }
             } catch (e) {
-                toast({ variant: 'destructive', title: 'Invalid QR Code', description: 'This QR code is not valid for payments.' });
+                toast({ variant: 'destructive', title: dictionary.invalidQrTitle, description: dictionary.invalidQrError });
                 setTimeout(() => {
                     setScanResult(null);
                     setIsProcessing(false);
                 }, 2000);
             }
         }
-    }, [scanResult, toast, router, isProcessing]);
+    }, [scanResult, toast, router, isProcessing, dictionary]);
 
     return (
         <div className="space-y-6">
@@ -114,7 +115,7 @@ export default function ScanToPayPage() {
                         <span className="sr-only">Back to Pay</span>
                     </Button>
                 </Link>
-                <h1 className="text-xl font-semibold">Scan QR Code</h1>
+                <h1 className="text-xl font-semibold">{dictionary.title}</h1>
             </header>
             <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-secondary flex items-center justify-center">
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
@@ -124,14 +125,14 @@ export default function ScanToPayPage() {
              {hasCameraPermission === false && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Camera Access Required</AlertTitle>
+                    <AlertTitle>{dictionary.cameraAccessRequiredTitle}</AlertTitle>
                     <AlertDescription>
-                        Please allow camera access in your browser to use this feature.
+                        {dictionary.cameraAccessRequiredDescription}
                     </AlertDescription>
                 </Alert>
             )}
             <p className="text-center text-muted-foreground">
-                {scanResult ? 'QR Code detected. Processing...' : 'Align QR code within the frame to scan.'}
+                {scanResult ? dictionary.processing : dictionary.alignQrCode}
             </p>
         </div>
     );

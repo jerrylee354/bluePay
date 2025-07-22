@@ -1,0 +1,118 @@
+
+{
+    "landing": {
+        "getStarted": "Get Started",
+        "heroTitle": "Peer-to-peer payments <span class=\"block text-primary\">built for modern life</span>",
+        "heroSubtitle": "Say goodbye to complex transfers. With BluePay, send and receive money from friends and family with just a few taps. Your security and privacy are our top priority.",
+        "heroCta": "Get Started for Free",
+        "featuresTitle": "A smarter, simpler way to pay",
+        "featuresSubtitle": "Discover how BluePay makes your financial life easier.",
+        "features": [
+            {
+                "title": "Instant Transactions",
+                "description": "Send and receive money in a flash. No waiting. Experience payments as they should be.",
+                "details": {
+                    "title": "Lightning-Fast Instant Transactions",
+                    "description": "Forget the long waits of bank transfers. BluePay's technology allows your funds to travel from your account to your friend's in seconds. Transactions are completed instantly, day or night, weekends or holidays.",
+                    "application": "After dinner with friends, use BluePay to split the bill instantly. No need for anyone to find change or transfer money the next day."
+                }
+            },
+            {
+                "title": "Easy Social Payments",
+                "description": "Find friends and transfer money easily with a username. No more exchanging sensitive, lengthy bank details.",
+                "details": {
+                    "title": "Payments Built for Social",
+                    "description": "All you need is your friend's BluePay username to pay them or receive money securely. This not only protects both parties' bank account privacy but also makes the payment process as simple and natural as sending a message.",
+                    "application": "When ordering afternoon tea for the office, colleagues can easily pay you using just your BluePay username, without adding each other as bank contacts one by one."
+                }
+            },
+            {
+                "title": "Bank-Grade Security",
+                "description": "Your transaction data is end-to-end encrypted. We never share or sell your data.",
+                "details": {
+                    "title": "A Rock-Solid Security Commitment",
+                    "description": "We use industry-leading end-to-end encryption to ensure your every transaction data is tightly protected during transmission. Furthermore, your personal and financial information will never be used for advertising or sold to third parties. Your security is our highest principle.",
+                    "application": "When buying second-hand items online, use BluePay for the transaction. You don't need to disclose your bank card number or sensitive personal information to strangers, significantly reducing the risk of fraud."
+                }
+            }
+        ],
+        "privacy": {
+            "title": "Your Privacy, Our Commitment",
+            "description": "At BluePay, we believe your financial information should be private. We've designed our platform with privacy in mind from the start.",
+            "points": [
+                "Your transaction data is never used for advertising or sold to third parties.",
+                "We use state-of-the-art encryption to protect your every transfer.",
+                "You have full control over your data and can view or download it at any time."
+            ],
+            "cta": "Read our Privacy Policy",
+            "developer": "Developed by Liu's Min Group"
+        },
+        "bottomCta": {
+            "title": "Ready to experience a simpler way to pay?",
+            "subtitle": "Join millions of users today and enjoy seamless, secure transactions.",
+            "cta": "Sign Up for Free"
+        },
+        "footer": "All rights reserved.",
+        "featureModal": {
+            "application": "Real-life Application"
+        }
+    },
+    "login": {
+        "title": "Log In",
+        "emailPlaceholder": "Email",
+        "passwordPlaceholder": "Password",
+        "loginErrorTitle": "Login Error",
+        "loginErrorDescription": "Invalid email or password. Please try again.",
+        "forgotPassword": "Forgot password?",
+        "loginButton": "Log In",
+        "or": "or",
+        "signupButton": "Sign Up",
+        "loginSuccessTitle": "Login Successful",
+        "loginSuccessDescription": "Welcome back!"
+    },
+    "signup": {
+        "joinTitle": "Join BluePay",
+        "chooseAccountType": "Choose your account type to get started.",
+        "personalAccount": "Personal",
+        "personalDescription": "For individuals to send & receive money.",
+        "businessAccount": "Business",
+        "businessDescription": "For companies to manage payments.",
+        "selectTypeError": "Please select an account type to continue.",
+        "emailTitle": "What's your email?",
+        "emailPlaceholder": "Email address",
+        "emailRequiredError": "Please enter your email address.",
+        "emailExistsError": "This email address is already in use.",
+        "emailValidateError": "Failed to validate email. Please try again.",
+        "passwordTitle": "Create a password",
+        "passwordPlaceholder": "Password (min. 6 characters)",
+        "confirmPasswordPlaceholder": "Confirm password",
+        "passwordLengthError": "Password must be at least 6 characters long.",
+        "passwordMismatchError": "Passwords do not match.",
+        "nameTitle": "What's your name?",
+        "firstNamePlaceholder": "First Name",
+        "lastNamePlaceholder": "Last Name",
+        "nameRequiredError": "Please enter your first and last name.",
+        "businessInfoTitle": "Business Information",
+        "businessInfoDescription": "This helps us verify your business.",
+        "businessIdPlaceholder": "Business ID / Tax ID (Optional)",
+        "finalStepTitle": "One last step",
+        "termsAgreement": "By creating an account, you agree to BluePay's <1>Terms of Service</1> and <3>Privacy Policy</3>.",
+        "termsRequiredError": "You must agree to the terms to continue.",
+        "createAccountButton": "Create Account",
+        "continueButton": "Continue",
+        "backButton": "Back",
+        "startOver": "Start Over",
+        "alreadyHaveAccount": "Already have an account?",
+        "logInLink": "Log In",
+        "signupSuccessTitle": "Signup Successful",
+        "signupSuccessDescription": "Your account has been created.",
+        "weakPasswordError": "Password is too weak. Please use at least 6 characters.",
+        "genericError": "An unexpected error occurred."
+    },
+    "status": {
+        "Completed": "Completed",
+        "Failed": "Failed",
+        "Pending": "Pending",
+        "Requested": "Requested"
+    }
+}

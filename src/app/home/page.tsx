@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-is-mobile";
+import { Dictionary } from "@/dictionaries";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -35,10 +36,11 @@ const TransactionIcon = ({ type }: { type: Transaction["type"] }) => {
   );
 };
 
-export default function HomePage() {
+export default function HomePage({ dictionary }: { dictionary: Dictionary }) {
   const { user, userData, transactions } = useAuth();
   const recentTransactions = transactions.slice(0, 4);
   const isMobile = useIsMobile();
+  const d = dictionary.home;
 
   const getInitials = (email: string | null | undefined) => {
     if (!email) return 'U';
@@ -49,7 +51,7 @@ export default function HomePage() {
     <div className="space-y-8">
       <header className="flex items-center justify-between">
         <div>
-          <p className="text-muted-foreground">Welcome Back,</p>
+          <p className="text-muted-foreground">{d.welcome}</p>
           <h1 className="text-2xl font-bold text-foreground">{userData?.firstName || user?.email || 'User'}</h1>
         </div>
         {isMobile && (
@@ -65,7 +67,7 @@ export default function HomePage() {
       <Card className="w-full shadow-lg bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="text-sm font-normal text-primary-foreground/80">
-            Total Balance
+            {d.totalBalance}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -81,16 +83,16 @@ export default function HomePage() {
       
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Activity</h2>
+          <h2 className="text-xl font-semibold">{d.recentActivity}</h2>
           <Link href="/activity" className="text-sm font-medium text-primary hover:underline">
-            View All
+            {d.viewAll}
           </Link>
         </div>
         <Card>
             <CardContent className="p-0">
               {transactions.length === 0 && !user ? (
                  <div className="p-8 text-center text-muted-foreground">
-                    Loading transactions...
+                    {d.loadingTransactions}
                 </div>
               ) : recentTransactions.length > 0 ? (
                 <ul className="divide-y">
@@ -113,7 +115,7 @@ export default function HomePage() {
                 </ul>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
-                    No recent transactions.
+                    {d.noRecentTransactions}
                 </div>
               )}
             </CardContent>

@@ -5,18 +5,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, History, CircleDollarSign, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dictionary } from "@/dictionaries";
 
-const navItems = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/activity", label: "Activity", icon: History },
-  { href: "/pay", label: "Pay", icon: CircleDollarSign },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
-];
 
-export default function BottomNav() {
+export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav']}) {
   const pathname = usePathname();
   
-  if (pathname.startsWith('/settings')) {
+  const navItems = [
+    { href: "/home", label: dictionary.home, icon: Home },
+    { href: "/activity", label: dictionary.activity, icon: History },
+    { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
+    { href: "/wallet", label: dictionary.wallet, icon: Wallet },
+  ];
+
+  if (pathname.includes('/settings')) {
     return null;
   }
 
@@ -24,7 +26,7 @@ export default function BottomNav() {
     <div className="fixed bottom-0 left-0 w-full border-t bg-background/95 backdrop-blur-sm z-10 h-24 pt-2 pb-safe-bottom">
       <nav className="flex justify-around items-start h-full max-w-lg mx-auto">
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = pathname.endsWith(item.href);
           
           return (
             <Link

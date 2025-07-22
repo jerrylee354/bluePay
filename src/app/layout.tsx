@@ -3,6 +3,11 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/auth-context';
 import AppContent from '@/components/app-content';
+import { i18n, type Locale } from '../../i18n';
+
+export async function generateStaticParams() {
+  return i18n.locales.map((locale) => ({ lang: locale }))
+}
 
 export const metadata: Metadata = {
   title: 'BluePay',
@@ -19,11 +24,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: { lang: Locale };
 }>) {
   return (
-    <html lang="en">
+    <html lang={params.lang}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -31,7 +38,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background">
         <AuthProvider>
-          <AppContent>
+          <AppContent locale={params.lang}>
             {children}
           </AppContent>
         </AuthProvider>
