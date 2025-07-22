@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -157,13 +158,13 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
-        setIsLoading(true);
         if (transactions.length === 0) {
             setTransactionsWithDetails([]);
             setIsLoading(false);
             return;
         }
 
+        setIsLoading(true);
         const detailedTxs = await Promise.all(
             transactions.map(async (tx) => {
                 if (tx.otherPartyUid) {
@@ -176,13 +177,8 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
         setTransactionsWithDetails(detailedTxs);
         setIsLoading(false);
     };
-
-    if(transactions.length > 0) {
-        fetchTransactionDetails();
-    } else {
-        setIsLoading(false);
-        setTransactionsWithDetails([]);
-    }
+    
+    fetchTransactionDetails();
   }, [transactions, getUserById]);
 
   const payments = transactionsWithDetails.filter(tx => tx.type === 'payment');
