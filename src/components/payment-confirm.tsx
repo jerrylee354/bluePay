@@ -292,8 +292,27 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
         );
     }
 
-    const MainContent = () => (
-        <div className="flex-1 flex flex-col justify-between p-4 md:p-6 text-center">
+    const Keypad = () => (
+        <div className="grid grid-cols-3 gap-1 p-4 bg-muted/20 md:rounded-r-xl md:rounded-l-none rounded-b-xl flex-shrink-0">
+            <KeypadButton value="1" onClick={handleKeypadClick} />
+            <KeypadButton value="2" letters="ABC" onClick={handleKeypadClick} />
+            <KeypadButton value="3" letters="DEF" onClick={handleKeypadClick} />
+            <KeypadButton value="4" letters="GHI" onClick={handleKeypadClick} />
+            <KeypadButton value="5" letters="JKL" onClick={handleKeypadClick} />
+            <KeypadButton value="6" letters="MNO" onClick={handleKeypadClick} />
+            <KeypadButton value="7" letters="PQRS" onClick={handleKeypadClick} />
+            <KeypadButton value="8" letters="TUV" onClick={handleKeypadClick} />
+            <KeypadButton value="9" letters="WXYZ" onClick={handleKeypadClick} />
+            <KeypadButton value="." onClick={handleKeypadClick} />
+            <KeypadButton value="0" onClick={handleKeypadClick} />
+            <Button variant="ghost" className="h-16 md:h-20" onClick={handleDelete}>
+                <Delete className="w-8 h-8"/>
+            </Button>
+        </div>
+    );
+    
+    const Content = () => (
+         <div className="flex-1 flex flex-col justify-between p-4 md:p-6 text-center">
             <div className="space-y-4">
                  {isLoading && <RecipientSkeleton />}
                  {error && <p className="text-center text-destructive">{error}</p>}
@@ -380,70 +399,28 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
         </div>
     );
 
-    const Keypad = () => (
-        <div className="grid grid-cols-3 gap-1 p-4 bg-muted/20 md:rounded-r-xl md:rounded-l-none rounded-b-xl flex-shrink-0">
-            <KeypadButton value="1" onClick={handleKeypadClick} />
-            <KeypadButton value="2" letters="ABC" onClick={handleKeypadClick} />
-            <KeypadButton value="3" letters="DEF" onClick={handleKeypadClick} />
-            <KeypadButton value="4" letters="GHI" onClick={handleKeypadClick} />
-            <KeypadButton value="5" letters="JKL" onClick={handleKeypadClick} />
-            <KeypadButton value="6" letters="MNO" onClick={handleKeypadClick} />
-            <KeypadButton value="7" letters="PQRS" onClick={handleKeypadClick} />
-            <KeypadButton value="8" letters="TUV" onClick={handleKeypadClick} />
-            <KeypadButton value="9" letters="WXYZ" onClick={handleKeypadClick} />
-            <KeypadButton value="." onClick={handleKeypadClick} />
-            <KeypadButton value="0" onClick={handleKeypadClick} />
-            <Button variant="ghost" className="h-16 md:h-20" onClick={handleDelete}>
-                <Delete className="w-8 h-8"/>
-            </Button>
-        </div>
-    );
-
-    const MobileLayout = () => (
-        <div className="md:hidden flex-1 flex flex-col justify-between h-full">
-            <header className={cn("relative flex items-center p-4 md:hidden", { 'hidden': isDialog })}>
-                <Button variant="ghost" size="icon" className="absolute left-4" onClick={handleBack}>
-                    {isDialog ? <X className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
-                    <span className="sr-only">Back</span>
-                </Button>
-                <h1 className="text-xl font-semibold text-center w-full">{mode === 'pay' ? '付款' : '要求付款'}</h1>
-            </header>
-            <MainContent />
-            <Keypad />
-        </div>
-    );
-    
-    const DesktopLayout = () => (
-        <div className="hidden md:flex flex-col w-full h-full">
-            <header className="relative flex items-center p-4">
-                <Button variant="ghost" size="icon" className="absolute left-4" onClick={handleBack}>
-                    {isDialog ? <X className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
-                    <span className="sr-only">Back</span>
-                </Button>
-                <h1 className="text-xl font-semibold text-center w-full">{mode === 'pay' ? '付款' : '要求付款'}</h1>
-            </header>
-            <div className="flex flex-1 overflow-hidden">
-                <div className="flex-1 flex flex-col">
-                    <MainContent />
-                </div>
-                <div className="border-l" />
-                <div className="flex flex-col">
-                    <Keypad />
-                </div>
-            </div>
-        </div>
-    );
+    if (isMobile === undefined) {
+        return <LoadingOverlay isLoading={true} />;
+    }
 
     return (
-        <div className="flex flex-col h-full bg-background">
+        <div className="flex flex-col h-full bg-background md:flex-row md:overflow-hidden">
              <LoadingOverlay isLoading={isProcessing} />
-             {isMobile === undefined ? (
-                <LoadingOverlay isLoading={true} />
-             ) : isMobile ? (
-                <MobileLayout />
-             ) : (
-                <DesktopLayout />
-             )}
+             <header className={cn("relative flex items-center p-4", { 'md:hidden': isDialog })}>
+                <Button variant="ghost" size="icon" className="absolute left-4" onClick={handleBack}>
+                    {isDialog ? <X className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
+                    <span className="sr-only">Back</span>
+                </Button>
+                <h1 className="text-xl font-semibold text-center w-full">{mode === 'pay' ? '付款' : '要求付款'}</h1>
+            </header>
+             
+            <div className="flex-1 flex flex-col md:border-r">
+                <Content />
+            </div>
+
+            <div className={cn("flex-shrink-0", { "hidden md:block": !isMobile })}>
+                 <Keypad />
+            </div>
         </div>
     );
 }

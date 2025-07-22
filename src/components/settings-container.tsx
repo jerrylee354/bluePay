@@ -51,7 +51,7 @@ export default function SettingsContainer({ dictionary, onLogout, onClose }: { d
     };
     
     return (
-        <div className="flex flex-col h-full bg-background md:bg-transparent">
+        <div className="flex flex-col h-full bg-background">
             <header className="p-4 md:p-6 pb-4 border-b flex-shrink-0">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export default function SettingsContainer({ dictionary, onLogout, onClose }: { d
                 </div>
             </header>
             <div className="p-4 md:p-6 overflow-y-auto flex-grow">
-                {PageComponent ? <PageComponent setPage={setPage} dictionary={dictionary} /> : (
+                {PageComponent ? <PageComponent setPage={setPage} dictionary={dictionary.settings} /> : (
                     <div className="space-y-6">
                         <Card>
                             <CardContent className="p-2">
