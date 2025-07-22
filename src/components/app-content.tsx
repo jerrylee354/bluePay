@@ -89,12 +89,22 @@ export default function AppContent({ children, dictionary }: { children: React.R
         return <>{children}</>
     }
     
-    // Auth routes (login, signup) and welcome page have their own layouts
+    // Auth routes (login, signup) and other special pages have their own layouts
     if (isAuthRoute) {
-        const pageName = pathname.substring(1) as keyof Dictionary;
-        const pageDictionary = dictionary[pageName] || dictionary.login;
+        let pageDictionary: Dictionary[keyof Dictionary] | undefined;
+        
+        if (pathname === '/login') {
+            pageDictionary = dictionary.login;
+        } else if (pathname === '/signup') {
+            pageDictionary = dictionary.signup;
+        } else if (pathname === '/pay/group') {
+            pageDictionary = dictionary.pay;
+        }
+        // For /terms, /privacy, /welcome, they dont receive dictionary props from here.
+        // /welcome uses AuthProvider directly. /terms and /privacy are static.
+        
          const childrenWithProps = React.Children.map(children, child => {
-            if (React.isValidElement(child)) {
+            if (React.isValidElement(child) && pageDictionary) {
               // @ts-ignore
               return React.cloneElement(child, { dictionary: pageDictionary });
             }
