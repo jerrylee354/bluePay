@@ -1,6 +1,4 @@
 
-"use client";
-
 import HomePageClient from '@/components/home-page-client';
 import { getDictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/i18n';
