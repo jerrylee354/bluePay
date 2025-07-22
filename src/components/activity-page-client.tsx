@@ -53,7 +53,7 @@ const statusStyles: { [key: string]: string } = {
     "已請求": "bg-gray-100 text-gray-700 hover:bg-gray-100",
 };
 
-const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPayment, dictionary }: { tx: Transaction, currency: string, onClick: () => void, onAvatarClick: (e: React.MouseEvent) => void, onConfirmPayment: (tx: Transaction) => void, dictionary: Dictionary['activity'] }) => {
+const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPayment, dictionary }: { tx: Transaction, currency: string, onClick: () => void, onAvatarClick: (e: React.MouseEvent) => void, onConfirmPayment: (tx: Transaction) => void, dictionary: Dictionary }) => {
     
     const getInitials = (name?: string) => {
         if (!name) return '?';
@@ -62,7 +62,7 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
     
     const statusStyle = statusStyles[tx.status] || statusStyles['Pending'];
 
-    const isPaymentRequest = tx.status === dictionary.status.requested && tx.type === 'payment';
+    const isPaymentRequest = tx.status === dictionary.status.Requested && tx.type === 'payment';
 
     return (
         <li className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-muted/50" onClick={isPaymentRequest ? undefined : onClick}>
@@ -74,7 +74,7 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
                 <p className="font-semibold">{tx.name}</p>
                  {isPaymentRequest ? (
                     <Button size="sm" className="h-8" onClick={() => onConfirmPayment(tx)}>
-                        {dictionary.confirmPayment}
+                        {dictionary.activity.confirmPayment}
                     </Button>
                  ) : (
                     <Badge variant="outline" className={cn("border-none", statusStyle)}>
@@ -90,7 +90,7 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
     );
 };
 
-const TransactionList = ({ transactions, currency, onTransactionClick, onConfirmPayment, dictionary }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, onConfirmPayment: (tx: Transaction) => void, dictionary: Dictionary['activity'] }) => {
+const TransactionList = ({ transactions, currency, onTransactionClick, onConfirmPayment, dictionary }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, onConfirmPayment: (tx: Transaction) => void, dictionary: Dictionary }) => {
     
     const handleAvatarClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -99,7 +99,7 @@ const TransactionList = ({ transactions, currency, onTransactionClick, onConfirm
     if (transactions.length === 0) {
         return (
             <div className="p-8 text-center text-muted-foreground">
-                {dictionary.noTransactions}
+                {dictionary.activity.noTransactions}
             </div>
         );
     }
@@ -200,21 +200,21 @@ const ActivityContent = ({
         <TabsContent value="all" className="rounded-xl overflow-hidden mt-4">
           <Card>
             <CardContent className="p-0">
-                <TransactionList transactions={transactionsWithDetails} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity} />
+                <TransactionList transactions={transactionsWithDetails} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary} />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="payments" className="rounded-xl overflow-hidden mt-4">
           <Card>
             <CardContent className="p-0">
-                <TransactionList transactions={payments} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
+                <TransactionList transactions={payments} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary}/>
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="receipts" className="rounded-xl overflow-hidden mt-4">
           <Card>
             <CardContent className="p-0">
-                <TransactionList transactions={receipts} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
+                <TransactionList transactions={receipts} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary}/>
             </CardContent>
           </Card>
         </TabsContent>
