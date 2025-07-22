@@ -1,24 +1,37 @@
 
-import SettingsPageClient from '@/components/settings-page-client';
+
+import SettingsContainer from '@/components/settings-container';
 import { getDictionary } from '@/dictionaries';
 import { type Locale } from '@/i18n';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 
-import ProfilePage from './profile/page';
-import SecurityPage from './security/page';
-import PrivacySettingsPage from './privacy/page';
-import NotificationSettingsPage from './notifications/page';
-import EditUsernamePage from './profile/edit-username/page';
 
 export default async function SettingsPage({ params }: { params: { lang: Locale } }) {
   const dictionary = await getDictionary(params.lang);
 
-  const components = {
-    profile: ProfilePage,
-    security: SecurityPage,
-    privacy: PrivacySettingsPage,
-    notifications: NotificationSettingsPage,
-    'edit-username': EditUsernamePage,
-  };
+  return <SettingsPageClient dictionary={dictionary} />;
+}
 
-  return <SettingsPageClient dictionary={dictionary} components={components} />;
+"use client";
+
+function SettingsPageClient({ dictionary }: { dictionary: any }) {
+    const { logout } = useAuth();
+    const router = useRouter();
+
+    const handleLogout = () => {
+        logout();
+    };
+
+    const handleClose = () => {
+        router.back();
+    };
+    
+    return (
+      <SettingsContainer
+        dictionary={dictionary}
+        onLogout={handleLogout}
+        onClose={handleClose}
+      />
+    );
 }

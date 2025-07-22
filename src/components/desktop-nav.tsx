@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import {
@@ -22,19 +22,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
-    DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import SettingsContainer, { type SettingsPage } from './settings-container';
+import SettingsContainer from './settings-container';
 import { Dictionary } from '@/dictionaries';
 
 
 export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary }) {
   const { user, userData, logout } = useAuth();
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const [settingsPage, setSettingsPage] = React.useState<SettingsPage>('main');
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const router = useRouter();
   
   const navItems = [
     { href: "/home", label: dictionary.home, icon: Home },
@@ -81,14 +79,15 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
 
   const handleDialogChange = (open: boolean) => {
     setIsDialogOpen(open);
-    if (!open) {
-      setTimeout(() => setSettingsPage('main'), 200);
-    }
   }
 
   const handleLogout = () => {
     handleDialogChange(false);
     logout();
+  }
+  
+  const handleClose = () => {
+    setIsDialogOpen(false);
   }
 
   return (
@@ -141,11 +140,10 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                   </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-2xl p-0 max-h-[90vh] flex flex-col">
-                  <SettingsContainer 
-                    page={settingsPage} 
-                    setPage={setSettingsPage} 
+                  <SettingsContainer
                     dictionary={settingsDictionary}
                     onLogout={handleLogout}
+                    onClose={handleClose}
                   />
                 </DialogContent>
           </Dialog>
