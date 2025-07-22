@@ -43,15 +43,6 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
     { href: "/wallet", label: dictionary.wallet, icon: WalletIcon },
   ];
 
-  const pageConfig: Record<SettingsPage, { title: string; backPage?: SettingsPage }> = {
-      main: { title: settingsDictionary.settings.title },
-      profile: { title: settingsDictionary.settings.profile.title, backPage: 'main' },
-      security: { title: settingsDictionary.settings.security.title, backPage: 'main' },
-      privacy: { title: settingsDictionary.settings.privacy.title, backPage: 'main' },
-      notifications: { title: settingsDictionary.settings.notifications.title, backPage: 'main' },
-      'edit-username': { title: settingsDictionary.settings.profile.editUsername, backPage: 'profile'},
-  };
-
   const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
       const pathname = usePathname();
       const isActive = pathname.startsWith(item.href);
@@ -155,7 +146,6 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                     setPage={setSettingsPage} 
                     dictionary={settingsDictionary}
                     onLogout={handleLogout}
-                    isDialog={true}
                   />
                 </DialogContent>
           </Dialog>
