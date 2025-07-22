@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, X } from 'lucide-react';
 import SettingsPage from '@/app/settings/page';
 import ProfilePage from '@/app/settings/profile/page';
 import SecurityPage from '@/app/settings/security/page';
@@ -14,7 +14,7 @@ import { Dictionary } from '@/dictionaries';
 
 export type SettingsPage = 'main' | 'profile' | 'security' | 'privacy' | 'notifications' | 'edit-username';
 
-const SettingsContainer = ({ page, setPage, dictionary, onLogout }: { page: SettingsPage; setPage: (page: SettingsPage) => void, dictionary: Dictionary, onLogout: () => void }) => {
+const SettingsContainer = ({ page, setPage, dictionary, onLogout, onClose }: { page: SettingsPage; setPage: (page: SettingsPage) => void, dictionary: Dictionary, onLogout: () => void, onClose?: () => void }) => {
     
     const pageConfig: Record<SettingsPage, { title: string; component: React.ComponentType<any>; backPage?: SettingsPage }> = {
         main: { title: dictionary.settings.title, component: SettingsPage },
@@ -35,18 +35,26 @@ const SettingsContainer = ({ page, setPage, dictionary, onLogout }: { page: Sett
 
     return (
         <div className="flex flex-col h-full">
-            <header className="p-6 pb-4 border-b flex-shrink-0">
-                <div className="flex items-center gap-4">
-                    {page !== 'main' && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBack}>
-                            <ChevronLeft className="h-5 w-5" />
-                            <span className="sr-only">Back</span>
+            <header className="p-4 md:p-6 pb-4 border-b flex-shrink-0">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                         {page !== 'main' && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBack}>
+                                <ChevronLeft className="h-5 w-5" />
+                                <span className="sr-only">Back</span>
+                            </Button>
+                        )}
+                        <h2 className='text-lg font-semibold leading-none tracking-tight'>{title}</h2>
+                    </div>
+                     {page === 'main' && onClose && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+                            <X className="h-5 w-5" />
+                            <span className="sr-only">Close</span>
                         </Button>
                     )}
-                    <h2 className='text-lg font-semibold leading-none tracking-tight'>{title}</h2>
                 </div>
             </header>
-            <div className="p-6 overflow-y-auto flex-grow">
+            <div className="p-4 md:p-6 overflow-y-auto flex-grow">
                 <PageComponent setPage={setPage} dictionary={dictionary} onLogout={onLogout} />
             </div>
         </div>

@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, Shield, Eye, Bell, LogOut, ChevronRight } from 'lucide-react';

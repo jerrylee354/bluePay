@@ -17,12 +17,17 @@ export default function SettingsPageClient({ dictionary }: { dictionary: Diction
         router.push(`/${dictionary.locale}/login`);
     }
 
+    const handleClose = () => {
+        router.back();
+    }
+
     return (
         <SettingsContainer 
             page={page} 
             setPage={setPage} 
             dictionary={dictionary}
             onLogout={handleLogout} 
+            onClose={handleClose}
         />
     );
 }
