@@ -10,8 +10,9 @@ import { Skeleton } from './ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
-import { type Locale } from '../../i18n';
+import { type Locale } from '../i18n';
 import { getDictionary, type Dictionary } from '@/dictionaries';
+import { i18n } from '../i18n';
 
 const authRoutes = ['/login', '/signup', '/terms', '/privacy', '/welcome'];
 const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
@@ -40,13 +41,15 @@ const AppLoader = () => (
     </div>
 );
 
-function AppContentInternal({ children, locale }: { children: React.ReactNode, locale: Locale }) {
+function AppContentInternal({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading, userData, logout } = useFirebaseAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
     const [dictionary, setDictionary] = useState<Dictionary | null>(null);
     const [isIdle, setIsIdle] = useState(false);
+    
+    const locale = i18n.locales.find(l => pathname.startsWith(`/${l}`)) || i18n.defaultLocale;
 
     useEffect(() => {
         getDictionary(locale).then(setDictionary);
@@ -67,7 +70,7 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
     });
     
     const isAuthRoute = authRoutes.some(route => pathname.endsWith(route));
-    const isPublicRoute = pathname === `/${locale}` || pathname === '/';
+    const isPublicRoute = pathname === `/` || i18n.locales.every(l => !pathname.startsWith(`/${l}`));
 
 
     useEffect(() => {
@@ -76,14 +79,14 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
         const isAppRoute = !isAuthRoute && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
-            router.push('/login');
+            router.push(`/${locale}/login`);
         } else if (isAuthenticated) {
             if (isPublicRoute) {
-                router.push('/home');
+                 router.push(`/${locale}/home`);
             } else if (userData && !userData.hasCompletedOnboarding && !pathname.endsWith('/welcome')) {
-                router.push('/welcome');
+                router.push(`/${locale}/welcome`);
             } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute && !pathname.endsWith('/privacy') && !pathname.endsWith('/terms'))) {
-                router.push('/home');
+                router.push(`/${locale}/home`);
             }
         }
     }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isPublicRoute, locale]);
@@ -92,7 +95,6 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
         return <AppLoader />;
     }
 
-    // Public routes (landing page) are handled by src/app/[lang]/page.tsx now
     if (isPublicRoute) {
         return <>{children}</>
     }
@@ -128,7 +130,13 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
         return <AppLoader />;
     }
     
-    const childrenWithProps = children;
+    const childrenWithProps = React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+            // @ts-ignore
+            return React.cloneElement(child, { dictionary });
+        }
+        return child;
+    });
 
     if (isMobile && isFullScreenPage) {
          return (
@@ -166,12 +174,11 @@ function AppContentInternal({ children, locale }: { children: React.ReactNode, l
     );
 }
 
-export default function AppContent({ children, locale }: { children: React.ReactNode, locale: Locale }) {
+export default function AppContent({ children }: { children: React.ReactNode }) {
+    // This component no longer needs AuthProvider
     return (
-        <FirebaseAuthProvider>
-            <AppContentInternal locale={locale}>
-                {children}
-            </AppContentInternal>
-        </FirebaseAuthProvider>
+        <AppContentInternal>
+            {children}
+        </AppContentInternal>
     )
 }
