@@ -16,7 +16,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
-import AppContent from '@/components/app-content';
 
 function WelcomeContent() {
     const [step, setStep] = useState(1);
@@ -287,6 +286,5 @@ function WelcomeContent() {
 }
 
 export default function WelcomePage() {
-    // We don't need AppContent here as it will be handled by the root layout now
     return <WelcomeContent />;
 }

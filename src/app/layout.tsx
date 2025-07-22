@@ -1,10 +1,8 @@
 import React from 'react';
-import AppContent from '@/components/app-content';
 import { AuthProvider } from '@/context/auth-context';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { getDictionary } from '@/dictionaries';
-import { i18n, type Locale } from '@/i18n';
+import { type Locale } from '@/i18n';
 
 // This RootLayout is now simpler and doesn't fetch data itself.
 // The locale-based layouts will handle data fetching.
@@ -16,7 +14,7 @@ export default function RootLayout({
   params: { lang: Locale };
 }>) {
   return (
-    <html lang={params.lang}>
+    <html lang={params.lang ?? 'en'}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
