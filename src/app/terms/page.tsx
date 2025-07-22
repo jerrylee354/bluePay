@@ -2,29 +2,28 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function TermsPage() {
     const [lastUpdated, setLastUpdated] = useState('');
+    const router = useRouter();
 
     useEffect(() => {
-        setLastUpdated(new Date().toLocaleDateString());
+        setLastUpdated(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
     }, []);
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center p-4">
-            <div className="w-full max-w-2xl">
-                <div className="relative mb-4 flex items-center justify-center">
+        <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
+            <div className="w-full max-w-3xl">
+                <div className="relative mb-6 flex items-center justify-center">
                     <div className="absolute left-0">
-                         <Button asChild variant="ghost" size="icon">
-                           <Link href="/signup">
+                         <Button variant="ghost" size="icon" onClick={() => router.back()}>
                                 <ChevronLeft className="h-6 w-6" />
                                 <span className="sr-only">Back</span>
-                           </Link>
-                        </Button>
+                         </Button>
                     </div>
                     <h1 className="text-3xl font-bold text-center">Terms of Service</h1>
                 </div>
