@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle, ShieldCheck, Users, Zap } from 'lucide-react';
+import { ArrowRight, CheckCircle, ShieldCheck, Users, Zap, Wallet } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -101,11 +101,7 @@ export default function LandingPage() {
             <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-lg">
                 <div className="container flex items-center justify-between h-20 max-w-7xl mx-auto px-4">
                     <Link href="/" className="flex items-center gap-2">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M19 6H5C3.89543 6 3 6.89543 3 8V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V8C21 6.89543 20.1046 6 19 6Z" stroke="#3880ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M3 10H21" stroke="#3880ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M16 15H16.01" stroke="#3880ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <Wallet className="w-8 h-8 text-primary" />
                         <span className="text-2xl font-bold text-gray-900">BluePay</span>
                     </Link>
                     <nav className={cn(
