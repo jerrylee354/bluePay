@@ -57,9 +57,11 @@ export default function AppContent({ children, dictionary }: { children: React.R
         isIdle: !isAuthenticated || isLoading,
     });
     
-    const publicRoutes = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'];
+    const publicRoutes = ['/', '/terms', '/privacy'];
+    const authRoutes = ['/login', '/signup', '/welcome'];
     const isPublicRoute = publicRoutes.includes(pathname);
-    const isAppRoute = !isPublicRoute;
+    const isAuthRoute = authRoutes.includes(pathname);
+    const isAppRoute = !isPublicRoute && !isAuthRoute;
 
     React.useEffect(() => {
         if (isLoading) return;
@@ -69,20 +71,37 @@ export default function AppContent({ children, dictionary }: { children: React.R
         } else if (isAuthenticated) {
             if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
                 router.push(`/welcome`);
-            } else if (userData && userData.hasCompletedOnboarding && (pathname === '/welcome' || pathname === '/login' || pathname === '/signup' || pathname === '/')) {
+            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute || pathname === '/')) {
                 router.push('/home');
             }
         }
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAppRoute]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAppRoute, isAuthRoute]);
     
+    // If the auth state is loading and we are on an app route, show the loader.
     if (isLoading && isAppRoute) {
         return <AppLoader />;
     }
     
+    // This prevents a flash of the home page for unauthenticated users on app routes.
     if (!isAuthenticated && isAppRoute) {
       return <AppLoader />;
     }
 
+    // This prevents a flash of the auth pages for authenticated users.
+    if (isAuthenticated && isAuthRoute) {
+        return <AppLoader />;
+    }
+    
+    // Don't render a layout for public or auth routes.
+    if (isPublicRoute || isAuthRoute) {
+        return <>{children}</>;
+    }
+
+    // Wait for the mobile check to complete to prevent hydration mismatch.
+    if (isMobile === undefined) {
+        return <AppLoader />;
+    }
+    
     const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
 
@@ -90,16 +109,10 @@ export default function AppContent({ children, dictionary }: { children: React.R
         logout();
         setIsIdle(false);
     };
-    
-    // Public routes and auth routes are rendered without the app shell
-    if (isPublicRoute) {
-        return <>{children}</>;
-    }
-
 
     if (isMobile && isFullScreenPage) {
          return (
-            <main className="h-screen bg-background">
+            <main className="h-dvh bg-background">
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 {children}
             </main>
@@ -111,7 +124,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
             <div className="relative flex min-h-dvh w-full flex-col items-center">
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 <div className="w-full max-w-lg bg-background flex-1 flex flex-col">
-                    <main className="flex-1 overflow-y-auto p-4 pb-24">
+                    <main className="flex-1 overflow-y-auto p-4 pb-28">
                         {children}
                     </main>
                     <BottomNav dictionary={dictionary.nav} />
@@ -125,7 +138,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
             {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
             <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary.settings} />
             <main className="flex-1 p-8">
-               <div className="mx-auto max-w-5xl">
+               <div className="mx-auto max-w-7xl">
                     {children}
                </div>
             </main>

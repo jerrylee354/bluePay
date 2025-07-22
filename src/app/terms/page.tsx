@@ -1,9 +1,19 @@
+
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function TermsPage() {
+    const [lastUpdated, setLastUpdated] = useState('');
+
+    useEffect(() => {
+        setLastUpdated(new Date().toLocaleDateString());
+    }, []);
+
     return (
         <div className="flex min-h-screen flex-col items-center justify-center p-4">
             <div className="w-full max-w-2xl">
@@ -23,7 +33,7 @@ export default function TermsPage() {
                         <CardTitle>Agreement to Terms</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 text-muted-foreground">
-                        <p>Last updated: {new Date().toLocaleDateString()}</p>
+                        <p>Last updated: {lastUpdated}</p>
                         <p>
                            By using our services, you are agreeing to these terms. Please read them carefully. Our services are very diverse, so sometimes additional terms or product requirements (including age requirements) may apply. Additional terms will be available with the relevant services, and those additional terms become part of your agreement with us if you use those services.
                         </p>

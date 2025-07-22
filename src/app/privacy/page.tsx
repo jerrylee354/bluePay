@@ -1,9 +1,19 @@
+
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PrivacyPolicyPage() {
+    const [lastUpdated, setLastUpdated] = useState('');
+
+    useEffect(() => {
+        setLastUpdated(new Date().toLocaleDateString());
+    }, []);
+
     return (
         <div className="flex min-h-screen flex-col items-center justify-center p-4">
             <div className="w-full max-w-2xl">
@@ -23,7 +33,7 @@ export default function PrivacyPolicyPage() {
                         <CardTitle>Introduction</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 text-muted-foreground">
-                        <p>Last updated: {new Date().toLocaleDateString()}</p>
+                        <p>Last updated: {lastUpdated}</p>
                         <p>
                             Welcome to BluePay. We respect your privacy and are committed to protecting your personal data. This privacy notice will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) or use our services and tell you about your privacy rights and how the law protects you.
                         </p>
