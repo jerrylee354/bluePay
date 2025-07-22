@@ -16,7 +16,7 @@ import { doc, setDoc, getDoc, collection, query, onSnapshot, DocumentData, order
 import type { Transaction, Ticket } from '@/lib/data';
 import { sendReceipt, type ReceiptDetails } from '@/ai/flows/send-receipt-flow';
 import { getDictionary, type Dictionary } from '@/dictionaries';
-import { Locale } from '../i18n';
+import { i18n, type Locale } from '@/i18n';
 
 interface ProcessTransactionParams {
     fromUserId: string;
@@ -77,7 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getCurrentLocale = (): Locale => {
     const segments = pathname.split('/');
-    return (segments[1] as Locale) || 'en';
+    const locale = i18n.locales.find(l => l === segments[1]);
+    return locale || i18n.defaultLocale;
   }
 
 
@@ -166,7 +167,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    const locale = getCurrentLocale();
     await signOut(auth);
     router.push(`/login`);
   };

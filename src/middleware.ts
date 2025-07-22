@@ -28,10 +28,6 @@ function getLocale(request: NextRequest): string | undefined {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   
-  // Check if the user is in Taiwan
-  const country = request.geo?.country || ''
-  const preferredLocale = getLocale(request)
-
   const pathnameIsMissingLocale = i18n.locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   )
