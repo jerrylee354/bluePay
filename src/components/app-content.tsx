@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
@@ -10,6 +10,28 @@ import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
 import { type Dictionary } from '@/dictionaries';
+import { Skeleton } from './ui/skeleton';
+import { LoadingOverlay } from './ui/loading-overlay';
+
+
+const AppLoader = () => (
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
+        <div className="w-full max-w-md space-y-8 p-4">
+             <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-8 w-32" />
+                </div>
+                <Skeleton className="h-12 w-12 rounded-full" />
+             </div>
+             <Skeleton className="h-32 w-full rounded-xl" />
+             <div className="space-y-4">
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-20 w-full rounded-xl" />
+             </div>
+        </div>
+    </div>
+);
 
 
 export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
@@ -31,13 +53,22 @@ export default function AppContent({ children, dictionary }: { children: React.R
         isIdle: !isAuthenticated || isLoading,
     });
     
-    const publicRoutes = ['/', '/terms', '/privacy'];
-    const authRoutes = ['/login', 'signup', '/welcome'];
-    const isPublicRoute = publicRoutes.includes(pathname) || authRoutes.some(p => pathname.includes(p));
+    const localeSegment = `/${dictionary.locale}`;
+    const publicPaths = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'].map(p => `${localeSegment}${p.replace(/\/$/, '')}`);
+    const isPublicRoute = publicPaths.some(p => pathname === p || (p === `${localeSegment}/` && pathname === localeSegment));
 
-    // If the page is public, don't render any specific app layout.
     if (isPublicRoute) {
         return <>{children}</>;
+    }
+
+    if (isLoading || isMobile === undefined) {
+      return (
+        // Show a full-page loader that covers both mobile and desktop layouts
+        // until we know the auth state and screen size.
+        <div className="min-h-screen bg-background">
+            <LoadingOverlay isLoading={true} />
+        </div>
+      );
     }
     
     const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
@@ -83,4 +114,3 @@ export default function AppContent({ children, dictionary }: { children: React.R
         </div>
     );
 }
-

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ArrowUpRight, ArrowDownLeft, Loader } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { useAuth } from "@/context/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { Dictionary } from "@/dictionaries";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -37,7 +38,7 @@ const TransactionIcon = ({ type }: { type: Transaction["type"] }) => {
 };
 
 export default function HomePageClient({ dictionary }: { dictionary: Dictionary }) {
-  const { user, userData, transactions } = useAuth();
+  const { user, userData, transactions, isLoading } = useAuth();
   const recentTransactions = transactions.slice(0, 4);
   const isMobile = useIsMobile();
   const d = dictionary.home;
@@ -49,6 +50,7 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
 
   return (
     <div className="space-y-8">
+      <LoadingOverlay isLoading={isLoading} />
       <header className="flex items-center justify-between">
         <div>
           <p className="text-muted-foreground">{d.welcome}</p>
@@ -57,9 +59,7 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
               {userData.firstName}
             </h1>
           ) : (
-            <div className="flex items-center h-8">
-              <Loader className="h-6 w-6 animate-spin-slow" />
-            </div>
+            <Skeleton className="h-8 w-32 mt-1" />
           )}
         </div>
         {isMobile && (
@@ -84,9 +84,7 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
               {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
             </p>
           ) : (
-            <div className="h-10 flex items-center">
-              <Loader className="h-8 w-8 animate-spin-slow" />
-            </div>
+             <Skeleton className="h-10 w-48" />
           )}
         </CardContent>
       </Card>
@@ -100,10 +98,19 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
         </div>
         <Card>
             <CardContent className="p-0">
-              {transactions.length === 0 && !user ? (
-                 <div className="p-8 text-center text-muted-foreground">
-                    {d.loadingTransactions}
-                </div>
+              {isLoading ? (
+                 <div className="p-4 space-y-2">
+                    {[...Array(4)].map((_, i) => (
+                        <div key={i} className="flex items-center p-2 space-x-4">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="flex-1 space-y-2">
+                                <Skeleton className="h-4 w-3/4" />
+                                <Skeleton className="h-3 w-1/2" />
+                            </div>
+                            <Skeleton className="h-6 w-20" />
+                        </div>
+                    ))}
+                 </div>
               ) : recentTransactions.length > 0 ? (
                 <ul className="divide-y">
                     {recentTransactions.map((tx) => (
