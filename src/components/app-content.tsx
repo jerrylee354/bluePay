@@ -12,7 +12,7 @@ import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
 import { type Dictionary } from '@/dictionaries';
 
-const authRoutes = ['/login', '/signup'];
+const authRoutes = ['/login', '/signup', '/welcome'];
 const publicRoutes = ['/', '/terms', '/privacy'];
 const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
 
@@ -70,17 +70,17 @@ export default function AppContent({ children, dictionary }: { children: React.R
         if (!isAuthenticated && isAppRoute) {
             router.push(`/login`);
         } else if (isAuthenticated) {
-             if (isPublicRoute && pathname !== '/') { // Allow landing page for logged in users, but redirect from other public pages
+             if (pathname === '/') {
                  router.push(`/home`);
             } else if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
                 router.push(`/welcome`);
             } else if (userData && userData.hasCompletedOnboarding && pathname === '/welcome') {
                 router.push('/home');
-            } else if (isAuthRoute) {
+            } else if (pathname === '/login' || pathname === '/signup') {
                  router.push(`/home`);
             }
         }
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAppRoute, isPublicRoute, isAuthRoute]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAppRoute]);
     
     if (isLoading && isAppRoute) {
         return <AppLoader />;
@@ -97,10 +97,8 @@ export default function AppContent({ children, dictionary }: { children: React.R
         setIsIdle(false);
     };
     
-    const pageKey = pathname.split('/')[1] || 'landing';
-    
     // Public routes and auth routes are rendered without the app shell
-    if (isPublicRoute || isAuthRoute || pathname === '/welcome') {
+    if (isPublicRoute || isAuthRoute) {
         return <>{children}</>;
     }
 
