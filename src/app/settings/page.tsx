@@ -16,8 +16,9 @@ const SettingsListItem = ({ icon: Icon, text, onClick }: { icon: React.ElementTy
     </div>
 );
 
-export default function SettingsPage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) {
+export default function SettingsPage({ setPage, dictionary }: { setPage?: (page: SettingsPage) => void, dictionary: Dictionary }) {
     const { logout } = useAuth();
+    const d = dictionary.settings;
     
     const handleNavigation = (page: SettingsPage) => {
         if (setPage) {
@@ -29,15 +30,15 @@ export default function SettingsPage({ setPage, dictionary }: { setPage?: (page:
         <div className="space-y-6">
              <Card>
                 <CardContent className="p-2">
-                    <SettingsListItem icon={User} text={dictionary.profile.title} onClick={() => handleNavigation('profile')} />
+                    <SettingsListItem icon={User} text={d.profile.title} onClick={() => handleNavigation('profile')} />
                 </CardContent>
             </Card>
 
             <Card>
                 <CardContent className="p-2">
-                    <SettingsListItem icon={Shield} text={dictionary.security.title} onClick={() => handleNavigation('security')} />
-                    <SettingsListItem icon={Eye} text={dictionary.privacy.title} onClick={() => handleNavigation('privacy')} />
-                    <SettingsListItem icon={Bell} text={dictionary.notifications.title} onClick={() => handleNavigation('notifications')} />
+                    <SettingsListItem icon={Shield} text={d.security.title} onClick={() => handleNavigation('security')} />
+                    <SettingsListItem icon={Eye} text={d.privacy.title} onClick={() => handleNavigation('privacy')} />
+                    <SettingsListItem icon={Bell} text={d.notifications.title} onClick={() => handleNavigation('notifications')} />
                 </CardContent>
             </Card>
 
@@ -45,7 +46,7 @@ export default function SettingsPage({ setPage, dictionary }: { setPage?: (page:
                 <CardContent className="p-2">
                      <div className="flex items-center p-4 hover:bg-destructive/10 rounded-lg cursor-pointer transition-colors" onClick={logout}>
                         <LogOut className="w-6 h-6 mr-4 text-destructive" />
-                        <span className="flex-1 text-base font-medium text-destructive">{dictionary.logout}</span>
+                        <span className="flex-1 text-base font-medium text-destructive">{dictionary.settings.logout}</span>
                     </div>
                 </CardContent>
             </Card>

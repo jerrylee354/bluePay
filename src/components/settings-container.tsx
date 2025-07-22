@@ -15,15 +15,15 @@ import { Dictionary } from '@/dictionaries';
 
 export type SettingsPage = 'main' | 'profile' | 'security' | 'privacy' | 'notifications' | 'edit-username';
 
-const SettingsContainer = ({ page, setPage, dictionary }: { page: SettingsPage; setPage: (page: SettingsPage) => void, dictionary: Dictionary['settings'] }) => {
+const SettingsContainer = ({ page, setPage, dictionary }: { page: SettingsPage; setPage: (page: SettingsPage) => void, dictionary: Dictionary }) => {
     
     const pageConfig: Record<SettingsPage, { title: string; component: React.ComponentType<any>; backPage?: SettingsPage }> = {
-        main: { title: dictionary.title, component: SettingsPage },
-        profile: { title: dictionary.profile.title, component: ProfilePage, backPage: 'main' },
-        security: { title: dictionary.security.title, component: SecurityPage, backPage: 'main' },
-        privacy: { title: dictionary.privacy.title, component: PrivacySettingsPage, backPage: 'main' },
-        notifications: { title: dictionary.notifications.title, component: NotificationSettingsPage, backPage: 'main' },
-        'edit-username': { title: dictionary.profile.editUsername, component: EditUsernamePage, backPage: 'profile'},
+        main: { title: dictionary.settings.title, component: SettingsPage },
+        profile: { title: dictionary.settings.profile.title, component: ProfilePage, backPage: 'main' },
+        security: { title: dictionary.settings.security.title, component: SecurityPage, backPage: 'main' },
+        privacy: { title: dictionary.settings.privacy.title, component: PrivacySettingsPage, backPage: 'main' },
+        notifications: { title: dictionary.settings.notifications.title, component: NotificationSettingsPage, backPage: 'main' },
+        'edit-username': { title: dictionary.settings.profile.editUsername, component: EditUsernamePage, backPage: 'profile'},
     };
 
     const { title, component: PageComponent, backPage } = pageConfig[page];
