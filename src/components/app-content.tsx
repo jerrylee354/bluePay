@@ -70,7 +70,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
         if (!isAuthenticated && isAppRoute) {
             router.push(`/login`);
         } else if (isAuthenticated) {
-             if (isPublicRoute) {
+             if (isPublicRoute && pathname !== '/') { // Allow landing page for logged in users, but redirect from other public pages
                  router.push(`/home`);
             } else if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
                 router.push(`/welcome`);
@@ -98,20 +98,10 @@ export default function AppContent({ children, dictionary }: { children: React.R
     };
     
     const pageKey = pathname.split('/')[1] || 'landing';
-    // @ts-ignore
-    const pageDictionary = dictionary[pageKey] || dictionary;
-
-    const childrenWithProps = React.Children.map(children, child => {
-        if (React.isValidElement(child)) {
-            // @ts-ignore
-            return React.cloneElement(child, { dictionary: pageDictionary });
-        }
-        return child;
-    });
-
+    
     // Public routes and auth routes are rendered without the app shell
     if (isPublicRoute || isAuthRoute || pathname === '/welcome') {
-        return <>{childrenWithProps}</>;
+        return <>{children}</>;
     }
 
 
@@ -119,7 +109,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
          return (
             <main className="h-screen bg-background">
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
-                {childrenWithProps}
+                {children}
             </main>
          );
     }
@@ -130,7 +120,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 <div className="w-full max-w-lg bg-background h-screen flex flex-col">
                     <main className="flex-1 overflow-y-auto p-4 mb-24">
-                        {childrenWithProps}
+                        {children}
                     </main>
                     <BottomNav dictionary={dictionary.nav} />
                 </div>
@@ -144,7 +134,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
             <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary.settings} />
             <main className="flex-1 p-8">
                <div className="mx-auto max-w-5xl">
-                    {childrenWithProps}
+                    {children}
                </div>
             </main>
         </div>
