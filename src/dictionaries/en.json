@@ -1,5 +1,6 @@
 
 {
+    "locale": "en",
     "landing": {
         "getStarted": "Get Started",
         "heroTitle": "Peer-to-peer payments <span class=\"block text-primary\">built for modern life</span>",
@@ -109,10 +110,104 @@
         "weakPasswordError": "Password is too weak. Please use at least 6 characters.",
         "genericError": "An unexpected error occurred."
     },
+    "nav": {
+        "home": "Home",
+        "activity": "Activity",
+        "pay": "Pay",
+        "wallet": "Wallet",
+        "settings": "Settings"
+    },
+    "home": {
+        "welcome": "Welcome back,",
+        "totalBalance": "Total Balance",
+        "recentActivity": "Recent Activity",
+        "viewAll": "View all",
+        "loadingTransactions": "Loading transactions...",
+        "noRecentTransactions": "No recent transactions found."
+    },
+    "activity": {
+        "title": "Activity",
+        "tabs": {
+            "all": "All",
+            "sent": "Sent",
+            "received": "Received"
+        },
+        "noTransactions": "No transactions to display.",
+        "confirmPayment": "Confirm Payment",
+        "insufficientFundsTitle": "Insufficient Funds",
+        "insufficientFundsDescription": "You do not have enough balance to complete this transaction.",
+        "paymentSuccessTitle": "Payment Sent",
+        "paymentSuccessDescription": "Successfully sent",
+        "paymentFailedTitle": "Payment Failed",
+        "genericError": "An unexpected error occurred. Please try again.",
+        "requestDeclinedTitle": "Request Declined",
+        "requestDeclinedDescription": "You have declined the payment request from",
+        "declineFailedTitle": "Decline Failed",
+        "confirmPaymentTitle": "Confirm Payment",
+        "confirmPaymentDescription": "Do you want to send <strong>{amount}</strong> to <strong>{name}</strong>?",
+        "decline": "Decline",
+        "confirmAndPay": "Confirm & Pay"
+    },
+    "transactionDetails": {
+        "title": "Transaction Details"
+    },
+    "pay": {
+        "title": "Pay or Request",
+        "searchPlaceholder": "Search by name, @username, or email",
+        "noUsersFound": "No users found for \"{searchTerm}\"",
+        "pay": "Pay",
+        "request": "Request",
+        "scanQrCode": {
+            "title": "Scan QR Code",
+            "description": "Pay by scanning a QR code",
+            "cameraAccessDeniedTitle": "Camera Access Denied",
+            "cameraAccessDeniedDescription": "Please allow camera access in your browser settings to scan QR codes.",
+            "cameraAccessRequiredTitle": "Camera Access Required",
+            "cameraAccessRequiredDescription": "To scan a QR code, please grant access to your camera in your browser's settings.",
+            "invalidQrTitle": "Invalid QR Code",
+            "invalidQrError": "The scanned QR code is not a valid BluePay payment code.",
+            "processing": "Processing...",
+            "alignQrCode": "Align QR code within the frame"
+        },
+        "showQrCode": {
+            "title": "Show my QR Code",
+            "description": "Receive money by showing your QR"
+        },
+        "receiveFromOthers": "Receive from others",
+        "groupPayment": "Group Payment",
+        "splitBillWithGroup": "Split a bill with a group",
+        "featureUnderConstruction": "This feature is under construction.",
+        "createNewGroup": "Create New Group"
+    },
+    "wallet": {
+        "title": "Wallet",
+        "underConstruction": "Wallet feature coming soon!"
+    },
+    "settings": {
+        "title": "Settings",
+        "profile": {
+            "title": "Edit Profile",
+            "editUsername": "Edit Username"
+        },
+        "security": {
+            "title": "Login & Security"
+        },
+        "privacy": {
+            "title": "Data & Privacy"
+        },
+        "notifications": {
+            "title": "Notification Preferences"
+        }
+    },
     "status": {
         "Completed": "Completed",
         "Failed": "Failed",
         "Pending": "Pending",
         "Requested": "Requested"
+    },
+    "idleTimeout": {
+        "title": "Session Expired",
+        "description": "You have been logged out due to inactivity.",
+        "confirm": "OK"
     }
 }

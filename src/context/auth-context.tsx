@@ -16,7 +16,7 @@ import { doc, setDoc, getDoc, collection, query, onSnapshot, DocumentData, order
 import type { Transaction, Ticket } from '@/lib/data';
 import { sendReceipt, type ReceiptDetails } from '@/ai/flows/send-receipt-flow';
 import { getDictionary, type Dictionary } from '@/dictionaries';
-import { Locale } from '../../i18n';
+import { Locale } from '../i18n';
 
 interface ProcessTransactionParams {
     fromUserId: string;
@@ -168,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     const locale = getCurrentLocale();
     await signOut(auth);
-    router.push(`/${locale}/login`);
+    router.push(`/login`);
   };
   
   const checkEmailExists = async (email: string) => {

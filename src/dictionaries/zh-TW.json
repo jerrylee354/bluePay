@@ -1,5 +1,6 @@
 
 {
+    "locale": "zh-TW",
     "landing": {
         "getStarted": "開始使用",
         "heroTitle": "為現代生活打造的<span class=\"block text-primary\">點對點支付</span>",
@@ -109,10 +110,104 @@
         "weakPasswordError": "密碼強度不足，請至少使用6個字元。",
         "genericError": "發生未預期的錯誤。"
     },
+    "nav": {
+        "home": "首頁",
+        "activity": "活動",
+        "pay": "支付",
+        "wallet": "錢包",
+        "settings": "設定"
+    },
+    "home": {
+        "welcome": "歡迎回來，",
+        "totalBalance": "總餘額",
+        "recentActivity": "最近的活動",
+        "viewAll": "查看全部",
+        "loadingTransactions": "正在載入交易紀錄...",
+        "noRecentTransactions": "找不到最近的交易紀錄。"
+    },
+    "activity": {
+        "title": "活動",
+        "tabs": {
+            "all": "全部",
+            "sent": "已傳送",
+            "received": "已接收"
+        },
+        "noTransactions": "沒有交易紀錄可顯示。",
+        "confirmPayment": "確認付款",
+        "insufficientFundsTitle": "餘額不足",
+        "insufficientFundsDescription": "您的帳戶餘額不足以完成此交易。",
+        "paymentSuccessTitle": "付款成功",
+        "paymentSuccessDescription": "已成功傳送",
+        "paymentFailedTitle": "付款失敗",
+        "genericError": "發生未預期的錯誤，請再試一次。",
+        "requestDeclinedTitle": "已拒絕請求",
+        "requestDeclinedDescription": "您已拒絕來自的付款請求",
+        "declineFailedTitle": "拒絕失敗",
+        "confirmPaymentTitle": "確認付款",
+        "confirmPaymentDescription": "您確定要傳送 <strong>{amount}</strong> 給 <strong>{name}</strong> 嗎？",
+        "decline": "拒絕",
+        "confirmAndPay": "確認並付款"
+    },
+    "transactionDetails": {
+        "title": "交易詳情"
+    },
+    "pay": {
+        "title": "付款或收款",
+        "searchPlaceholder": "依姓名、@使用者名稱或電子郵件搜尋",
+        "noUsersFound": "找不到符合「{searchTerm}」的使用者",
+        "pay": "付款",
+        "request": "要求",
+        "scanQrCode": {
+            "title": "掃描 QR Code",
+            "description": "掃描 QR Code 來付款",
+            "cameraAccessDeniedTitle": "相機存取被拒",
+            "cameraAccessDeniedDescription": "請在瀏覽器設定中允許相機存取以掃描 QR Code。",
+            "cameraAccessRequiredTitle": "需要相機存取權限",
+            "cameraAccessRequiredDescription": "若要掃描 QR Code，請在瀏覽器的設定中授予相機存取權限。",
+            "invalidQrTitle": "無效的 QR Code",
+            "invalidQrError": "掃描的 QR Code 不是有效的 BluePay 付款碼。",
+            "processing": "處理中...",
+            "alignQrCode": "將 QR Code 對準掃描框"
+        },
+        "showQrCode": {
+            "title": "顯示我的 QR Code",
+            "description": "出示您的 QR Code 以收款"
+        },
+        "receiveFromOthers": "向他人收款",
+        "groupPayment": "群組付款",
+        "splitBillWithGroup": "與群組成員分攤帳單",
+        "featureUnderConstruction": "此功能正在建構中。",
+        "createNewGroup": "建立新群組"
+    },
+    "wallet": {
+        "title": "錢包",
+        "underConstruction": "錢包功能即將推出！"
+    },
+    "settings": {
+        "title": "設定",
+        "profile": {
+            "title": "編輯個人檔案",
+            "editUsername": "編輯使用者名稱"
+        },
+        "security": {
+            "title": "登入與安全性"
+        },
+        "privacy": {
+            "title": "資料與隱私權"
+        },
+        "notifications": {
+            "title": "通知偏好設定"
+        }
+    },
     "status": {
         "Completed": "已完成",
         "Failed": "失敗",
         "Pending": "待處理",
         "Requested": "已請求"
+    },
+    "idleTimeout": {
+        "title": "連線階段已逾時",
+        "description": "由於您閒置過久，系統已將您登出。",
+        "confirm": "確定"
     }
 }
