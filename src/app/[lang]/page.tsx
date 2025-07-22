@@ -1,4 +1,4 @@
-import LandingPage from '@/app/(app)/page';
+import LandingPage from '@/components/landing-page';
 import { getDictionary } from '@/dictionaries';
 import { type Locale } from '@/i18n';
 
