@@ -61,6 +61,7 @@ interface AuthContextType {
   requestTransaction: (params: RequestTransactionParams) => Promise<void>;
   declineTransaction: (params: DeclineTransactionParams) => Promise<void>;
   isLoading: boolean;
+  isLoggingOut: boolean;
   refreshUserData: () => Promise<void>;
 }
 
@@ -86,6 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [walletItems, setWalletItems] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -183,11 +185,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    setIsLoggingOut(true);
     const locale = getCurrentLocale();
     await signOut(auth);
     eraseCookie('firebaseIdToken');
-    // Instead of router.push, we'll use window.location to trigger a full refresh
-    // ensuring the middleware can correctly redirect.
     window.location.href = `/${locale}/login`;
   };
   
@@ -503,7 +504,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, isLoading, refreshUserData }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, isLoading, isLoggingOut, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

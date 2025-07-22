@@ -35,7 +35,7 @@ const AppLoader = () => (
 
 
 export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { isAuthenticated, isLoading, logout } = useAuth();
+    const { isAuthenticated, isLoading, logout, isLoggingOut } = useAuth();
     const pathname = usePathname();
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
@@ -54,17 +54,18 @@ export default function AppContent({ children, dictionary }: { children: React.R
     });
     
     const localeSegment = `/${dictionary.locale}`;
-    const publicPaths = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'].map(p => `${localeSegment}${p.replace(/\/$/, '')}`);
-    const isPublicRoute = publicPaths.some(p => pathname === p || (p === `${localeSegment}/` && pathname === localeSegment));
+    const publicPaths = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'].map(p => {
+        const path = p === '/' ? '' : p;
+        return `${localeSegment}${path}`;
+    });
+    const isPublicRoute = publicPaths.includes(pathname);
 
     if (isPublicRoute) {
         return <>{children}</>;
     }
 
-    if (isLoading || isMobile === undefined) {
+    if (isLoading || isMobile === undefined || isLoggingOut) {
       return (
-        // Show a full-page loader that covers both mobile and desktop layouts
-        // until we know the auth state and screen size.
         <div className="min-h-screen bg-background">
             <LoadingOverlay isLoading={true} />
         </div>
