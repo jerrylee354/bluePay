@@ -53,11 +53,13 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
 
     type Feature = typeof features[0];
 
-    const FeatureItem = ({ feature, onClick, delay }: { feature: Feature, onClick: () => void, delay: string }) => (
+    const FeatureItem = ({ feature, onClick, isVisible }: { feature: Feature, onClick: () => void, isVisible: boolean }) => (
         <button 
             onClick={onClick} 
-            className="text-left flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-primary hover:bg-primary/5 transition-all duration-300 h-full opacity-0 animate-fade-in-up"
-            style={{ animationDelay: delay }}
+            className={cn(
+                "text-left flex items-start gap-4 p-6 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-primary hover:bg-primary/5 transition-all duration-300 h-full",
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+            )}
         >
             <div className="flex-shrink-0 p-2 rounded-full bg-primary/10">
                 <feature.icon className="w-6 h-6 text-primary" />
@@ -76,10 +78,28 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
     const heroCtaRef = useRef<HTMLDivElement>(null);
     const footerCtaRef = useRef<HTMLDivElement>(null);
 
+    const [isHeroVisible, setIsHeroVisible] = useState(false);
+    const [isFeaturesTitleVisible, setFeaturesTitleVisible] = useState(false);
+    const [isFeaturesItemsVisible, setFeaturesItemsVisible] = useState([false, false, false]);
+    const [isPrivacyVisible, setPrivacyVisible] = useState(false);
+    const [isCtaVisible, setCtaVisible] = useState(false);
+
     useEffect(() => {
         if (window.matchMedia('(display-mode: standalone)').matches) {
             router.push('/home');
         }
+        
+        const timers = [
+            setTimeout(() => setIsHeroVisible(true), 100),
+            setTimeout(() => setFeaturesTitleVisible(true), 300),
+            setTimeout(() => setFeaturesItemsVisible(prev => [true, prev[1], prev[2]]), 500),
+            setTimeout(() => setFeaturesItemsVisible(prev => [prev[0], true, prev[2]]), 600),
+            setTimeout(() => setFeaturesItemsVisible(prev => [prev[0], prev[1], true]), 700),
+            setTimeout(() => setPrivacyVisible(true), 800),
+            setTimeout(() => setCtaVisible(true), 900)
+        ];
+
+        return () => timers.forEach(clearTimeout);
     }, [router]);
 
     useEffect(() => {
@@ -101,7 +121,7 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
 
     return (
         <div className="flex flex-col min-h-dvh bg-white text-gray-800 font-body">
-            <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-lg animate-fade-in-down">
+            <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-lg">
                 <div className="container flex items-center justify-between h-20 max-w-7xl mx-auto px-4">
                     <Link href="/" className="flex items-center gap-2">
                         <Wallet className="w-8 h-8 text-primary" />
@@ -124,16 +144,14 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
             <main className="flex-1">
                 <section className="relative py-28 md:py-40 text-center overflow-hidden bg-white">
                     <div className="absolute inset-0 -z-0 opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1)_0%,rgba(255,255,255,0)_60%)]"></div>
-                    <div className="container relative max-w-4xl mx-auto px-4 z-10">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-7xl opacity-0 animate-fade-in-down"
+                    <div className={cn("container relative max-w-4xl mx-auto px-4 z-10 transition-all duration-700", isHeroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5")}>
+                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-7xl"
                             dangerouslySetInnerHTML={{ __html: dictionary.heroTitle }}
-                            style={{ animationDelay: '0.2s' }}
                         ></h1>
-                        <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 md:text-xl opacity-0 animate-fade-in-down"
-                           style={{ animationDelay: '0.4s' }}>
+                        <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 md:text-xl">
                             {dictionary.heroSubtitle}
                         </p>
-                        <div className="mt-10 opacity-0 animate-fade-in-up" ref={heroCtaRef} style={{ animationDelay: '0.6s' }}>
+                        <div className="mt-10" ref={heroCtaRef}>
                              <Button asChild size="lg" className="h-14 text-lg group">
                                 <Link href="/login">
                                     {dictionary.heroCta}
@@ -146,28 +164,28 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
                 
                  <section id="features" className="py-24 bg-gray-50">
                     <div className="container max-w-6xl mx-auto px-4">
-                        <div className="text-center mb-16 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        <div className={cn("text-center mb-16 transition-all duration-500", isFeaturesTitleVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5")}>
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{dictionary.featuresTitle}</h2>
                             <p className="mt-4 text-lg text-gray-600">{dictionary.featuresSubtitle}</p>
                         </div>
                         <div className="grid md:grid-cols-3 gap-8">
                             {features.map((feature, index) => (
-                                <FeatureItem key={index} feature={feature} onClick={() => setSelectedFeature(feature)} delay={`${0.4 + index * 0.2}s`} />
+                                <FeatureItem key={index} feature={feature} onClick={() => setSelectedFeature(feature)} isVisible={isFeaturesItemsVisible[index]} />
                             ))}
                         </div>
                     </div>
                 </section>
 
                 <section id="privacy-focus" className="py-24 bg-white">
-                    <div className="container max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-                        <div className="relative flex justify-center items-center p-8 opacity-0 animate-fade-in-right" style={{ animationDelay: '0.2s' }}>
+                    <div className={cn("container max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-12 items-center transition-all duration-500", isPrivacyVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5")}>
+                        <div className="relative flex justify-center items-center p-8">
                              <div className="relative w-72 h-72">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-primary/5"></div>
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 rounded-full bg-primary/10"></div>
                                 <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 text-primary" />
                             </div>
                         </div>
-                        <div className="text-left opacity-0 animate-fade-in-left" style={{ animationDelay: '0.4s' }}>
+                        <div className="text-left">
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900">
                                 {dictionary.privacy.title}
                             </h2>
@@ -203,7 +221,7 @@ export default function LandingPage({ dictionary }: { dictionary: Dictionary['la
                 </section>
                 
                 <section id="cta" className="py-24 text-center bg-gray-50">
-                    <div className="container max-w-4xl mx-auto px-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                    <div className={cn("container max-w-4xl mx-auto px-4 transition-all duration-500", isCtaVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5")}>
                         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{dictionary.bottomCta.title}</h2>
                         <p className="mt-4 text-lg text-gray-600">{dictionary.bottomCta.subtitle}</p>
                         <div className="mt-8" ref={footerCtaRef}>
