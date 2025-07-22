@@ -2,10 +2,33 @@
 import Link from 'next/link';
 import { Users, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dictionary } from '@/dictionaries';
+import { getDictionary } from '@/dictionaries';
+import { i18n, type Locale } from '@/i18n';
+import { headers } from 'next/headers';
+import { match as matchLocale } from '@formatjs/intl-localematcher';
+import Negotiator from 'negotiator';
 
-export default function GroupPayPage({ dictionary }: { dictionary: Dictionary}) {
+function getLocale(): Locale {
+  const negotiatorHeaders: Record<string, string> = {};
+  headers().forEach((value, key) => (negotiatorHeaders[key] = value));
+
+  // @ts-ignore locales are readonly
+  const locales: string[] = i18n.locales;
+
+  let languages = new Negotiator({ headers: negotiatorHeaders }).languages(
+    locales
+  );
+
+  const locale = matchLocale(languages, locales, i18n.defaultLocale);
+
+  return locale as Locale;
+}
+
+export default async function GroupPayPage() {
+    const lang = getLocale();
+    const dictionary = await getDictionary(lang);
     const d = dictionary.pay;
+
     return (
         <div className="space-y-6">
             <header className="relative flex items-center justify-center h-14">
