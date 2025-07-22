@@ -131,7 +131,7 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'spin-slow': 'spin 3s linear infinite',
+        'spin-slow': 'spin 1.5s linear infinite',
         'fade-in-down': 'fade-in-down 0.5s ease-out forwards',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
         'fade-in-right': 'fade-in-right 0.5s ease-out forwards',

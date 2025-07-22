@@ -1,6 +1,7 @@
+
 "use client";
 
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Loader } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,11 +53,13 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
         <div>
           <p className="text-muted-foreground">{d.welcome}</p>
           {userData?.firstName ? (
-            <h1 key="username" className="text-2xl font-bold text-foreground animate-fade-in-up">
+            <h1 className="text-2xl font-bold text-foreground">
               {userData.firstName}
             </h1>
           ) : (
-            <Skeleton className="h-8 w-32 mt-1" />
+            <div className="flex items-center h-8">
+              <Loader className="h-6 w-6 animate-spin-slow" />
+            </div>
           )}
         </div>
         {isMobile && (
@@ -77,11 +80,13 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
         </CardHeader>
         <CardContent>
           {userData ? (
-            <p key="balance" className="text-4xl font-bold tracking-tight animate-fade-in-up">
+            <p className="text-4xl font-bold tracking-tight">
               {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
             </p>
           ) : (
-            <Skeleton className="h-10 w-48 bg-primary/20" />
+            <div className="h-10 flex items-center">
+              <Loader className="h-8 w-8 animate-spin-slow" />
+            </div>
           )}
         </CardContent>
       </Card>
