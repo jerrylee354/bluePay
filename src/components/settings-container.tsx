@@ -8,7 +8,7 @@ import SettingsPage from '@/app/settings/page';
 import ProfilePage from '@/app/settings/profile/page';
 import SecurityPage from '@/app/settings/security/page';
 import PrivacySettingsPage from '@/app/settings/privacy/page';
-import NotificationSettingsPage from '@/app/settings/notifications/page';
+import NotificationSettingsPage from '@/app/[lang]/settings/notifications/page';
 import EditUsernamePage from '@/app/settings/profile/edit-username/page';
 import { Dictionary } from '@/dictionaries';
 
