@@ -144,6 +144,83 @@ const TransactionList = ({ transactions, currency, onTransactionClick, onConfirm
     );
 }
 
+const ActivitySkeleton = () => (
+    <div className="space-y-4">
+        <div className="grid w-full grid-cols-3 bg-muted p-1 rounded-md h-10">
+            <Skeleton className="h-full w-full rounded-sm" />
+            <Skeleton className="h-full w-full rounded-sm" />
+            <Skeleton className="h-full w-full rounded-sm" />
+        </div>
+        {[...Array(2)].map((_, i) => (
+             <div key={i}>
+                  <Skeleton className="h-6 w-24 mb-2 mt-4" />
+                  <Card>
+                      <CardContent className="p-0 divide-y">
+                           {[...Array(3)].map((_, j) => (
+                              <div key={j} className="flex items-center p-4 space-x-4">
+                                  <Skeleton className="h-11 w-11 rounded-full" />
+                                  <div className="flex-1 space-y-2">
+                                      <Skeleton className="h-4 w-3/4" />
+                                      <Skeleton className="h-3 w-1/2" />
+                                  </div>
+                                  <Skeleton className="h-6 w-20" />
+                              </div>
+                           ))}
+                      </CardContent>
+                  </Card>
+             </div>
+        ))}
+    </div>
+);
+
+
+const ActivityContent = ({
+    dictionary,
+    transactionsWithDetails,
+    currency,
+    payments,
+    receipts,
+    handleTransactionClick,
+    handleConfirmPayment
+} : {
+    dictionary: Dictionary,
+    transactionsWithDetails: Transaction[],
+    currency: string,
+    payments: Transaction[],
+    receipts: Transaction[],
+    handleTransactionClick: (tx: Transaction) => void,
+    handleConfirmPayment: (tx: Transaction) => void
+}) => (
+    <Tabs defaultValue="all" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="all">{dictionary.activity.tabs.all}</TabsTrigger>
+            <TabsTrigger value="payments">{dictionary.activity.tabs.sent}</TabsTrigger>
+            <TabsTrigger value="receipts">{dictionary.activity.tabs.received}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="all" className="rounded-xl overflow-hidden mt-4">
+          <Card>
+            <CardContent className="p-0">
+                <TransactionList transactions={transactionsWithDetails} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="payments" className="rounded-xl overflow-hidden mt-4">
+          <Card>
+            <CardContent className="p-0">
+                <TransactionList transactions={payments} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="receipts" className="rounded-xl overflow-hidden mt-4">
+          <Card>
+            <CardContent className="p-0">
+                <TransactionList transactions={receipts} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
+            </CardContent>
+          </Card>
+        </TabsContent>
+    </Tabs>
+);
+
 export default function ActivityPageClient({ dictionary }: { dictionary: Dictionary }) {
   const { transactions, userData, getUserById, user, processTransaction, declineTransaction } = useAuth();
   const currency = userData?.currency || 'USD';
@@ -158,13 +235,13 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
+        setIsLoading(true);
         if (transactions.length === 0) {
             setTransactionsWithDetails([]);
             setIsLoading(false);
             return;
         }
 
-        setIsLoading(true);
         const detailedTxs = await Promise.all(
             transactions.map(async (tx) => {
                 if (tx.otherPartyUid) {
@@ -264,69 +341,26 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
       }
   };
 
-
-  const ActivitySkeleton = () => (
-      <div className="space-y-4">
-          {[...Array(2)].map((_, i) => (
-               <div key={i}>
-                    <Skeleton className="h-6 w-24 mb-2 px-4 py-2" />
-                    <Card>
-                        <CardContent className="p-0 divide-y">
-                             {[...Array(3)].map((_, j) => (
-                                <div key={j} className="flex items-center p-4 space-x-4">
-                                    <Skeleton className="h-11 w-11 rounded-full" />
-                                    <div className="flex-1 space-y-2">
-                                        <Skeleton className="h-4 w-3/4" />
-                                        <Skeleton className="h-3 w-1/2" />
-                                    </div>
-                                    <Skeleton className="h-6 w-20" />
-                                </div>
-                             ))}
-                        </CardContent>
-                    </Card>
-               </div>
-          ))}
-      </div>
-  )
-
   return (
     <div className="space-y-6">
       <LoadingOverlay isLoading={isConfirming} />
       <header>
         <h1 className="text-3xl font-bold">{dictionary.activity.title}</h1>
       </header>
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="all">{dictionary.activity.tabs.all}</TabsTrigger>
-          <TabsTrigger value="payments">{dictionary.activity.tabs.sent}</TabsTrigger>
-          <TabsTrigger value="receipts">{dictionary.activity.tabs.received}</TabsTrigger>
-        </TabsList>
-        {isLoading ? <ActivitySkeleton /> : (
-            <>
-                <TabsContent value="all" className="rounded-xl overflow-hidden">
-                  <Card>
-                    <CardContent className="p-0">
-                        <TransactionList transactions={transactionsWithDetails} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity} />
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                <TabsContent value="payments" className="rounded-xl overflow-hidden">
-                  <Card>
-                    <CardContent className="p-0">
-                        <TransactionList transactions={payments} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                <TabsContent value="receipts" className="rounded-xl overflow-hidden">
-                  <Card>
-                    <CardContent className="p-0">
-                        <TransactionList transactions={receipts} currency={currency} onTransactionClick={handleTransactionClick} onConfirmPayment={handleConfirmPayment} dictionary={dictionary.activity}/>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-            </>
-        )}
-      </Tabs>
+      
+      {isLoading ? (
+        <ActivitySkeleton />
+      ) : (
+        <ActivityContent
+            dictionary={dictionary}
+            transactionsWithDetails={transactionsWithDetails}
+            currency={currency}
+            payments={payments}
+            receipts={receipts}
+            handleTransactionClick={handleTransactionClick}
+            handleConfirmPayment={handleConfirmPayment}
+        />
+      )}
 
       <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>
         <DialogContent className="sm:max-w-2xl p-0 flex flex-col max-h-[85vh]">
@@ -365,3 +399,5 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
     </div>
   );
 }
+
+    
