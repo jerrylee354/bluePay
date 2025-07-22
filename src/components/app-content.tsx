@@ -11,10 +11,7 @@ import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
 import { type Dictionary } from '@/dictionaries';
-
-const authRoutes = ['/login', '/signup', '/welcome'];
-const publicRoutes = ['/', '/terms', '/privacy'];
-const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
+import { cn } from '@/lib/utils';
 
 
 const AppLoader = () => (
@@ -60,9 +57,9 @@ export default function AppContent({ children, dictionary }: { children: React.R
         isIdle: !isAuthenticated || isLoading,
     });
     
-    const isAuthRoute = authRoutes.some(route => pathname === route);
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-    const isAppRoute = !isAuthRoute && !isPublicRoute;
+    const publicRoutes = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'];
+    const isPublicRoute = publicRoutes.includes(pathname);
+    const isAppRoute = !isPublicRoute;
 
     React.useEffect(() => {
         if (isLoading) return;
@@ -70,14 +67,10 @@ export default function AppContent({ children, dictionary }: { children: React.R
         if (!isAuthenticated && isAppRoute) {
             router.push(`/login`);
         } else if (isAuthenticated) {
-             if (pathname === '/') {
-                 router.push(`/home`);
-            } else if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
+            if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
                 router.push(`/welcome`);
-            } else if (userData && userData.hasCompletedOnboarding && pathname === '/welcome') {
+            } else if (userData && userData.hasCompletedOnboarding && (pathname === '/welcome' || pathname === '/login' || pathname === '/signup' || pathname === '/')) {
                 router.push('/home');
-            } else if (pathname === '/login' || pathname === '/signup') {
-                 router.push(`/home`);
             }
         }
     }, [isAuthenticated, isLoading, pathname, router, userData, isAppRoute]);
@@ -90,15 +83,16 @@ export default function AppContent({ children, dictionary }: { children: React.R
       return <AppLoader />;
     }
 
+    const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
 
-     const handleConfirmIdle = () => {
+    const handleConfirmIdle = () => {
         logout();
         setIsIdle(false);
     };
     
     // Public routes and auth routes are rendered without the app shell
-    if (isPublicRoute || isAuthRoute) {
+    if (isPublicRoute) {
         return <>{children}</>;
     }
 
@@ -114,10 +108,10 @@ export default function AppContent({ children, dictionary }: { children: React.R
 
     if (isMobile) {
         return (
-            <div className="relative flex min-h-screen w-full flex-col items-center">
+            <div className="relative flex min-h-dvh w-full flex-col items-center">
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
-                <div className="w-full max-w-lg bg-background h-screen flex flex-col">
-                    <main className="flex-1 overflow-y-auto p-4 mb-24">
+                <div className="w-full max-w-lg bg-background flex-1 flex flex-col">
+                    <main className="flex-1 overflow-y-auto p-4 pb-24">
                         {children}
                     </main>
                     <BottomNav dictionary={dictionary.nav} />
