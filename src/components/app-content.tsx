@@ -55,15 +55,18 @@ export default function AppContent({ children, dictionary }: { children: React.R
     
     const localeSegment = `/${dictionary.locale}`;
     const publicPaths = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'].map(p => {
-        const path = p === '/' ? '' : p;
-        return `${localeSegment}${path}`;
+        // The root path in a multi-lang setup is just the locale itself
+        if (p === '/') {
+            return `/${dictionary.locale}`;
+        }
+        return `${localeSegment}${p}`;
     });
     const isPublicRoute = publicPaths.includes(pathname);
 
     if (isPublicRoute) {
         return <>{children}</>;
     }
-
+    
     if (isLoading || isMobile === undefined || isLoggingOut) {
       return (
         <div className="min-h-screen bg-background">
@@ -106,7 +109,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
     return (
         <div className="flex min-h-screen">
             {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
-            <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary.settings} />
+            <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary} />
             <main className="flex-1 p-8">
                <div className="mx-auto max-w-7xl">
                     {children}
