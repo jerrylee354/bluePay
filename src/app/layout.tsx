@@ -1,11 +1,11 @@
 
 import { getDictionary } from '@/dictionaries';
-import { type Locale } from '@/i18n';
+import { type Locale } from '../i18n';
 import AppContent from '@/components/app-content';
 import { AuthProvider } from '@/context/auth-context';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { i18n } from '@/i18n';
+import { i18n } from '../i18n';
 
 // This is the new root layout. It no longer has language params.
 // It immediately renders AuthProvider and AppContent which will handle everything else.

@@ -1,8 +1,8 @@
 
 import LandingPage from '@/app/(app)/page';
 import { getDictionary } from '@/dictionaries';
-import { type Locale } from '@/i18n';
-import { i18n } from '@/i18n';
+import { type Locale } from '../i18n';
+import { i18n } from '../i18n';
 import { headers } from 'next/headers'
 import { match as matchLocale } from '@formatjs/intl-localematcher'
 import Negotiator from 'negotiator'
@@ -28,7 +28,7 @@ function getLocale(): string | undefined {
 // This is the new root page that will handle locale detection
 // and pass the correct dictionary to the actual landing page component.
 export default async function RootPage() {
-  const lang = getLocale() as Locale;
+  const lang = (getLocale() as Locale) || i18n.defaultLocale;
   const dictionary = await getDictionary(lang);
   return <LandingPage dictionary={dictionary.landing} />;
 }

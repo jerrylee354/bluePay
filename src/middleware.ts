@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-import { i18n } from '@/i18n'
+import { i18n } from './i18n'
 
 import { match as matchLocale } from '@formatjs/intl-localematcher'
 import Negotiator from 'negotiator'
@@ -30,7 +30,7 @@ export function middleware(request: NextRequest) {
   
   // Check if the user is in Taiwan
   const country = request.geo?.country || ''
-  const preferredLocale = country === 'TW' ? 'zh-TW' : getLocale(request)
+  const preferredLocale = getLocale(request)
 
   const pathnameIsMissingLocale = i18n.locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
@@ -52,9 +52,11 @@ export function middleware(request: NextRequest) {
         return
     }
 
+    const locale = getLocale(request)
+
     return NextResponse.redirect(
       new URL(
-        `/${preferredLocale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
+        `/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
         request.url
       )
     )

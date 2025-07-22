@@ -1,5 +1,6 @@
-import type { Locale } from '../i18n'
-import { i18n } from '../i18n'
+
+import type { Locale } from './i18n'
+import { i18n } from './i18n'
 
 const dictionaries = {
   en: () => import('./dictionaries/en.json').then((module) => module.default),

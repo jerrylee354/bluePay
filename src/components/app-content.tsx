@@ -10,7 +10,7 @@ import { Skeleton } from './ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
-import { type Locale, i18n } from '@/i18n';
+import { type Locale, i18n } from '../i18n';
 import { getDictionary, type Dictionary } from '@/dictionaries';
 
 const authRoutes = ['/login', '/signup', '/terms', '/privacy', '/welcome'];
@@ -69,12 +69,13 @@ function AppContentInternal({ children }: { children: React.ReactNode }) {
     });
     
     const isAuthRoute = authRoutes.some(route => pathname.endsWith(route));
-    const isPublicRoute = pathname === `/` || i18n.locales.every(l => !pathname.startsWith(`/${l}`));
+    const isPublicRoute = pathname === `/`;
 
 
     useEffect(() => {
         if (isLoading) return;
         
+        const pathLocale = pathname.split('/')[1];
         const isAppRoute = !isAuthRoute && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
