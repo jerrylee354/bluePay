@@ -178,7 +178,7 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
     }
     
     const formattedAmount = (() => {
-        if (amount === '0') return '0';
+        if (amount === '0' && !amount.includes('.')) return '0';
         const [integerPart, decimalPart] = amount.split('.');
         const formattedIntegerPart = new Intl.NumberFormat('en-US').format(BigInt(integerPart.replace(/,/g, '') || '0'));
         if (decimalPart !== undefined) {
@@ -399,37 +399,53 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
         </div>
     );
 
-    return (
-        <div className="flex flex-col md:flex-row h-full bg-background">
-             <LoadingOverlay isLoading={isProcessing} />
-             <header className={cn("relative flex items-center p-4 md:hidden", { 'hidden': isMobile && isDialog })}>
+    const MobileLayout = () => (
+        <div className="md:hidden flex-1 flex flex-col justify-between h-full">
+            <header className={cn("relative flex items-center p-4 md:hidden", { 'hidden': isDialog })}>
                 <Button variant="ghost" size="icon" className="absolute left-4" onClick={handleBack}>
                     {isDialog ? <X className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
                     <span className="sr-only">Back</span>
                 </Button>
                 <h1 className="text-xl font-semibold text-center w-full">{mode === 'pay' ? '付款' : '要求付款'}</h1>
             </header>
-
-            <div className="hidden md:flex flex-col w-full">
-                <header className="relative flex items-center p-4">
-                    <Button variant="ghost" size="icon" className="absolute left-4" onClick={handleBack}>
-                        {isDialog ? <X className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
-                        <span className="sr-only">Back</span>
-                    </Button>
-                    <h1 className="text-xl font-semibold text-center w-full">{mode === 'pay' ? '付款' : '要求付款'}</h1>
-                </header>
-                <div className="flex flex-1">
+            <MainContent />
+            <Keypad />
+        </div>
+    );
+    
+    const DesktopLayout = () => (
+        <div className="hidden md:flex flex-col w-full h-full">
+            <header className="relative flex items-center p-4">
+                <Button variant="ghost" size="icon" className="absolute left-4" onClick={handleBack}>
+                    {isDialog ? <X className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
+                    <span className="sr-only">Back</span>
+                </Button>
+                <h1 className="text-xl font-semibold text-center w-full">{mode === 'pay' ? '付款' : '要求付款'}</h1>
+            </header>
+            <div className="flex flex-1 overflow-hidden">
+                <div className="flex-1 flex flex-col">
                     <MainContent />
-                    <div className="border-l" />
+                </div>
+                <div className="border-l" />
+                <div className="flex flex-col">
                     <Keypad />
                 </div>
             </div>
+        </div>
+    );
 
-            <div className="md:hidden flex-1 flex flex-col justify-between">
-                <MainContent />
-                <Keypad />
-            </div>
-
+    return (
+        <div className="flex flex-col h-full bg-background">
+             <LoadingOverlay isLoading={isProcessing} />
+             {isMobile === undefined ? (
+                <LoadingOverlay isLoading={true} />
+             ) : isMobile ? (
+                <MobileLayout />
+             ) : (
+                <DesktopLayout />
+             )}
         </div>
     );
 }
+
+    
