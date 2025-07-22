@@ -18,13 +18,19 @@ function getLocale(request: NextRequest): string {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const locale = getLocale(request);
-  const token = request.cookies.get('firebaseIdToken');
 
-  // Add locale to the path if it's missing
+  // Check if the path is for a file/asset
+  const isAsset = pathname.includes('.') || pathname.startsWith('/api') || pathname.startsWith('/_next');
+  if (isAsset) {
+    return NextResponse.next();
+  }
+
+  // Check if the path is missing a locale
   const pathnameIsMissingLocale = i18n.locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
+
+  const locale = getLocale(request);
 
   if (pathnameIsMissingLocale) {
     return NextResponse.redirect(
@@ -32,22 +38,25 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  const authenticatedRoutes = ['/home', '/activity', '/pay', '/wallet', '/settings'];
+  const token = request.cookies.get('firebaseIdToken');
+  const localeFromPath = pathname.split('/')[1];
+
+  const authenticatedRoutes = ['/home', '/activity', '/pay', '/wallet', '/settings', '/pay/confirm', '/pay/request', '/pay/scan'];
   const authRoutes = ['/login', '/signup', '/welcome'];
 
-  // Check if the current route requires authentication
-  const isProtectedRoute = authenticatedRoutes.some(route => pathname.endsWith(route));
-  const isAuthRoute = authRoutes.some(route => pathname.endsWith(route));
+  const isProtectedRoute = authenticatedRoutes.some(route => pathname.startsWith(`/${localeFromPath}${route}`));
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(`/${localeFromPath}${route}`));
+  const isRootPage = pathname === `/${localeFromPath}` || pathname === `/${localeFromPath}/`;
 
   if (token) {
-    // If logged in, redirect from auth pages to home
-    if (isAuthRoute || pathname === `/${locale}` || pathname === `/${locale}/`) {
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    // If logged in, redirect from auth pages or root to home
+    if (isAuthRoute || isRootPage) {
+      return NextResponse.redirect(new URL(`/${localeFromPath}/home`, request.url));
     }
   } else {
     // If not logged in, redirect protected routes to login
     if (isProtectedRoute) {
-      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+      return NextResponse.redirect(new URL(`/${localeFromPath}/login`, request.url));
     }
   }
 

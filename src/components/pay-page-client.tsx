@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -97,8 +98,10 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
     }
     
     const handleSelectUser = (user: DocumentData) => {
+        const lang = dictionary.locale;
+        const url = `/${lang}/pay/confirm?userId=${user.uid}`;
         if (isMobile) {
-            router.push(`/pay/confirm?userId=${user.uid}`);
+            router.push(url);
         } else {
             setSelectedUser(user);
             setIsPayDialogOpen(true);
@@ -214,7 +217,7 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
                         <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname === '/pay' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname === `/${dictionary.locale}/pay` ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                             <Link href="/pay">{d.pay}</Link>
@@ -222,7 +225,7 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
                         <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname === '/pay/request' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname === `/${dictionary.locale}/pay/request` ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                             <Link href="/pay/request">{d.request}</Link>
@@ -232,8 +235,8 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
             </div>
 
              <Dialog open={isPayDialogOpen} onOpenChange={handleDialogClose}>
-                <DialogContent className="p-0 max-w-3xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
-                    <DialogHeader className="sr-only">
+                <DialogContent className="p-0 max-w-4xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
+                    <DialogHeader className='sr-only'>
                         <DialogTitle>Confirm Payment</DialogTitle>
                     </DialogHeader>
                     {selectedUser && (
@@ -241,8 +244,8 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
                             isDialog={true}
                             onClose={handleDialogClose}
                             dictionary={dictionary}
-                            userIdFromDialog={selectedUser.uid}
-                            modeFromDialog="pay"
+                            userIdFromProps={selectedUser.uid}
+                            modeFromProps="pay"
                         />
                     )}
                 </DialogContent>

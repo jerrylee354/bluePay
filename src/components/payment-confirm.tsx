@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { DocumentData } from 'firebase/firestore';
 import { ChevronLeft, Delete, X, Image as ImageIcon, FileText } from 'lucide-react';
@@ -47,13 +48,18 @@ interface PaymentConfirmProps {
     isDialog?: boolean;
     onClose?: () => void;
     dictionary: Dictionary;
-    userIdFromDialog?: string | null;
-    modeFromDialog?: 'pay' | 'request' | string;
+    userIdFromProps?: string | null;
+    modeFromProps?: 'pay' | 'request' | string;
 }
 
-export default function PaymentConfirm({ isDialog = false, onClose, dictionary, userIdFromDialog, modeFromDialog }: PaymentConfirmProps) {
+export default function PaymentConfirm({ 
+    isDialog = false, 
+    onClose, 
+    dictionary, 
+    userIdFromProps, 
+    modeFromProps 
+}: PaymentConfirmProps) {
     const router = useRouter();
-    const searchParams = useSearchParams();
     
     const { getUserById, processTransaction, requestTransaction, user, userData } = useAuth();
     const { toast } = useToast();
@@ -73,8 +79,8 @@ export default function PaymentConfirm({ isDialog = false, onClose, dictionary, 
     const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
     const [completedTransaction, setCompletedTransaction] = useState<Transaction | null>(null);
     
-    const userId = isDialog ? userIdFromDialog : searchParams.get('userId');
-    const mode = isDialog ? (modeFromDialog || 'pay') : (searchParams.get('mode') || 'pay');
+    const userId = isDialog ? userIdFromProps : (userIdFromProps || null);
+    const mode = isDialog ? modeFromProps : (modeFromProps || 'pay');
 
     useEffect(() => {
         if (!userId) {
@@ -301,7 +307,7 @@ export default function PaymentConfirm({ isDialog = false, onClose, dictionary, 
     }
 
     const Keypad = () => (
-        <div className="grid grid-cols-3 gap-1 p-4 bg-muted/20 md:rounded-r-xl md:rounded-l-none rounded-b-xl flex-shrink-0">
+        <div className="grid grid-cols-3 gap-1 p-4 bg-muted/20 rounded-b-xl md:bg-transparent md:rounded-b-none md:rounded-r-xl md:h-full">
             <KeypadButton value="1" onClick={handleKeypadClick} />
             <KeypadButton value="2" letters="ABC" onClick={handleKeypadClick} />
             <KeypadButton value="3" letters="DEF" onClick={handleKeypadClick} />
@@ -411,31 +417,40 @@ export default function PaymentConfirm({ isDialog = false, onClose, dictionary, 
         return <LoadingOverlay isLoading={true} />;
     }
 
+    if (isMobile) {
+        return (
+            <div className="flex flex-col h-dvh bg-background">
+                <LoadingOverlay isLoading={isProcessing} />
+                <header className={cn("relative flex items-center justify-between p-4 flex-shrink-0", { 'hidden': isDialog })}>
+                    <Button variant="ghost" size="icon" onClick={handleBack}>
+                        <ChevronLeft className="h-6 w-6" />
+                        <span className="sr-only">Back</span>
+                    </Button>
+                    <h1 className="text-xl font-semibold">{mode === 'pay' ? '付款' : '要求付款'}</h1>
+                    <div className="w-10"></div>
+                </header>
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    <Content />
+                </div>
+                <div className="flex-shrink-0">
+                    <Keypad />
+                </div>
+            </div>
+        );
+    }
+
+    // Desktop / Dialog Layout
     return (
-        <div className="flex flex-col h-full bg-background md:flex-row md:overflow-hidden">
-             <LoadingOverlay isLoading={isProcessing} />
-             <header className={cn("relative flex items-center p-4", { 'md:hidden': isDialog })}>
-                <Button variant="ghost" size="icon" className="absolute left-4" onClick={handleBack}>
-                    {isDialog ? <X className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
-                    <span className="sr-only">Back</span>
-                </Button>
-                <h1 className="text-xl font-semibold text-center w-full">{mode === 'pay' ? '付款' : '要求付款'}</h1>
-            </header>
-             
-            <div className="flex-1 flex flex-col md:border-r">
+        <div className="flex flex-row h-[580px] bg-background rounded-xl overflow-hidden">
+            <LoadingOverlay isLoading={isProcessing} />
+            <div className="flex-1 flex flex-col border-r">
                 <Content />
             </div>
-
-             {isMobile && (
-                <div className="flex-shrink-0">
-                    <Keypad />
-                </div>
-            )}
-             {!isMobile && (
-                <div className="flex-shrink-0">
-                    <Keypad />
-                </div>
-            )}
+            <div className="flex-shrink-0 w-80">
+                <Keypad />
+            </div>
         </div>
     );
 }
+
+    

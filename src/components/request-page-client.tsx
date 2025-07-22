@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -97,9 +98,10 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
      useEffect(() => {
         if (typeof window !== 'undefined' && currentUser) {
             const baseUrl = window.location.origin;
-            setQrValue(`${baseUrl}/pay/confirm?userId=${currentUser.uid}`);
+            const lang = dictionary.locale;
+            setQrValue(`${baseUrl}/${lang}/pay/confirm?userId=${currentUser.uid}`);
         }
-    }, [currentUser]);
+    }, [currentUser, dictionary.locale]);
 
 
     const getInitials = (name?: string) => {
@@ -121,8 +123,10 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
     }
     
     const handleSelectUser = (user: DocumentData) => {
+        const lang = dictionary.locale;
+        const url = `/${lang}/pay/confirm?userId=${user.uid}&mode=request`;
         if (isMobile) {
-            router.push(`/pay/confirm?userId=${user.uid}&mode=request`);
+            router.push(url);
         } else {
             setSelectedUser(user);
             setIsRequestDialogOpen(true);
@@ -282,7 +286,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                          <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname === '/pay' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname === `/${dictionary.locale}/pay` ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                             <Link href="/pay">{d.pay}</Link>
@@ -290,7 +294,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                         <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname === '/pay/request' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname === `/${dictionary.locale}/pay/request` ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                              <Link href="/pay/request">{d.request}</Link>
@@ -300,7 +304,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
             </div>
 
             <Dialog open={isRequestDialogOpen} onOpenChange={handleDialogClose}>
-                <DialogContent className="p-0 max-w-3xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
+                <DialogContent className="p-0 max-w-4xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
                     <DialogHeader className="sr-only">
                         <DialogTitle>Confirm Request</DialogTitle>
                     </DialogHeader>
@@ -309,8 +313,8 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                             isDialog={true}
                             onClose={handleDialogClose}
                             dictionary={dictionary}
-                            userIdFromDialog={selectedUser.uid}
-                            modeFromDialog="request"
+                            userIdFromProps={selectedUser.uid}
+                            modeFromProps="request"
                         />
                     )}
                 </DialogContent>
