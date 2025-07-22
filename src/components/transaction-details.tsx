@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dictionary } from "@/dictionaries";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -35,7 +36,7 @@ const DetailRow = ({ label, value }: { label: string; value: string | React.Reac
     </div>
 );
 
-export default function TransactionDetails({ transaction }: { transaction: Transaction }) {
+export default function TransactionDetails({ transaction, dictionary }: { transaction: Transaction, dictionary: Dictionary['transactionDetails'] }) {
     const { getUserById, userData } = useAuth();
     const [otherParty, setOtherParty] = useState<DocumentData | null>(null);
     const [isLoading, setIsLoading] = useState(true);

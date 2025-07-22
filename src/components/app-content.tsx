@@ -10,8 +10,7 @@ import { Skeleton } from './ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useIdleTimeout } from '@/hooks/use-idle-timeout';
 import { IdleTimeoutDialog } from './idle-timeout-dialog';
-import { type Locale, i18n } from '../i18n';
-import { getDictionary, type Dictionary } from '@/dictionaries';
+import { type Dictionary } from '@/dictionaries';
 
 const authRoutes = ['/login', '/signup', '/terms', '/privacy', '/welcome'];
 const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
@@ -40,21 +39,13 @@ const AppLoader = () => (
     </div>
 );
 
-function AppContentInternal({ children }: { children: React.ReactNode }) {
+export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     const { isAuthenticated, isLoading, userData, logout } = useFirebaseAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
-    const [dictionary, setDictionary] = useState<Dictionary | null>(null);
     const [isIdle, setIsIdle] = useState(false);
     
-    const locale = i18n.locales.find(l => pathname.startsWith(`/${l}`)) || i18n.defaultLocale;
-
-    useEffect(() => {
-        getDictionary(locale).then(setDictionary);
-    }, [locale]);
-
-
     const handleIdle = () => {
         if(isAuthenticated) {
             setIsIdle(true);
@@ -68,14 +59,13 @@ function AppContentInternal({ children }: { children: React.ReactNode }) {
         isIdle: !isAuthenticated || isLoading,
     });
     
-    const isAuthRoute = authRoutes.some(route => pathname.endsWith(route));
+    const isAuthRoute = authRoutes.some(route => pathname === route);
     const isPublicRoute = pathname === `/`;
 
 
     useEffect(() => {
         if (isLoading) return;
         
-        const pathLocale = pathname.split('/')[1];
         const isAppRoute = !isAuthRoute && !isPublicRoute;
 
         if (!isAuthenticated && isAppRoute) {
@@ -83,13 +73,13 @@ function AppContentInternal({ children }: { children: React.ReactNode }) {
         } else if (isAuthenticated) {
             if (isPublicRoute) {
                  router.push(`/home`);
-            } else if (userData && !userData.hasCompletedOnboarding && !pathname.endsWith('/welcome')) {
+            } else if (userData && !userData.hasCompletedOnboarding && pathname !== '/welcome') {
                 router.push(`/welcome`);
-            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute && !pathname.endsWith('/privacy') && !pathname.endsWith('/terms'))) {
+            } else if (userData && userData.hasCompletedOnboarding && (isAuthRoute && pathname !== '/privacy' && pathname !== '/terms')) {
                 router.push(`/home`);
             }
         }
-    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isPublicRoute, locale]);
+    }, [isAuthenticated, isLoading, pathname, router, userData, isAuthRoute, isPublicRoute]);
     
     if (isLoading && !isAuthRoute && !isPublicRoute) {
         return <AppLoader />;
@@ -99,36 +89,30 @@ function AppContentInternal({ children }: { children: React.ReactNode }) {
         return <>{children}</>
     }
     
-    // Auth routes (login, signup) and welcome page
+    // Auth routes (login, signup) and welcome page have their own layouts
     if (isAuthRoute) {
-        if(dictionary){
-            const pageName = pathname.substring(pathname.lastIndexOf('/') + 1) as keyof Dictionary;
-             const childrenWithProps = React.Children.map(children, child => {
-                if (React.isValidElement(child)) {
-                  // @ts-ignore
-                  return React.cloneElement(child, { dictionary: dictionary[pageName] || dictionary.login });
-                }
-                return child;
-              });
-              return <>{childrenWithProps}</>;
-        }
-        return <AppLoader/>
+        const pageName = pathname.substring(1) as keyof Dictionary;
+        const pageDictionary = dictionary[pageName] || dictionary.login;
+         const childrenWithProps = React.Children.map(children, child => {
+            if (React.isValidElement(child)) {
+              // @ts-ignore
+              return React.cloneElement(child, { dictionary: pageDictionary });
+            }
+            return child;
+          });
+          return <>{childrenWithProps}</>;
     }
     
     if (!isAuthenticated) {
       return <AppLoader />;
     }
 
-    const isFullScreenPage = fullScreenRoutes.some(route => pathname.endsWith(route));
+    const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
 
      const handleConfirmIdle = () => {
         logout();
         setIsIdle(false);
     };
-
-    if (!dictionary) {
-        return <AppLoader />;
-    }
     
     const childrenWithProps = React.Children.map(children, child => {
         if (React.isValidElement(child)) {
@@ -172,13 +156,4 @@ function AppContentInternal({ children }: { children: React.ReactNode }) {
             </main>
         </div>
     );
-}
-
-export default function AppContent({ children }: { children: React.ReactNode }) {
-    // This component no longer needs AuthProvider
-    return (
-        <AppContentInternal>
-            {children}
-        </AppContentInternal>
-    )
 }

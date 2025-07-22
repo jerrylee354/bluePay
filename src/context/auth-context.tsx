@@ -76,9 +76,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   const getCurrentLocale = (): Locale => {
-    const segments = pathname.split('/');
-    const locale = i18n.locales.find(l => l === segments[1]);
-    return locale || i18n.defaultLocale;
+    // A simple way to get locale from path if you use it, e.g. /en/home
+    // For this app, we're not using path-based locales anymore.
+    // The logic is now in `layout.tsx` based on headers.
+    // This function can be simplified or used to get locale from a cookie if needed.
+    return (document.documentElement.lang as Locale) || i18n.defaultLocale;
   }
 
 

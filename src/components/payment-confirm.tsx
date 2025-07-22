@@ -20,6 +20,7 @@ import { type Transaction } from '@/lib/data';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dictionary } from '@/dictionaries';
 
 const RecipientSkeleton = () => (
     <div className="flex items-center space-x-4 p-4">
@@ -47,13 +48,15 @@ interface PaymentConfirmProps {
     mode: 'pay' | 'request' | string;
     isDialog?: boolean;
     onClose?: () => void;
+    dictionary: Dictionary;
 }
 
-export default function PaymentConfirm({ userId, mode, isDialog = false, onClose }: PaymentConfirmProps) {
+export default function PaymentConfirm({ userId, mode, isDialog = false, onClose, dictionary }: PaymentConfirmProps) {
     const router = useRouter();
     const { getUserById, processTransaction, requestTransaction, user, userData } = useAuth();
     const { toast } = useToast();
     const isMobile = useIsMobile();
+    const d = dictionary.pay;
 
     const [recipient, setRecipient] = useState<DocumentData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -216,7 +219,8 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                     toUserId: recipient.uid,
                     amount: numericAmount,
                     note,
-                    attachmentUrl: attachedImage
+                    attachmentUrl: attachedImage,
+                    locale: dictionary.locale as 'en' | 'zh-TW',
                 });
             } else { // Request logic
                  txResult = await requestTransaction({
@@ -225,6 +229,7 @@ export default function PaymentConfirm({ userId, mode, isDialog = false, onClose
                     amount: numericAmount,
                     note,
                     attachmentUrl: attachedImage,
+                    locale: dictionary.locale as 'en' | 'zh-TW',
                  });
             }
             setCompletedTransaction(txResult);

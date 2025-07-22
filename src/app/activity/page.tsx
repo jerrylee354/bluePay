@@ -336,7 +336,7 @@ export default function ActivityPage({ dictionary }: { dictionary: Dictionary })
       <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>
         <DialogContent className="sm:max-w-2xl p-0 flex flex-col max-h-[85vh]">
             <DialogHeader className="p-6 pb-4">
-                <DialogTitle className="sr-only">Transaction Details</DialogTitle>
+                <DialogTitle className="sr-only">{dictionary.transactionDetails.title}</DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto px-6 pb-6">
                 {selectedTx && <TransactionDetails transaction={selectedTx} dictionary={dictionary.transactionDetails} />}

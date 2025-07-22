@@ -43,7 +43,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
 
   const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
       const pathname = usePathname();
-      const isActive = pathname.endsWith(item.href);
+      const isActive = pathname === item.href;
 
       return (
           <TooltipProvider delayDuration={0}>

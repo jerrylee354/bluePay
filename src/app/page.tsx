@@ -1,8 +1,7 @@
 
 import LandingPage from '@/app/(app)/page';
 import { getDictionary } from '@/dictionaries';
-import { type Locale } from './i18n';
-import { i18n } from './i18n';
+import { type Locale, i18n } from '@/i18n';
 import { headers } from 'next/headers'
 import { match as matchLocale } from '@formatjs/intl-localematcher'
 import Negotiator from 'negotiator'

@@ -282,7 +282,7 @@ export default function RequestPage({ dictionary }: { dictionary: Dictionary }) 
                          <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname.endsWith('/pay') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname === '/pay' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                             <Link href="/pay">{d.pay}</Link>
@@ -290,7 +290,7 @@ export default function RequestPage({ dictionary }: { dictionary: Dictionary }) 
                         <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname.endsWith('/request') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname === '/pay/request' ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                              <Link href="/pay/request">{d.request}</Link>

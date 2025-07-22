@@ -26,7 +26,7 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
     <div className="fixed bottom-0 left-0 w-full border-t bg-background/95 backdrop-blur-sm z-10 h-24 pt-2 pb-safe-bottom">
       <nav className="flex justify-around items-start h-full max-w-lg mx-auto">
         {navItems.map((item) => {
-          const isActive = pathname.endsWith(item.href);
+          const isActive = pathname === item.href;
           
           return (
             <Link
