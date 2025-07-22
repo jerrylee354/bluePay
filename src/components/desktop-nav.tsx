@@ -28,7 +28,7 @@ import SettingsContainer, { type SettingsPage } from './settings-container';
 import { Dictionary } from '@/dictionaries';
 
 
-export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary }) {
+export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary['settings'] }) {
   const { user, userData } = useAuth();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [settingsPage, setSettingsPage] = React.useState<SettingsPage>('main');
@@ -129,12 +129,12 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                     </Avatar>
                     <div className={cn("flex flex-col items-start text-left transition-all duration-200", isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden")}>
                         <p className="font-semibold text-sm leading-tight whitespace-nowrap">{userData?.firstName || "User"}</p>
-                        <p className="text-xs text-muted-foreground leading-tight">{settingsDictionary.settings.title}</p>
+                        <p className="text-xs text-muted-foreground leading-tight">{settingsDictionary.title}</p>
                     </div>
                   </button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-2xl p-0">
-                  <SettingsContainer page={settingsPage} setPage={setSettingsPage} dictionary={settingsDictionary} />
+                  <SettingsContainer page={settingsPage} setPage={setSettingsPage} dictionary={{...settingsDictionary, settings: settingsDictionary } as any} />
                 </DialogContent>
           </Dialog>
       </div>
