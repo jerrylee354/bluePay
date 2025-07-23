@@ -280,7 +280,7 @@ export default function PaymentConfirm({
             const mockTransaction: Transaction = {
                 id: 'temp-' + Date.now(),
                 type: mode === 'pay' ? 'payment' : 'receipt',
-                status: mode === 'pay' ? 'Completed' : 'Requested',
+                status: mode === 'pay' ? dictionary.status.Completed : dictionary.status.Requested,
                 date: new Date().toISOString(),
                 amount: numericAmount,
                 description: note,
@@ -518,3 +518,5 @@ export default function PaymentConfirm({
     );
 }
 
+
+    

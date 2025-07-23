@@ -104,7 +104,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
         if (typeof window !== 'undefined' && currentUser) {
             const baseUrl = window.location.origin;
             const lang = dictionary.locale;
-            setQrValue(`${baseUrl}/${lang}/pay/confirm?userId=${currentUser.uid}`);
+            setQrValue(`${baseUrl}/${lang}/pay/confirm?userId=${currentUser.uid}&mode=request`);
         }
     }, [currentUser, dictionary.locale]);
 
@@ -296,7 +296,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                          <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname.includes('/pay') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname.includes('/pay') && !pathname.includes('/request') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                             <Link href="/pay">{d.pay}</Link>
@@ -332,3 +332,5 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
         </div>
     );
 }
+
+    

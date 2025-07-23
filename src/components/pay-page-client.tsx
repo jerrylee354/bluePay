@@ -262,3 +262,5 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
         </div>
     );
 }
+
+    
