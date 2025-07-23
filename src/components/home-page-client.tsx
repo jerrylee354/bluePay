@@ -139,7 +139,7 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
       {isBusiness ? (
         <>
             <BalanceCard />
-            <Dashboard transactions={transactions} dictionary={dictionary} timeframe="1hour" showRevenueChartOnly={true} />
+            <Dashboard transactions={transactions} dictionary={dictionary} timeframe="all-time" showRevenueChartOnly={true} />
         </>
       ) : (
         <>
