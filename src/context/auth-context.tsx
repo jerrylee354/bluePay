@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -293,7 +292,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const [emailSnapshot, firstNameSnapshot, lastNameSnapshot] = await Promise.all([
             getDocs(emailQuery),
             getDocs(firstNameQuery),
-            getDocs(lastNameSnapshot)
+            getDocs(lastNameQuery)
         ]);
         
         const usersMap = new Map<string, DocumentData>();
@@ -547,10 +546,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const addTicketToWallet = async (templateId: string, issuerId: string) => {
     if (!user) throw new Error("User not authenticated");
-    
-    const templateRef = doc(db, "users", issuerId, "ticketTemplates", templateId);
-    
+
     await runTransaction(db, async (transaction) => {
+        const templateRef = doc(db, "users", issuerId, "ticketTemplates", templateId);
         const templateSnap = await transaction.get(templateRef);
 
         if (!templateSnap.exists()) {
@@ -630,3 +628,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+    
