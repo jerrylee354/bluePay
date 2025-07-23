@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { DocumentData } from 'firebase/firestore';
 import VerificationStatusDialog from './VerificationStatusDialog';
 import AddTicketDialog from './add-ticket-dialog';
+import { useAddTicketDialogStore } from '@/stores/add-ticket-dialog-store';
 
 
 const AppLoader = () => (
@@ -249,12 +250,27 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
 function AppContentWithAuth({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     const { user, userData, isLoading, isLoggingOut, logout, submitAppeal } = useAuth();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const openAddTicketDialog = useAddTicketDialogStore((state) => state.openDialog);
     const prevUserDataRef = useRef<DocumentData | null>();
     const { toast } = useToast();
 
     const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
     const [showVerificationDialog, setShowVerificationDialog] = useState(false);
     const [verificationChangeType, setVerificationChangeType] = useState<'granted' | 'revoked' | null>(null);
+    
+    useEffect(() => {
+        const templateId = searchParams.get('templateId');
+        const issuerId = searchParams.get('issuerId');
+        
+        if(templateId && issuerId) {
+            openAddTicketDialog(templateId, issuerId);
+            const newPath = pathname;
+            router.replace(newPath, { scroll: false });
+        }
+    }, [searchParams, openAddTicketDialog, pathname, router]);
+
 
     useEffect(() => {
         if (prevUserDataRef.current && userData) {
@@ -301,8 +317,6 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
         return <>{children}</>;
     }
     
-    // First, handle the initial loading state before any other checks.
-    // This prevents race conditions where userData is checked before it's loaded.
     if (isLoading || !userData || (isLoggingOut && !pathname.includes('/login'))) {
         return <LoadingOverlay isLoading={true} />;
     }
@@ -318,14 +332,13 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
                 />
     }
     
-    // Now that we know userData is loaded, we can safely check its status.
     if (userData.status !== 'Yes') {
         return <AccountSuspendedScreen 
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
                     onAppeal={handleAppeal}
                     userData={userData}
-                    onContinue={() => {}} // This path is not used when showAppealSuccess is false
+                    onContinue={() => {}} 
                     showAppealSuccess={false}
                 />
     }

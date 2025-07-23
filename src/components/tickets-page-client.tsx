@@ -29,7 +29,7 @@ import { format } from 'date-fns';
 
 const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => (
     <div 
-        className="rounded-lg p-4 text-white shadow-md flex flex-col justify-between"
+        className="rounded-lg p-4 text-white shadow-md flex flex-col justify-between overflow-hidden"
         style={{ 
             backgroundColor: template.style?.backgroundColor || '#4f46e5',
             color: template.style?.textColor || '#ffffff',
@@ -231,8 +231,8 @@ const CreateEditTicketDialog = ({
         <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
             <DialogContent className="max-w-lg flex flex-col h-full sm:h-auto max-h-[90vh]">
                 <LoadingOverlay isLoading={isProcessing} />
-                <DialogHeader>
-                    <div className="flex justify-between items-center">
+                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
+                    <div className="flex items-center justify-between">
                         <DialogTitle className="text-2xl font-bold">{dialogTitle}</DialogTitle>
                          <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">{dictionary.step} {step}/{totalSteps}</span>
@@ -241,14 +241,14 @@ const CreateEditTicketDialog = ({
                             </Button>
                         </div>
                     </div>
-                    <DialogDescription>{dictionary.createTicketDescription}</DialogDescription>
+                    <DialogDescription className="sr-only">{dictionary.createTicketDescription}</DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 flex items-center justify-center py-8 overflow-y-auto">
+                <div className="flex-1 flex items-center justify-center p-6 overflow-y-auto">
                     {renderStepContent()}
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t">
+                <div className="flex justify-between items-center p-6 pt-4 border-t flex-shrink-0">
                     {step > 1 ? (
                         <Button variant="ghost" onClick={handleBack}><ChevronLeft className="mr-2 h-4 w-4"/> {dictionary.back}</Button>
                     ) : <div></div>}
@@ -286,7 +286,7 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const handleShare = (template: TicketTemplate) => {
         if (typeof window !== 'undefined' && user) {
             const baseUrl = window.location.origin;
-            const addUrl = `${baseUrl}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
+            const addUrl = `${baseUrl}/home?templateId=${template.id}&issuerId=${user.uid}`;
             const qrJson = JSON.stringify({ type: 'ticket_url', url: addUrl });
             setQrValue(qrJson);
             setSelectedTemplate(template);
@@ -309,7 +309,7 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const copyToClipboard = () => {
         if (!selectedTemplate || !user) return;
         const baseUrl = window.location.origin;
-        const addUrl = `${baseUrl}/wallet/add?templateId=${selectedTemplate.id}&issuerId=${user.uid}`;
+        const addUrl = `${baseUrl}/home?templateId=${selectedTemplate.id}&issuerId=${user.uid}`;
         navigator.clipboard.writeText(addUrl).then(() => {
             toast({ title: d.linkCopied });
         }, (err) => {
