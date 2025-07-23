@@ -1,7 +1,5 @@
 import React from 'react';
-import { AuthProvider } from '@/context/auth-context';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
 import { type Locale } from '@/i18n';
 
 // This RootLayout is now simpler and doesn't fetch data itself.
@@ -23,10 +21,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico?favicon.56766c03.ico" sizes="48x48" type="image/x-icon" />
       </head>
       <body className="font-body antialiased bg-background">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-        <Toaster />
+        {children}
       </body>
     </html>
   );

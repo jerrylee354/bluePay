@@ -151,12 +151,23 @@
     "transactionDetails": {
         "title": "Transaction Details"
     },
+    "paymentSuccess": {
+        "paymentSuccessful": "Payment Successful",
+        "requestSent": "Request Sent",
+        "paidTo": "Paid to",
+        "requestedFrom": "Requested from",
+        "transactionDate": "Transaction Date",
+        "transactionStatus": "Transaction Status",
+        "transactionId": "Transaction ID",
+        "note": "Note",
+        "done": "Done"
+    },
     "pay": {
         "title": "Pay or Request",
         "searchPlaceholder": "Search by name, @username, or email",
         "noUsersFound": "No users found for \"{searchTerm}\"",
         "pay": "Pay",
-        "request": "Request",
+        "request": "Request Payment",
         "scanQrCode": {
             "title": "Scan QR Code",
             "description": "Pay by scanning a QR code",

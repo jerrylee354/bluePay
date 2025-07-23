@@ -151,6 +151,17 @@
     "transactionDetails": {
         "title": "交易詳情"
     },
+    "paymentSuccess": {
+        "paymentSuccessful": "付款成功",
+        "requestSent": "請求已傳送",
+        "paidTo": "付款給",
+        "requestedFrom": "來自的請求",
+        "transactionDate": "交易日期",
+        "transactionStatus": "交易狀態",
+        "transactionId": "交易 ID",
+        "note": "附註",
+        "done": "完成"
+    },
     "pay": {
         "title": "付款或收款",
         "searchPlaceholder": "依姓名、@使用者名稱或電子郵件搜尋",
@@ -258,5 +269,3 @@
         "confirm": "確定"
     }
 }
-
-    

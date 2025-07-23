@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
+import { AuthProvider, useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
 import { useIsMobile } from '@/hooks/use-is-mobile';
@@ -12,6 +12,7 @@ import { IdleTimeoutDialog } from './idle-timeout-dialog';
 import { type Dictionary } from '@/dictionaries';
 import { Skeleton } from './ui/skeleton';
 import { LoadingOverlay } from './ui/loading-overlay';
+import { Toaster } from './ui/toaster';
 
 
 const AppLoader = () => (
@@ -33,8 +34,7 @@ const AppLoader = () => (
     </div>
 );
 
-
-export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
+function AuthDependentContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     const { isAuthenticated, isLoading, logout, isLoggingOut } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
@@ -122,5 +122,17 @@ export default function AppContent({ children, dictionary }: { children: React.R
                </div>
             </main>
         </div>
+    );
+}
+
+
+export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
+    return (
+        <AuthProvider>
+            <AuthDependentContent dictionary={dictionary}>
+                {children}
+            </AuthDependentContent>
+            <Toaster />
+        </AuthProvider>
     );
 }
