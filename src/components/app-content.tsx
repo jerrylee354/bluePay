@@ -116,8 +116,8 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
                     <main className="flex-1 overflow-y-auto p-4 pb-28">
                         {children}
                     </main>
-                    <BottomNav dictionary={dictionary.nav} />
                 </div>
+                 <BottomNav dictionary={dictionary.nav} /> {/* Moved BottomNav out of the flex-col container */}
             </div>
         );
     }

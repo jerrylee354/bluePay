@@ -93,6 +93,25 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
   if (isLoading) {
       return <LoadingOverlay isLoading={true} />;
   }
+  
+  const BalanceCard = () => (
+      <Card className="w-full shadow-lg bg-primary text-primary-foreground">
+        <CardHeader>
+          <CardTitle className="text-sm font-normal text-primary-foreground/80">
+            {d.totalBalance}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {userData ? (
+            <p className="text-4xl font-bold tracking-tight">
+              {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
+            </p>
+          ) : (
+             <Skeleton className="h-10 w-48" />
+          )}
+        </CardContent>
+    </Card>
+  );
 
   return (
     <div className="space-y-8">
@@ -118,25 +137,13 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
       </header>
         
       {isBusiness ? (
-        <Dashboard transactions={transactions} dictionary={dictionary} timeframe="1hour" />
+        <>
+            <BalanceCard />
+            <Dashboard transactions={transactions} dictionary={dictionary} timeframe="1hour" showRevenueChartOnly={true} />
+        </>
       ) : (
         <>
-            <Card className="w-full shadow-lg bg-primary text-primary-foreground">
-                <CardHeader>
-                  <CardTitle className="text-sm font-normal text-primary-foreground/80">
-                    {d.totalBalance}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {userData ? (
-                    <p className="text-4xl font-bold tracking-tight">
-                      {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
-                    </p>
-                  ) : (
-                     <Skeleton className="h-10 w-48" />
-                  )}
-                </CardContent>
-            </Card>
+            <BalanceCard />
             <RecentActivity transactions={recentTransactions} userData={userData} dictionary={d} />
         </>
       )}

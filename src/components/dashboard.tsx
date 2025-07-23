@@ -41,10 +41,12 @@ export default function Dashboard({
   transactions,
   dictionary,
   timeframe = 'all-time',
+  showRevenueChartOnly = false,
 }: {
   transactions: Transaction[];
   dictionary: Dictionary;
   timeframe?: '1hour' | 'all-time';
+  showRevenueChartOnly?: boolean;
 }) {
   const { userData } = useAuth();
   const currency = userData?.currency || 'USD';
@@ -95,16 +97,18 @@ export default function Dashboard({
       .map(([name, total]) => ({ name, total }))
       .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime());
   }, [filteredTransactions, dictionary.status]);
-
-  return (
-    <div className="space-y-6">
+  
+  const headerContent = (
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{d.title}</h1>
         <div className="text-sm font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-md">
           {timeframe === '1hour' ? d.lastHour : d.allTime}
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+  );
+  
+  const statCards = (
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{d.totalRevenue}</CardTitle>
@@ -148,41 +152,47 @@ export default function Dashboard({
           </CardContent>
         </Card>
       </div>
+  );
 
-      {chartData.length > 0 && (
-        <Card>
-            <CardHeader>
-                <CardTitle>{d.revenueChartTitle}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData}>
-                        <XAxis
-                            dataKey="name"
-                            stroke="#888888"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                        />
-                        <YAxis
-                            stroke="#888888"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                            tickFormatter={(value) => formatCurrency(value as number, currency)}
-                        />
-                        <Tooltip 
-                          cursor={{ fill: 'hsl(var(--muted))' }}
-                          content={<CustomTooltip currency={currency} dictionary={dictionary} />}
-                        />
-                        <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-      )}
+  const revenueChart = (
+     <Card>
+        <CardHeader>
+            <CardTitle>{d.revenueChartTitle}</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData}>
+                    <XAxis
+                        dataKey="name"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => formatCurrency(value as number, currency)}
+                    />
+                    <Tooltip 
+                      cursor={{ fill: 'hsl(var(--muted))' }}
+                      content={<CustomTooltip currency={currency} dictionary={dictionary} />}
+                    />
+                    <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
+        </CardContent>
+    </Card>
+  );
 
+  return (
+    <div className="space-y-6">
+      {!showRevenueChartOnly && headerContent}
+      {!showRevenueChartOnly && statCards}
+      {chartData.length > 0 && revenueChart}
     </div>
   );
 }

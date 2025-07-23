@@ -50,6 +50,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
     { href: "/home", label: dictionary.home, icon: Home },
     { href: "/dashboard", label: dictionary.dashboard, icon: LayoutDashboard },
     { href: "/orders", label: dictionary.orders, icon: Package },
+    { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
     { href: "/wallet", label: dictionary.wallet, icon: WalletIcon },
   ];
 
