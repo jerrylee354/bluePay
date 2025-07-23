@@ -115,7 +115,8 @@
         "activity": "Activity",
         "pay": "Pay",
         "wallet": "Wallet",
-        "settings": "Settings"
+        "settings": "Settings",
+        "orders": "Orders"
     },
     "home": {
         "welcome": "Welcome back,",
@@ -123,7 +124,9 @@
         "recentActivity": "Recent Activity",
         "viewAll": "View all",
         "loadingTransactions": "Loading transactions...",
-        "noRecentTransactions": "No recent transactions found."
+        "noRecentTransactions": "No recent transactions found.",
+        "dashboard": "Dashboard",
+        "businessDashboardComingSoon": "Dashboard for business accounts coming soon."
     },
     "activity": {
         "title": "Activity",
@@ -189,6 +192,10 @@
         "splitBillWithGroup": "Split a bill with a group",
         "featureUnderConstruction": "This feature is under construction.",
         "createNewGroup": "Create New Group"
+    },
+    "orders": {
+        "title": "Orders",
+        "underConstruction": "Order management feature coming soon!"
     },
     "wallet": {
         "title": "Wallet",

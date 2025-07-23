@@ -10,7 +10,8 @@ import {
   Home,
   History,
   CircleDollarSign,
-  Wallet as WalletIcon, 
+  Wallet as WalletIcon,
+  Package 
 } from "lucide-react";
 import {
   Tooltip,
@@ -35,13 +36,22 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const router = useRouter();
-  
-  const navItems = [
+  const isBusiness = userData?.accountType === 'business';
+
+  const personalNavItems = [
     { href: "/home", label: dictionary.home, icon: Home },
     { href: "/activity", label: dictionary.activity, icon: History },
     { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
     { href: "/wallet", label: dictionary.wallet, icon: WalletIcon },
   ];
+
+  const businessNavItems = [
+    { href: "/home", label: dictionary.home, icon: Home },
+    { href: "/activity", label: dictionary.activity, icon: History },
+    { href: "/orders", label: dictionary.orders, icon: Package },
+  ];
+
+  const navItems = isBusiness ? businessNavItems : personalNavItems;
 
   const NavLink = ({ item, isExpanded }: { item: typeof navItems[0], isExpanded: boolean }) => {
       const pathname = usePathname();

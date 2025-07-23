@@ -115,7 +115,8 @@
         "activity": "活動",
         "pay": "支付",
         "wallet": "錢包",
-        "settings": "設定"
+        "settings": "設定",
+        "orders": "訂單"
     },
     "home": {
         "welcome": "歡迎回來，",
@@ -123,7 +124,9 @@
         "recentActivity": "最近的活動",
         "viewAll": "查看全部",
         "loadingTransactions": "正在載入交易紀錄...",
-        "noRecentTransactions": "找不到最近的交易紀錄。"
+        "noRecentTransactions": "找不到最近的交易紀錄。",
+        "dashboard": "儀表板",
+        "businessDashboardComingSoon": "商業帳戶的儀表板功能即將推出。"
     },
     "activity": {
         "title": "活動",
@@ -189,6 +192,10 @@
         "splitBillWithGroup": "與群組成員分攤帳單",
         "featureUnderConstruction": "此功能正在建構中。",
         "createNewGroup": "建立新群組"
+    },
+    "orders": {
+        "title": "訂單",
+        "underConstruction": "訂單管理功能即將推出！"
     },
     "wallet": {
         "title": "錢包",

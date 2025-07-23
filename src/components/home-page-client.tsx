@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,20 +37,75 @@ const TransactionIcon = ({ type }: { type: Transaction["type"] }) => {
   );
 };
 
+const RecentActivity = ({ transactions, userData, dictionary }: { transactions: Transaction[], userData: any, dictionary: Dictionary['home'] }) => (
+    <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">{dictionary.recentActivity}</h2>
+          <Link href="/activity" className="text-sm font-medium text-primary hover:underline">
+            {dictionary.viewAll}
+          </Link>
+        </div>
+        <Card>
+            <CardContent className="p-0">
+              {transactions.length > 0 ? (
+                <ul className="divide-y">
+                    {transactions.map((tx) => (
+                        <li key={tx.id} className="flex items-center p-4 space-x-4">
+                            <TransactionIcon type={tx.type} />
+                            <div className="flex-1">
+                                <p className="font-semibold">{tx.name}</p>
+                                <p className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleDateString()}</p>
+                            </div>
+                            <p className={cn(
+                                "font-bold",
+                                tx.type === 'payment' ? 'text-destructive' : 'text-accent'
+                            )}>
+                                {tx.type === 'payment' ? '-' : '+'}
+                                {formatCurrency(tx.amount, userData?.currency || 'USD')}
+                            </p>
+                        </li>
+                    ))}
+                </ul>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground">
+                    {dictionary.noRecentTransactions}
+                </div>
+              )}
+            </CardContent>
+        </Card>
+      </div>
+);
+
+const BusinessDashboardPlaceholder = ({ dictionary }: { dictionary: Dictionary['home']}) => (
+    <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">{dictionary.dashboard}</h2>
+        </div>
+        <div className="flex flex-col items-center justify-center space-y-4 text-center p-8 bg-secondary rounded-xl min-h-[300px]">
+            <LayoutDashboard className="w-16 h-16 text-muted-foreground" />
+            <p className="text-muted-foreground">{dictionary.businessDashboardComingSoon}</p>
+        </div>
+    </div>
+);
+
 export default function HomePageClient({ dictionary }: { dictionary: Dictionary }) {
   const { user, userData, transactions, isLoading } = useAuth();
   const recentTransactions = transactions.slice(0, 4);
   const isMobile = useIsMobile();
   const d = dictionary.home;
+  const isBusiness = userData?.accountType === 'business';
 
   const getInitials = (email: string | null | undefined) => {
     if (!email) return 'U';
     return email.charAt(0).toUpperCase();
   }
 
+  if (isLoading) {
+      return <LoadingOverlay isLoading={true} />;
+  }
+
   return (
     <div className="space-y-8">
-      <LoadingOverlay isLoading={isLoading} />
       <header className="flex items-center justify-between">
         <div>
           <p className="text-muted-foreground">{d.welcome}</p>
@@ -89,55 +144,11 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
         </CardContent>
       </Card>
       
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">{d.recentActivity}</h2>
-          <Link href="/activity" className="text-sm font-medium text-primary hover:underline">
-            {d.viewAll}
-          </Link>
-        </div>
-        <Card>
-            <CardContent className="p-0">
-              {isLoading ? (
-                 <div className="p-4 space-y-2">
-                    {[...Array(4)].map((_, i) => (
-                        <div key={i} className="flex items-center p-2 space-x-4">
-                            <Skeleton className="h-10 w-10 rounded-full" />
-                            <div className="flex-1 space-y-2">
-                                <Skeleton className="h-4 w-3/4" />
-                                <Skeleton className="h-3 w-1/2" />
-                            </div>
-                            <Skeleton className="h-6 w-20" />
-                        </div>
-                    ))}
-                 </div>
-              ) : recentTransactions.length > 0 ? (
-                <ul className="divide-y">
-                    {recentTransactions.map((tx) => (
-                        <li key={tx.id} className="flex items-center p-4 space-x-4">
-                            <TransactionIcon type={tx.type} />
-                            <div className="flex-1">
-                                <p className="font-semibold">{tx.name}</p>
-                                <p className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleDateString()}</p>
-                            </div>
-                            <p className={cn(
-                                "font-bold",
-                                tx.type === 'payment' ? 'text-destructive' : 'text-accent'
-                            )}>
-                                {tx.type === 'payment' ? '-' : '+'}
-                                {formatCurrency(tx.amount, userData?.currency || 'USD')}
-                            </p>
-                        </li>
-                    ))}
-                </ul>
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                    {d.noRecentTransactions}
-                </div>
-              )}
-            </CardContent>
-        </Card>
-      </div>
+      {isBusiness ? (
+        <BusinessDashboardPlaceholder dictionary={d} />
+      ) : (
+        <RecentActivity transactions={recentTransactions} userData={userData} dictionary={d} />
+      )}
     </div>
   );
 }
