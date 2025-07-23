@@ -66,6 +66,7 @@ const AccountSuspendedScreen = ({
     showAppealSuccess: boolean,
 }) => {
     const [showTemporarySuccess, setShowTemporarySuccess] = useState(false);
+    const d = dictionary;
 
     const handleAppealClick = () => {
         onAppeal();
@@ -78,11 +79,11 @@ const AccountSuspendedScreen = ({
     const getSuspensionDetails = () => {
         switch (userData?.status) {
             case 'No1':
-                return { title: dictionary.title, description: dictionary.description_large_transaction };
+                return { title: d.title, description: d.description_large_transaction };
             case 'No2':
-                return { title: dictionary.title, description: dictionary.description_fraud };
+                return { title: d.title, description: d.description_fraud };
             default:
-                return { title: dictionary.title, description: dictionary.description };
+                return { title: d.title, description: d.description };
         }
     }
 
@@ -91,14 +92,14 @@ const AccountSuspendedScreen = ({
             <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
                 <Card className="w-full max-w-md text-center shadow-lg">
                     <CardHeader>
-                        <CardTitle className="mt-4 text-2xl font-bold">{dictionary.appealApprovedTitle}</CardTitle>
+                        <CardTitle className="mt-4 text-2xl font-bold">{d.appealApprovedTitle}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex flex-col items-center">
                             <AnimatedCheckmark />
-                            <p className="text-muted-foreground">{dictionary.appealApprovedDescription}</p>
+                            <p className="text-muted-foreground">{d.appealApprovedDescription}</p>
                             <Button className="w-full mt-6" onClick={onContinue}>
-                                {dictionary.continue}
+                                {d.continue}
                             </Button>
                         </div>
                     </CardContent>
@@ -112,12 +113,12 @@ const AccountSuspendedScreen = ({
             <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
                 <Card className="w-full max-w-md text-center shadow-lg">
                     <CardHeader>
-                         <CardTitle className="mt-4 text-2xl font-bold">{dictionary.appealSuccessTitle}</CardTitle>
+                         <CardTitle className="mt-4 text-2xl font-bold">{d.appealSuccessTitle}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                          <div className="flex flex-col items-center">
                             <AnimatedCheckmark />
-                            <p className="text-muted-foreground">{dictionary.appealSuccessDescription}</p>
+                            <p className="text-muted-foreground">{d.appealSuccessDescription}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -138,15 +139,15 @@ const AccountSuspendedScreen = ({
                      <CardTitle className="mt-4 text-2xl font-bold">{title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <p className="text-muted-foreground">{hasAppealed ? dictionary.appealInReview : description}</p>
+                    <p className="text-muted-foreground">{hasAppealed ? d.appealInReview : description}</p>
                     <div className="flex flex-col gap-3 sm:flex-row">
                         <Button variant="outline" className="w-full" onClick={onLogout}>
                             <LogOut className="mr-2 h-4 w-4" />
-                            {dictionary.logout}
+                            {d.logout}
                         </Button>
                         {!hasAppealed && (
                             <Button className="w-full" onClick={handleAppealClick}>
-                                {dictionary.appeal}
+                                {d.appeal}
                             </Button>
                         )}
                     </div>
