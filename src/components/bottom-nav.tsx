@@ -25,12 +25,10 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
     { href: "/home", label: dictionary.home, icon: Home },
     { href: "/dashboard", label: dictionary.dashboard, icon: LayoutDashboard },
     { href: "/orders", label: dictionary.orders, icon: Package },
-    { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
     { href: "/wallet", label: dictionary.wallet, icon: Wallet },
   ];
   
   const navItems = isBusiness ? businessNavItems : personalNavItems;
-  const gridColsClass = isBusiness ? 'grid-cols-5' : 'grid-cols-4';
 
   if (pathname.includes('/settings')) {
     return null;
@@ -38,7 +36,7 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
 
   return (
     <div className="fixed bottom-0 left-0 w-full border-t bg-background/95 backdrop-blur-sm z-50 h-20 pt-2 pb-safe-bottom">
-      <nav className={cn("grid justify-around items-start h-full max-w-lg mx-auto", gridColsClass)}>
+      <nav className="grid grid-cols-4 justify-around items-start h-full max-w-lg mx-auto">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           
