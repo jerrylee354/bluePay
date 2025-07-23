@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-is-mobile";
 import { Dictionary } from "@/dictionaries";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import Dashboard from "./dashboard";
+import VerifiedAvatar from "./VerifiedAvatar";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -85,11 +86,6 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
   const d = dictionary.home;
   const isBusiness = userData?.accountType === 'business';
 
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return 'U';
-    return email.charAt(0).toUpperCase();
-  }
-
   if (isLoading) {
       return <LoadingOverlay isLoading={true} />;
   }
@@ -128,10 +124,7 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
         </div>
         {isMobile && (
           <Link href="/settings">
-              <Avatar className="h-12 w-12 cursor-pointer">
-                <AvatarImage src={userData?.photoURL || ""} alt="User Avatar" />
-                <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
-              </Avatar>
+              <VerifiedAvatar user={userData} className="h-12 w-12 cursor-pointer" />
           </Link>
         )}
       </header>

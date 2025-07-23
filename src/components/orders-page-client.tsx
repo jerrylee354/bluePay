@@ -10,7 +10,6 @@ import { type Transaction } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import TransactionDetails from '@/components/transaction-details';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     AlertDialog,
@@ -29,6 +28,7 @@ import { Dictionary } from '@/dictionaries';
 import { Plus, FilePlus, QrCode, ShoppingCart } from 'lucide-react';
 import QRCode from 'qrcode.react';
 import { Skeleton } from '@/components/ui/skeleton';
+import VerifiedAvatar from './VerifiedAvatar';
 
 
 function formatCurrency(amount: number, currency: string) {
@@ -51,17 +51,9 @@ const statusStyles: { [key: string]: string } = {
 
 const TransactionItem = ({ tx, currency, onClick }: { tx: Transaction, currency: string, onClick: () => void }) => {
     
-    const getInitials = (name?: string) => {
-        if (!name) return '?';
-        return name.charAt(0).toUpperCase();
-    }
-    
     return (
         <li className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-muted/50" onClick={onClick}>
-            <Avatar className="h-11 w-11">
-                <AvatarImage src={tx.otherParty?.photoURL} alt={tx.name} />
-                <AvatarFallback>{getInitials(tx.name)}</AvatarFallback>
-            </Avatar>
+            <VerifiedAvatar user={tx.otherParty} className="h-11 w-11" />
             <div className="flex-1 space-y-1">
                 <p className="font-semibold">{tx.name}</p>
                 <p className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleString()}</p>
@@ -210,11 +202,6 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
       setTxToCancel(null);
     }
   };
-
-  const getInitials = (name?: string) => {
-    if (!name) return '?';
-    return name.charAt(0).toUpperCase();
-  }
   
   const getDisplayUsername = () => {
       if (!userData) return '';
@@ -259,10 +246,7 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
                                     )}
                                 </div>
                                 <div className="flex items-center gap-3 pt-2">
-                                    <Avatar className="h-12 w-12">
-                                        <AvatarImage src={userData?.photoURL || ''} alt="User Avatar" />
-                                        <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
-                                    </Avatar>
+                                    <VerifiedAvatar user={userData} className="h-12 w-12" />
                                     <div className="text-left">
                                         <p className="font-bold text-lg">{userData?.firstName} {userData?.lastName}</p>
                                         <p className="text-muted-foreground">{getDisplayUsername()}</p>

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { DocumentData } from 'firebase/firestore';
 import { ChevronLeft, Delete, X, Image as ImageIcon, FileText, PlusCircle, Trash2 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +19,7 @@ import { type Transaction } from '@/lib/data';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { cn } from '@/lib/utils';
 import { Dictionary } from '@/dictionaries';
+import VerifiedAvatar from './VerifiedAvatar';
 
 export interface OrderItem {
   id: string;
@@ -222,11 +222,6 @@ export default function PaymentConfirm({
     }, []);
 
 
-    const getInitials = (name?: string) => {
-        if (!name) return 'U';
-        return name.charAt(0).toUpperCase();
-    }
-    
     const formattedAmount = useMemo(() => {
         if (amount === '0' && !amount.includes('.')) return '0';
         const [integerPart, decimalPart] = amount.split('.');
@@ -466,10 +461,7 @@ export default function PaymentConfirm({
                 <div className="space-y-4">
                      {recipient && (
                          <div className="flex flex-col items-center space-y-2">
-                            <Avatar className="h-16 w-16">
-                                <AvatarImage src={recipient.photoURL} alt={recipient.firstName} />
-                                <AvatarFallback className="text-2xl">{getInitials(recipient.firstName)}</AvatarFallback>
-                            </Avatar>
+                            <VerifiedAvatar user={recipient} className="h-16 w-16" fallbackClassName="text-2xl" />
                             <div>
                                 <p className="font-semibold text-xl">{recipient.firstName} {recipient.lastName}</p>
                                 <p className="text-muted-foreground">{recipient.username || recipient.email}</p>

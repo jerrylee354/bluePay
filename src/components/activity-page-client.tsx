@@ -9,7 +9,6 @@ import { type Transaction } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import TransactionDetails from '@/components/transaction-details';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +28,7 @@ import { Dictionary } from '@/dictionaries';
 import { Store } from 'lucide-react';
 import { OrderItem } from './payment-confirm';
 import PaymentSuccess from './payment-success';
+import VerifiedAvatar from './VerifiedAvatar';
 
 
 function formatCurrency(amount: number, currency: string) {
@@ -58,26 +58,17 @@ const statusStyles: { [key: string]: string } = {
 
 const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPayment, dictionary }: { tx: Transaction, currency: string, onClick: () => void, onAvatarClick: (e: React.MouseEvent) => void, onConfirmPayment: (tx: Transaction) => void, dictionary: Dictionary }) => {
     
-    const getInitials = (name?: string) => {
-        if (!name) return '?';
-        return name.charAt(0).toUpperCase();
-    }
-    
     const statusStyle = statusStyles[tx.status] || statusStyles['Pending'];
-
     const isPaymentRequest = tx.status === dictionary.status.Requested && tx.type === 'payment';
-    const isBusiness = tx.otherParty?.accountType === 'business';
 
     return (
         <li className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-muted/50" onClick={isPaymentRequest ? undefined : onClick}>
-            <Avatar className="h-11 w-11 cursor-default" onClick={onAvatarClick}>
-                <AvatarImage src={tx.otherParty?.photoURL} alt={tx.name} />
-                <AvatarFallback>{getInitials(tx.name)}</AvatarFallback>
-            </Avatar>
+            <div onClick={onAvatarClick} className="cursor-default">
+                <VerifiedAvatar user={tx.otherParty} className="h-11 w-11" />
+            </div>
             <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                     <p className="font-semibold">{tx.name}</p>
-                    {isBusiness && <Store className="w-4 h-4 text-muted-foreground" />}
                 </div>
                  {isPaymentRequest ? (
                     <Button size="sm" className="h-8" onClick={() => onConfirmPayment(tx)}>
@@ -453,10 +444,7 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
                     <AlertDialogTitle className="text-center">{dictionary.activity.confirmPaymentTitle}</AlertDialogTitle>
                     <AlertDialogDescription asChild>
                          <div className="flex flex-col items-center text-center space-y-4 py-4">
-                             <Avatar className="h-16 w-16">
-                                <AvatarImage src={txToConfirm.otherParty?.photoURL} alt={txToConfirm.name} />
-                                <AvatarFallback>{txToConfirm.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                            <VerifiedAvatar user={txToConfirm.otherParty} className="h-16 w-16" fallbackClassName="text-2xl" />
                             <p dangerouslySetInnerHTML={{ __html: dictionary.activity.confirmPaymentDescription.replace('{amount}', formatCurrency(txToConfirm.amount, currency)).replace('{name}', txToConfirm.name) }} />
                             
                             {txToConfirm.description && (

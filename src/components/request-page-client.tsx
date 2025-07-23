@@ -13,7 +13,6 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/auth-context';
 import { DocumentData } from 'firebase/firestore';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import {
@@ -27,6 +26,7 @@ import QRCode from 'qrcode.react';
 import PaymentConfirm from '@/components/payment-confirm';
 import { Dictionary } from '@/dictionaries';
 import { usePayDialogStore } from '@/stores/pay-dialog-store';
+import VerifiedAvatar from './VerifiedAvatar';
 
 function useDebounce(value: string, delay: number) {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -117,11 +117,6 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
         }
     }, [currentUser, dictionary.locale]);
 
-
-    const getInitials = (name?: string) => {
-        if (!name) return 'U';
-        return name.charAt(0).toUpperCase();
-    }
     
     const getDisplayUsername = () => {
         if (!userData) return '';
@@ -174,10 +169,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                         <ul className="divide-y">
                             {results.map(user => (
                                 <li key={user.uid} onClick={() => handleSelectUser(user)} className="flex items-center p-4 space-x-4 hover:bg-muted/50 cursor-pointer">
-                                    <Avatar className="h-12 w-12">
-                                        <AvatarImage src={user.photoURL || ''} alt={user.firstName} />
-                                        <AvatarFallback>{getInitials(user.firstName)}</AvatarFallback>
-                                    </Avatar>
+                                    <VerifiedAvatar user={user} className="h-12 w-12" />
                                     <div>
                                         <p className="font-semibold">{user.firstName} {user.lastName}</p>
                                         <p className="text-sm text-muted-foreground">{user.username}</p>
@@ -231,10 +223,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                                 )}
                             </div>
                             <div className="flex items-center gap-3 pt-2">
-                                <Avatar className="h-12 w-12">
-                                    <AvatarImage src={userData?.photoURL || ''} alt="User Avatar" />
-                                    <AvatarFallback>{getInitials(currentUser?.email)}</AvatarFallback>
-                                </Avatar>
+                                <VerifiedAvatar user={userData} className="h-12 w-12" />
                                 <div className="text-left">
                                     <p className="font-bold text-lg">{userData?.firstName} {userData?.lastName}</p>
                                     <p className="text-muted-foreground">{getDisplayUsername()}</p>
@@ -345,5 +334,3 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
         </div>
     );
 }
-
-    

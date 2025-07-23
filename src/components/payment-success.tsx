@@ -4,11 +4,11 @@
 import { Button } from "@/components/ui/button";
 import { type Transaction } from "@/lib/data";
 import { useAuth } from "@/context/auth-context";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Dictionary } from "@/dictionaries";
 import { OrderItem } from "./payment-confirm";
+import VerifiedAvatar from "./VerifiedAvatar";
 
 const AnimatedCheckmark = () => (
     <div className="mx-auto my-8 h-[100px] w-[100px]">
@@ -64,11 +64,6 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
 
     const isRequest = transaction.status === dictionary.status.Requested;
     const titleText = isRequest ? d_success.requestSent : d_success.paymentSuccessful;
-    
-    const getInitials = (name?: string) => {
-        if (!name) return '?';
-        return name.charAt(0).toUpperCase();
-    }
 
     return (
         <div className="flex flex-col items-center justify-center bg-background p-4 text-center min-h-dvh sm:p-8">
@@ -83,10 +78,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
                     </div>
 
                      <div className="flex flex-col items-center space-y-2 mb-6">
-                        <Avatar className="h-12 w-12">
-                            <AvatarImage src={transaction.otherParty?.photoURL} alt={transaction.name} />
-                            <AvatarFallback>{getInitials(transaction.name)}</AvatarFallback>
-                        </Avatar>
+                        <VerifiedAvatar user={transaction.otherParty} className="h-12 w-12" />
                         <div>
                             <p className="text-muted-foreground text-sm">{isRequest ? d_success.requestedFrom : d_success.paidTo}</p>
                             <p className="font-semibold text-lg">{transaction.name}</p>

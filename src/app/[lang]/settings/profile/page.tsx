@@ -4,10 +4,8 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Camera, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { db, updateDoc } from '@/lib/firebase';
@@ -16,6 +14,7 @@ import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import imageCompression from 'browser-image-compression';
 import { type SettingsPage } from '@/components/settings-container';
 import { Dictionary } from '@/dictionaries';
+import VerifiedAvatar from '@/components/VerifiedAvatar';
 
 
 const ProfileInfoItem = ({ label, value, isEditable = false, onClick }: { label: string, value: string, isEditable?: boolean, onClick?: () => void }) => {
@@ -50,11 +49,6 @@ export default function ProfilePage({ setPage, dictionary }: { setPage?: (page: 
             setPage(page);
         }
     };
-
-    const getInitials = (email: string | null | undefined) => {
-        if (!email) return 'U';
-        return email.charAt(0).toUpperCase();
-    }
     
     const getDisplayUsername = () => {
         if (!userData) return '';
@@ -136,10 +130,7 @@ export default function ProfilePage({ setPage, dictionary }: { setPage?: (page: 
              <div className="p-4 md:p-0">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
                      <div className="relative group">
-                        <Avatar className="h-28 w-28 md:h-32 md:w-32 border-4 border-background shadow-md">
-                            <AvatarImage src={userData?.photoURL || ""} alt={userData?.firstName || "User Avatar"} />
-                            <AvatarFallback className="text-4xl">{getInitials(user?.email)}</AvatarFallback>
-                        </Avatar>
+                        <VerifiedAvatar user={userData} className="h-28 w-28 md:h-32 md:w-32 border-4 border-background shadow-md" fallbackClassName="text-4xl" />
                         <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} className="hidden" accept="image/*"/>
                         <button 
                             className="absolute bottom-1 right-1 bg-muted text-muted-foreground p-2 rounded-full border-2 border-background transition-all group-hover:bg-primary group-hover:text-primary-foreground" 

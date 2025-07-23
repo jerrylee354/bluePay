@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import { type Transaction } from "@/lib/data";
 import { DocumentData } from "firebase/firestore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, ArrowUpRight, ArrowDownLeft, XCircle } from "lucide-react";
@@ -13,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { Dictionary } from "@/dictionaries";
 import { OrderItem } from "./payment-confirm";
 import { Button } from "./ui/button";
+import VerifiedAvatar from "./VerifiedAvatar";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -91,11 +91,6 @@ export default function TransactionDetails({ transaction, dictionary, onCancel }
         fetchOtherParty();
     }, [transaction.otherPartyUid, getUserById]);
     
-    const getInitials = (name?: string) => {
-        if (!name) return '?';
-        return name.charAt(0).toUpperCase();
-    }
-    
     const currency = userData?.currency || 'USD';
     const displayName = otherParty ? `${otherParty.firstName} ${otherParty.lastName}` : transaction.name;
 
@@ -109,10 +104,7 @@ export default function TransactionDetails({ transaction, dictionary, onCancel }
                     </>
                 ) : (
                     <>
-                        <Avatar className="h-16 w-16">
-                            <AvatarImage src={otherParty?.photoURL} alt={displayName} />
-                            <AvatarFallback className="text-2xl">{getInitials(otherParty?.firstName || transaction.name)}</AvatarFallback>
-                        </Avatar>
+                        <VerifiedAvatar user={otherParty} className="h-16 w-16" fallbackClassName="text-2xl" />
                         <p className="font-semibold text-lg">{displayName}</p>
                     </>
                 )}

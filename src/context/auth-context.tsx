@@ -124,12 +124,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (docSnapshot.exists()) {
             const currentData = docSnapshot.data();
             // Check for 'status' and 'hasAppealed' fields, add if they don't exist
-            const updates: { status?: string, hasAppealed?: boolean } = {};
+            const updates: { status?: string, hasAppealed?: boolean, verify?: string } = {};
             if (currentData.status === undefined) {
               updates.status = 'Yes';
             }
             if (currentData.hasAppealed === undefined) {
                 updates.hasAppealed = false;
+            }
+            if (currentData.verify === undefined) {
+                updates.verify = 'No';
             }
             if (Object.keys(updates).length > 0) {
               await updateDoc(userDocRef, updates);
@@ -193,6 +196,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       profileStatus: true,
       status: 'Yes',
       hasAppealed: false,
+      verify: 'No',
       createdAt: new Date(),
     };
 
@@ -263,7 +267,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const processSnapshot = (snapshot: any, usersMap: Map<string, DocumentData>) => {
         snapshot.forEach((doc: any) => {
             const data = doc.data();
-            if (data.profileStatus === true && data.accountType !== 'business') {
+            if (data.profileStatus === true) {
                 usersMap.set(doc.id, data);
             }
         });

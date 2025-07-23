@@ -20,7 +20,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Dialog,
     DialogContent,
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import SettingsContainer from './settings-container';
 import { Dictionary } from '@/dictionaries';
+import VerifiedAvatar from './VerifiedAvatar';
 
 
 export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary }) {
@@ -85,12 +85,6 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
       )
   }
 
-
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return "U";
-    return email.charAt(0).toUpperCase();
-  };
-
   const handleDialogChange = (open: boolean) => {
     setIsDialogOpen(open);
   }
@@ -138,10 +132,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                       "flex items-center h-12 w-full px-4 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
                         isExpanded ? "justify-start gap-4" : "justify-center"
                   )}>
-                      <Avatar className="h-9 w-9 shrink-0">
-                        <AvatarImage src={userData?.photoURL || ""} alt="User Avatar" />
-                        <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
-                    </Avatar>
+                      <VerifiedAvatar user={userData} className="h-9 w-9" />
                     <div className={cn("flex flex-col items-start text-left transition-all duration-200", isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 overflow-hidden")}>
                         <p className="font-semibold text-sm leading-tight whitespace-nowrap">{userData?.firstName || "User"}</p>
                         <p className="text-xs text-muted-foreground leading-tight">{settingsDictionary.settings.title}</p>

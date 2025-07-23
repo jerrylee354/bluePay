@@ -12,11 +12,11 @@ import { doc } from 'firebase/firestore';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from '@/components/ui/input';
 import { AlertCircle } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { Dictionary } from '@/dictionaries';
+import VerifiedAvatar from './VerifiedAvatar';
 
 function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
     const { user, userData, checkUsernameExists, refreshUserData, isLoading: isAuthLoading } = useAuth();
@@ -41,11 +41,6 @@ function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
             router.push('/login');
         }
     }, [isAuthLoading, user, router]);
-
-    const getInitials = (email: string | null | undefined) => {
-        if (!email) return 'U';
-        return email.charAt(0).toUpperCase();
-    }
     
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setError(null);
@@ -271,12 +266,7 @@ function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
 
                         <div className="flex justify-center">
                             <label htmlFor="avatar-upload" className="cursor-pointer group relative">
-                                <Avatar className="h-40 w-40 border-4 border-muted group-hover:border-primary transition-colors">
-                                    <AvatarImage src={avatarPreview || ""} alt="Avatar Preview" />
-                                    <AvatarFallback className="text-5xl">
-                                        {getInitials(user?.email)}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <VerifiedAvatar user={{ ...userData, photoURL: avatarPreview || userData?.photoURL }} className="h-40 w-40 border-4 border-muted" fallbackClassName="text-5xl" />
                                 <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 rounded-full transition-opacity">
                                     <Upload className="h-10 w-10 mb-2" />
                                     <span className="font-semibold">{d.changeAvatar}</span>
