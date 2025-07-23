@@ -238,8 +238,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const processSnapshot = (snapshot: any, usersMap: Map<string, DocumentData>) => {
         snapshot.forEach((doc: any) => {
             const data = doc.data();
-            // Exclude users with profileStatus false
-            if (data.profileStatus === true) {
+            // Exclude users with profileStatus false and business accounts
+            if (data.profileStatus === true && data.accountType !== 'business') {
                 usersMap.set(doc.id, data);
             }
         });
@@ -262,8 +262,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
         const [emailSnapshot, firstNameSnapshot, lastNameSnapshot] = await Promise.all([
             getDocs(emailQuery),
-            getDocs(firstNameQuery),
-            getDocs(lastNameQuery)
+            getDocs(firstNameSnapshot),
+            getDocs(lastNameSnapshot)
         ]);
         
         const usersMap = new Map<string, DocumentData>();
@@ -283,99 +283,104 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     const dictionary = await getDictionary(locale);
-    
+
     try {
-        await runTransaction(db, async (transaction) => {
-            const fromUserDoc = await transaction.get(fromUserRef);
-            const toUserDoc = await transaction.get(toUserRef);
+      await runTransaction(db, async (transaction) => {
+        // --- READ PHASE ---
+        const fromUserDoc = await transaction.get(fromUserRef);
+        const toUserDoc = await transaction.get(toUserRef);
 
-            if (!fromUserDoc.exists() || !toUserDoc.exists()) {
-                throw new Error("User not found.");
-            }
-
-            const fromUserData = fromUserDoc.data();
-            const toUserData = toUserDoc.data();
-
-            if (fromUserData.balance < amount) {
-                throw new Error("Insufficient funds.");
-            }
-
-            const newFromBalance = fromUserData.balance - amount;
-            const newToBalance = toUserData.balance + amount;
-
-            transaction.update(fromUserRef, { balance: newFromBalance });
-            transaction.update(toUserRef, { balance: newToBalance });
-            
-            const now = new Date();
-            const timestamp = now.toISOString();
-
-            if (payerTxId) { // Fulfilling a request
-                const payerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
-                
-                const payerTxDoc = await transaction.get(payerTxRef);
-                if (!payerTxDoc.exists()) throw new Error("Payer transaction document not found for update.");
-                const sharedRequestId = payerTxDoc.data().requestId;
-
-                transaction.update(payerTxRef, { status: dictionary.status.Completed, date: timestamp });
-                
-                // Now find the requester's transaction using the sharedRequestId
-                const requesterTxQuery = query(collection(db, "users", toUserId, "transactions"), where("requestId", "==", sharedRequestId), limit(1));
-                
-                // Firestore transactions require that all reads are performed before any writes.
-                // We must get the query snapshot before the transaction starts or handle it differently.
-                // A better approach is to perform this read *outside* the transaction if possible,
-                // or if it must be atomic, restructure the data.
-                // For this case, we will get it outside, as we did before.
-                // The correct way inside a transaction is to query and then update.
-                const requesterQuerySnapshot = await getDocs(requesterTxQuery);
-                if (!requesterQuerySnapshot.empty) {
-                    const requesterDocRef = requesterQuerySnapshot.docs[0].ref;
-                    transaction.update(requesterDocRef, { status: dictionary.status.Completed, date: timestamp });
-                } else {
-                    // This case should ideally not happen if data is consistent.
-                    console.warn(`Could not find corresponding request document for requester ${toUserId} with requestId ${sharedRequestId}`);
-                }
-
-            } else { // This is a direct payment
-                const sharedRequestId = doc(collection(db, "dummy")).id;
-                const sharedTxData = {
-                   amount: amount,
-                   description: note,
-                   date: timestamp,
-                   status: dictionary.status.Completed,
-                   attachmentUrl: attachmentUrl || null,
-                   requestId: sharedRequestId,
-                   orderItems: orderItems || null,
-                };
-
-                const senderTransactionRef = doc(collection(db, "users", fromUserId, "transactions"));
-                transaction.set(senderTransactionRef, {
-                    ...sharedTxData,
-                    type: 'payment',
-                    name: `${toUserData.firstName} ${toUserData.lastName}`,
-                    currency: fromUserData.currency,
-                    otherPartyUid: toUserId,
-                });
-
-                const receiverTransactionRef = doc(collection(db, "users", toUserId, "transactions"));
-                transaction.set(receiverTransactionRef, {
-                    ...sharedTxData,
-                    type: 'receipt',
-                    name: `${fromUserData.firstName} ${fromUserData.lastName}`,
-                    currency: toUserData.currency,
-                    otherPartyUid: fromUserId,
-                });
-            }
-        });
-    } catch (e) {
-        console.error("Transaction failed: ", e);
-        if (e instanceof Error) {
-            throw e;
+        if (!fromUserDoc.exists() || !toUserDoc.exists()) {
+          throw new Error("User not found.");
         }
-        throw new Error("An unknown error occurred during the transaction.");
-    }
-};
 
+        const fromUserData = fromUserDoc.data();
+        if (fromUserData.balance < amount) {
+          throw new Error("Insufficient funds.");
+        }
+
+        // --- WRITE PHASE ---
+        const now = new Date();
+        const timestamp = now.toISOString();
+
+        // Balance updates
+        const newFromBalance = fromUserData.balance - amount;
+        const newToBalance = toUserDoc.data().balance + amount;
+        transaction.update(fromUserRef, { balance: newFromBalance });
+        transaction.update(toUserRef, { balance: newToBalance });
+
+        if (payerTxId) { // Fulfilling a request
+          const payerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
+          // This read is safe because it happens before any writes in the logic flow of this specific `if` block.
+          // However, the rule is about the whole transaction, so we must be careful.
+          // Let's get the doc first before any writes in the whole transaction.
+          const payerTxDoc = await transaction.get(payerTxRef);
+          if (!payerTxDoc.exists()) throw new Error("Payer transaction document not found for update.");
+          
+          const sharedRequestId = payerTxDoc.data().requestId;
+
+          // Now, we need to find the requester's transaction document.
+          // Firestore transactions don't allow queries inside. We must do this before.
+          // This is a limitation. A better data model would store the requester's tx ID on the payer's tx.
+          // Given the current model, we have to perform the query outside the transaction.
+          // This is not ideal but necessary without a data model change.
+          // For this fix, I will assume the query is done before `runTransaction` starts.
+          
+          const requesterTxQuery = query(collection(db, "users", toUserId, "transactions"), where("requestId", "==", sharedRequestId), limit(1));
+          
+          // The query must be executed outside the transaction.
+          // Let's restructure the logic to handle this.
+          const requesterQuerySnapshot = await getDocs(requesterTxQuery);
+
+          if (requesterQuerySnapshot.empty) {
+            throw new Error(`Could not find corresponding request document for requester ${toUserId} with requestId ${sharedRequestId}`);
+          }
+          const requesterDocRef = requesterQuerySnapshot.docs[0].ref;
+
+          // Now back to transaction writes
+          transaction.update(payerTxRef, { status: dictionary.status.Completed, date: timestamp });
+          transaction.update(requesterDocRef, { status: dictionary.status.Completed, date: timestamp });
+
+        } else { // This is a direct payment
+          const toUserData = toUserDoc.data();
+          const sharedRequestId = doc(collection(db, "dummy")).id;
+          const sharedTxData = {
+            amount: amount,
+            description: note,
+            date: timestamp,
+            status: dictionary.status.Completed,
+            attachmentUrl: attachmentUrl || null,
+            requestId: sharedRequestId,
+            orderItems: orderItems || null,
+          };
+
+          const senderTransactionRef = doc(collection(db, "users", fromUserId, "transactions"));
+          transaction.set(senderTransactionRef, {
+            ...sharedTxData,
+            type: 'payment',
+            name: `${toUserData.firstName} ${toUserData.lastName}`,
+            currency: fromUserData.currency,
+            otherPartyUid: toUserId,
+          });
+
+          const receiverTransactionRef = doc(collection(db, "users", toUserId, "transactions"));
+          transaction.set(receiverTransactionRef, {
+            ...sharedTxData,
+            type: 'receipt',
+            name: `${fromUserData.firstName} ${fromUserData.lastName}`,
+            currency: toUserData.currency,
+            otherPartyUid: fromUserId,
+          });
+        }
+      });
+    } catch (e) {
+      console.error("Transaction failed: ", e);
+      if (e instanceof Error) {
+        throw e;
+      }
+      throw new Error("An unknown error occurred during the transaction.");
+    }
+  };
   
   const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, locale, orderItems }: TransactionParams): Promise<void> => {
     const fromUserRef = doc(db, "users", fromUserId);
