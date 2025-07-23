@@ -77,13 +77,13 @@ const TransactionItem = ({ tx, currency, onClick }: { tx: Transaction, currency:
     );
 };
 
-const PendingOrdersList = ({ transactions, currency, onTransactionClick }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void }) => {
+const PendingOrdersList = ({ transactions, currency, onTransactionClick, dictionary }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, dictionary: Dictionary['orders'] }) => {
     if (transactions.length === 0) {
         return (
             <div className="p-8 text-center text-muted-foreground min-h-[300px] flex flex-col items-center justify-center">
                 <ShoppingCart className="w-16 h-16 mb-4 text-gray-400"/>
-                <p className="font-semibold text-lg">{dictionary.orders.noPendingOrders}</p>
-                <p className="text-sm">{dictionary.orders.noPendingOrdersDescription}</p>
+                <p className="font-semibold text-lg">{dictionary.noPendingOrders}</p>
+                <p className="text-sm">{dictionary.noPendingOrdersDescription}</p>
             </div>
         );
     }
@@ -241,7 +241,7 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
       {isLoading ? (
         <Card><CardContent className="p-8 text-center text-muted-foreground">Loading...</CardContent></Card>
       ) : (
-        <PendingOrdersList transactions={pendingTransactions} currency={currency} onTransactionClick={handleTransactionClick} />
+        <PendingOrdersList transactions={pendingTransactions} currency={currency} onTransactionClick={handleTransactionClick} dictionary={d_orders} />
       )}
 
       <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>
