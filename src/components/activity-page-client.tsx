@@ -26,6 +26,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { Dictionary } from '@/dictionaries';
+import { Store } from 'lucide-react';
+import { OrderItem } from './payment-confirm';
 
 
 function formatCurrency(amount: number, currency: string) {
@@ -63,6 +65,7 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
     const statusStyle = statusStyles[tx.status] || statusStyles['Pending'];
 
     const isPaymentRequest = tx.status === dictionary.status.Requested && tx.type === 'payment';
+    const isBusiness = tx.otherParty?.accountType === 'business';
 
     return (
         <li className="flex items-center p-4 space-x-4 cursor-pointer hover:bg-muted/50" onClick={isPaymentRequest ? undefined : onClick}>
@@ -71,7 +74,10 @@ const TransactionItem = ({ tx, currency, onClick, onAvatarClick, onConfirmPaymen
                 <AvatarFallback>{getInitials(tx.name)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-1">
-                <p className="font-semibold">{tx.name}</p>
+                <div className="flex items-center gap-2">
+                    <p className="font-semibold">{tx.name}</p>
+                    {isBusiness && <Store className="w-4 h-4 text-muted-foreground" />}
+                </div>
                  {isPaymentRequest ? (
                     <Button size="sm" className="h-8" onClick={() => onConfirmPayment(tx)}>
                         {dictionary.activity.confirmPayment}
@@ -221,6 +227,17 @@ const ActivityContent = ({
     </Tabs>
 );
 
+const OrderItemsSummary = ({ items, currency }: { items: OrderItem[], currency: string }) => (
+    <div className="text-sm text-left w-full mt-2 space-y-1 rounded-md bg-muted p-3">
+        {items.map(item => (
+            <div key={item.id} className="flex justify-between">
+                <span>{item.name}</span>
+                <span className="font-medium">{formatCurrency(parseFloat(item.price), currency)}</span>
+            </div>
+        ))}
+    </div>
+);
+
 export default function ActivityPageClient({ dictionary }: { dictionary: Dictionary }) {
   const { transactions, userData, getUserById, user, processTransaction, declineTransaction } = useAuth();
   const currency = userData?.currency || 'USD';
@@ -296,7 +313,7 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
             amount: txToConfirm.amount,
             note: txToConfirm.description,
             attachmentUrl: txToConfirm.attachmentUrl,
-            requestId: txToConfirm.id,
+            payerTxId: txToConfirm.id,
             locale: dictionary.locale as 'en' | 'zh-TW',
         });
 
@@ -385,6 +402,16 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
                                 <AvatarFallback>{txToConfirm.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <p dangerouslySetInnerHTML={{ __html: dictionary.activity.confirmPaymentDescription.replace('{amount}', formatCurrency(txToConfirm.amount, currency)).replace('{name}', txToConfirm.name) }} />
+                            
+                            {txToConfirm.description && (
+                                <div className="text-sm italic text-muted-foreground bg-muted p-2 rounded-md w-full">
+                                    "{txToConfirm.description}"
+                                </div>
+                            )}
+
+                            {txToConfirm.orderItems && txToConfirm.orderItems.length > 0 && (
+                                <OrderItemsSummary items={txToConfirm.orderItems} currency={currency} />
+                            )}
                         </div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>

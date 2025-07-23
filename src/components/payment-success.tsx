@@ -62,7 +62,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
     const d_success = dictionary.paymentSuccess;
     const d_confirm = dictionary.paymentConfirm;
 
-    const isRequest = transaction.status === 'Requested';
+    const isRequest = transaction.status === dictionary.status.Requested;
     const titleText = isRequest ? d_success.requestSent : d_success.paymentSuccessful;
     
     const getInitials = (name?: string) => {
@@ -97,7 +97,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
 
                     <div className="space-y-1 text-left">
                         <DetailRow label={d_success.transactionDate} value={formatDate(transaction.date, dictionary.locale)} />
-                        <DetailRow label={d_success.transactionStatus} value={dictionary.status[transaction.status] || transaction.status} />
+                        <DetailRow label={d_success.transactionStatus} value={dictionary.status[transaction.status as keyof typeof dictionary.status] || transaction.status} />
                          <DetailRow label={d_success.transactionId} value={<span className="font-mono text-xs">{transaction.id}</span>} />
                     </div>
                     
@@ -120,4 +120,3 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
         </div>
     );
 }
-

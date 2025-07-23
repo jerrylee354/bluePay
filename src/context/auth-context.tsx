@@ -26,7 +26,7 @@ interface TransactionParams {
     amount: number;
     note: string;
     attachmentUrl?: string | null;
-    requestId?: string;
+    payerTxId?: string;
     locale: Locale;
     orderItems?: OrderItem[];
 }
@@ -238,8 +238,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const processSnapshot = (snapshot: any, usersMap: Map<string, DocumentData>) => {
         snapshot.forEach((doc: any) => {
             const data = doc.data();
-            // Exclude business accounts and users with profileStatus false
-            if (data.accountType !== 'business' && data.profileStatus === true) {
+            // Exclude users with profileStatus false
+            if (data.profileStatus === true) {
                 usersMap.set(doc.id, data);
             }
         });
@@ -279,7 +279,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, requestId, locale, orderItems }: TransactionParams): Promise<void> => {
+  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, payerTxId, locale, orderItems }: TransactionParams): Promise<void> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     const dictionary = await getDictionary(locale);
@@ -309,30 +309,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const now = new Date();
             const timestamp = now.toISOString();
 
-            if (requestId) {
-                const payerTxRef = doc(db, "users", fromUserId, "transactions", requestId);
+            if (payerTxId) { // Fulfilling a request
+                const payerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
                 
-                // Get the shared request ID from the payer's transaction document
                 const payerTxDoc = await transaction.get(payerTxRef);
-                if (!payerTxDoc.exists()) throw new Error("Payer transaction document not found.");
+                if (!payerTxDoc.exists()) throw new Error("Payer transaction document not found for update.");
                 const sharedRequestId = payerTxDoc.data().requestId;
 
                 transaction.update(payerTxRef, { status: dictionary.status.Completed, date: timestamp });
                 
+                // Now find the requester's transaction using the sharedRequestId
                 const requesterTxQuery = query(collection(db, "users", toUserId, "transactions"), where("requestId", "==", sharedRequestId), limit(1));
                 
-                // Can't use getDocs in a transaction. We must find the doc another way.
-                // Assuming `processTransaction` is only for *fulfilling* a request, we can get the requester's doc ref *before* the transaction.
-                // This is a common pattern.
+                // Firestore transactions require that all reads are performed before any writes.
+                // We must get the query snapshot before the transaction starts or handle it differently.
+                // A better approach is to perform this read *outside* the transaction if possible,
+                // or if it must be atomic, restructure the data.
+                // For this case, we will get it outside, as we did before.
+                // The correct way inside a transaction is to query and then update.
                 const requesterQuerySnapshot = await getDocs(requesterTxQuery);
                 if (!requesterQuerySnapshot.empty) {
                     const requesterDocRef = requesterQuerySnapshot.docs[0].ref;
                     transaction.update(requesterDocRef, { status: dictionary.status.Completed, date: timestamp });
+                } else {
+                    // This case should ideally not happen if data is consistent.
+                    console.warn(`Could not find corresponding request document for requester ${toUserId} with requestId ${sharedRequestId}`);
                 }
 
-            } else {
-                // This is a direct payment, not a response to a request.
-                const sharedRequestId = doc(collection(db, "dummy")).id; // Generate a unique ID for linking
+            } else { // This is a direct payment
+                const sharedRequestId = doc(collection(db, "dummy")).id;
                 const sharedTxData = {
                    amount: amount,
                    description: note,
