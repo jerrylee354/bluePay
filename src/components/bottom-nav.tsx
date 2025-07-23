@@ -37,7 +37,7 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
 
   return (
     <div className="fixed bottom-0 left-0 w-full border-t bg-background/95 backdrop-blur-sm z-50 h-24 pt-2 pb-safe-bottom">
-      <nav className={`grid ${navGridClass} justify-around items-start h-full max-w-lg mx-auto`}>
+      <nav className={cn("grid justify-around items-start h-full max-w-lg mx-auto", navGridClass)}>
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           
