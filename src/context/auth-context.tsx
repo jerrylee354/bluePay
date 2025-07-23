@@ -571,7 +571,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: templateData.title,
             description: templateData.description,
             style: templateData.style,
-            expiresAt: templateData.expiresAt,
+            expiresAt: templateData.expiresAt || null,
             addedAt: new Date().toISOString(),
             status: 'valid'
         };
