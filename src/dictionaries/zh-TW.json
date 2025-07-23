@@ -372,6 +372,9 @@
         "logout": "登出",
         "appeal": "申訴",
         "appealSuccessTitle": "申訴已提交",
-        "appealSuccessDescription": "您已成功申訴，我們會重新檢查您的帳號。"
+        "appealSuccessDescription": "您已成功申訴，我們會重新檢查您的帳號。",
+        "appealApprovedTitle": "申訴已成功",
+        "appealApprovedDescription": "您的申訴已成功，可以繼續使用，我們很抱歉造成您的不便。",
+        "continue": "繼續"
     }
 }

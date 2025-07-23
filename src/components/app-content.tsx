@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
@@ -19,6 +19,7 @@ import { AlertTriangle, LogOut, CheckCircle2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { DocumentData } from 'firebase/firestore';
 
 
 const AppLoader = () => (
@@ -48,6 +49,27 @@ const AnimatedCheckmark = () => (
         </svg>
     </div>
 );
+
+const AppealSuccessScreen = ({ dictionary, onContinue }: { dictionary: Dictionary['accountSuspended'], onContinue: () => void }) => {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+            <Card className="w-full max-w-md text-center shadow-lg">
+                <CardHeader>
+                    <CardTitle className="mt-4 text-2xl font-bold">{dictionary.appealApprovedTitle}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="flex flex-col items-center">
+                        <AnimatedCheckmark />
+                        <p className="text-muted-foreground">{dictionary.appealApprovedDescription}</p>
+                        <Button className="w-full mt-6" onClick={onContinue}>
+                            {dictionary.continue}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+};
 
 const AccountSuspendedScreen = ({ dictionary, onLogout, onAppeal, hasAppealed }: { dictionary: Dictionary['accountSuspended'], onLogout: () => void, onAppeal: () => void, hasAppealed: boolean }) => {
     return (
@@ -98,6 +120,9 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     const [isIdle, setIsIdle] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
     const [localHasAppealed, setLocalHasAppealed] = useState(userData?.hasAppealed || false);
+    const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
+
+    const prevUserDataRef = useRef<DocumentData | null>();
 
     const { toast } = useToast();
 
@@ -105,6 +130,13 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         if (userData?.hasAppealed) {
             setLocalHasAppealed(true);
         }
+    }, [userData]);
+    
+    useEffect(() => {
+        if (prevUserDataRef.current && prevUserDataRef.current.status === 'No' && userData?.status === 'Yes') {
+            setShowAppealSuccessScreen(true);
+        }
+        prevUserDataRef.current = userData;
     }, [userData]);
 
     const isBusiness = userData?.accountType === 'business';
@@ -150,7 +182,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         if (!user) return;
         try {
             await submitAppeal(user.uid);
-            setLocalHasAppealed(true);
+            setLocalHasAppealed(true); // UI optimistically updates
             toast({
                 title: dictionary.accountSuspended.appealSuccessTitle,
                 description: dictionary.accountSuspended.appealSuccessDescription,
@@ -163,6 +195,13 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
             })
         }
     };
+
+    if (showAppealSuccessScreen) {
+        return <AppealSuccessScreen 
+                    dictionary={dictionary.accountSuspended} 
+                    onContinue={() => setShowAppealSuccessScreen(false)} 
+                />
+    }
     
     if (userData?.status === 'No') {
         return <AccountSuspendedScreen 

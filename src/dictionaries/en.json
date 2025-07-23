@@ -372,6 +372,9 @@
         "logout": "Log Out",
         "appeal": "Appeal",
         "appealSuccessTitle": "Appeal Submitted",
-        "appealSuccessDescription": "You have successfully appealed. We will re-examine your account."
+        "appealSuccessDescription": "You have successfully appealed. We will re-examine your account.",
+        "appealApprovedTitle": "Appeal Successful",
+        "appealApprovedDescription": "Your appeal was successful, you can continue to use our service. We are sorry for the inconvenience.",
+        "continue": "Continue"
     }
 }
