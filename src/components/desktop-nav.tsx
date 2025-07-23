@@ -49,8 +49,8 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
   const businessNavItems = [
     { href: "/home", label: dictionary.home, icon: Home },
     { href: "/dashboard", label: dictionary.dashboard, icon: LayoutDashboard },
-    { href: "/activity", label: dictionary.activity, icon: History },
     { href: "/orders", label: dictionary.orders, icon: Package },
+    { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
   ];
 
   const navItems = isBusiness ? businessNavItems : personalNavItems;
