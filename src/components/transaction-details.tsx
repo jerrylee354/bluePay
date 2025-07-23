@@ -58,15 +58,16 @@ const OrderItemsList = ({ items, currency, dictionary }: { items: OrderItem[], c
 
 interface TransactionDetailsProps {
     transaction: Transaction;
-    dictionary: Dictionary['transactionDetails'];
+    dictionary: Dictionary;
     onCancel: (transaction: Transaction) => void;
 }
 
 export default function TransactionDetails({ transaction, dictionary, onCancel }: TransactionDetailsProps) {
-    const { getUserById, userData, user } = useAuth();
+    const { getUserById, userData } = useAuth();
     const [otherParty, setOtherParty] = useState<DocumentData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const d = dictionary.transactionDetails;
     const isRequester = transaction.type === 'receipt';
     const isCancellable = isRequester && transaction.status === dictionary.status.Pending;
 
@@ -122,7 +123,7 @@ export default function TransactionDetails({ transaction, dictionary, onCancel }
                 </div>
                  <div className="flex items-center gap-2 text-accent">
                     <CheckCircle2 className="w-4 h-4" />
-                    <span className="text-sm font-medium">{transaction.status}</span>
+                    <span className="text-sm font-medium">{dictionary.status[transaction.status as keyof typeof dictionary.status] || transaction.status}</span>
                 </div>
             </div>
 
@@ -146,23 +147,23 @@ export default function TransactionDetails({ transaction, dictionary, onCancel }
             
             <div className="space-y-3">
                  <DetailRow 
-                    label={dictionary.transactionTypeLabel} 
+                    label={d.transactionTypeLabel} 
                     value={
                         <span className="inline-flex items-center gap-1.5">
                             {transaction.type === 'payment' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
-                            {transaction.type === 'payment' ? dictionary.paymentSent : dictionary.paymentReceived}
+                            {transaction.type === 'payment' ? d.paymentSent : d.paymentReceived}
                         </span>
                     } 
                 />
-                <DetailRow label={dictionary.dateLabel} value={formatDate(transaction.date)} />
-                <DetailRow label={dictionary.transactionIdLabel} value={<span className="font-mono text-xs">{transaction.id}</span>} />
+                <DetailRow label={d.dateLabel} value={formatDate(transaction.date)} />
+                <DetailRow label={d.transactionIdLabel} value={<span className="font-mono text-xs">{transaction.id}</span>} />
             </div>
 
             {isCancellable && (
                 <div className="pt-4">
                     <Button variant="destructive" className="w-full" onClick={() => onCancel(transaction)}>
                         <XCircle className="mr-2 h-4 w-4" />
-                        {dictionary.cancelRequest}
+                        {userData?.accountType === 'business' ? d.cancelOrder : d.cancelRequest}
                     </Button>
                 </div>
             )}

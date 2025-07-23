@@ -166,10 +166,7 @@
         "dateLabel": "Date",
         "transactionIdLabel": "Transaction ID",
         "cancelRequest": "Cancel Request",
-        "paymentConfirm": {
-            "orderSummary": "Order Summary",
-            "total": "Total"
-        }
+        "cancelOrder": "Cancel Order"
     },
     "paymentSuccess": {
         "paymentSuccessful": "Payment Successful",

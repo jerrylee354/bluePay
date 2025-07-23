@@ -165,11 +165,8 @@
         "paymentReceived": "收款",
         "dateLabel": "日期",
         "transactionIdLabel": "交易 ID",
-        "cancelRequest": "取消請求",
-        "paymentConfirm": {
-            "orderSummary": "訂單摘要",
-            "total": "總計"
-        }
+        "cancelRequest": "取消要求",
+        "cancelOrder": "取消訂單"
     },
     "paymentSuccess": {
         "paymentSuccessful": "付款成功",
