@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
   const localeFromPath = pathname.split('/')[1];
 
   const authenticatedRoutes = ['/home', '/activity', '/pay', '/wallet', '/settings', '/pay/confirm', '/pay/request', '/pay/scan'];
-  const authRoutes = ['/login', '/signup', '/welcome'];
+  const authRoutes = ['/login', '/signup'];
 
   const isProtectedRoute = authenticatedRoutes.some(route => pathname.startsWith(`/${localeFromPath}${route}`));
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(`/${localeFromPath}${route}`));
