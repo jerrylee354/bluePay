@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon, X } from 'lucide-react';
+import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { Dictionary } from '@/dictionaries';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
@@ -226,8 +226,8 @@ const CreateEditTicketDialog = ({
     };
     
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-w-xl flex flex-col h-full sm:h-auto max-h-[90vh]">
+        <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
+            <DialogContent className="max-w-lg flex flex-col h-full sm:h-auto max-h-[90vh]">
                 <LoadingOverlay isLoading={isProcessing} />
                 <DialogHeader>
                     <div className="flex justify-between items-center">

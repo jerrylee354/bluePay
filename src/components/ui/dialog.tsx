@@ -39,6 +39,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       onPointerDownOutside={(e) => {
+          if (props.modal === false) return;
           const target = e.target as HTMLElement;
           if (target.closest('[data-radix-toast-announce-exclude]')) {
              e.preventDefault();
