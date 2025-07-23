@@ -11,6 +11,7 @@ import SecurityPage from '@/app/[lang]/settings/security/page';
 import PrivacySettingsPage from '@/app/[lang]/settings/privacy/page';
 import NotificationSettingsPage from '@/app/[lang]/settings/notifications/page';
 import EditUsernamePage from '@/app/[lang]/settings/profile/edit-username/page';
+import { useAuth } from '@/context/auth-context';
 
 export type SettingsPage = 'main' | 'profile' | 'security' | 'privacy' | 'notifications' | 'edit-username';
 
@@ -22,8 +23,14 @@ const SettingsListItem = ({ icon: Icon, text, onClick }: { icon: React.ElementTy
     </div>
 );
 
-export default function SettingsContainer({ dictionary, onLogout, onClose }: { dictionary: Dictionary, onLogout: () => void, onClose: () => void }) {
+export default function SettingsContainer({ dictionary, onClose }: { dictionary: Dictionary, onClose: () => void }) {
     const [page, setPage] = useState<SettingsPage>('main');
+    const { logout } = useAuth();
+
+
+    const handleLogout = () => {
+        logout();
+    }
 
     const components: Record<Exclude<SettingsPage, 'main'>, React.ComponentType<any>> = {
         profile: ProfilePage,
@@ -89,7 +96,7 @@ export default function SettingsContainer({ dictionary, onLogout, onClose }: { d
                         </Card>
 
                         <div className="pt-4">
-                             <Button variant="destructive" className="w-full h-12 text-base" onClick={onLogout}>
+                             <Button variant="destructive" className="w-full h-12 text-base" onClick={handleLogout}>
                                 <LogOut className="mr-2 h-5 w-5" />
                                 {dictionary.settings.logout}
                             </Button>

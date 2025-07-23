@@ -31,7 +31,7 @@ import { Dictionary } from '@/dictionaries';
 
 
 export default function DesktopNav({ dictionary, settingsDictionary }: { dictionary: Dictionary['nav'], settingsDictionary: Dictionary }) {
-  const { user, userData, logout } = useAuth();
+  const { user, userData } = useAuth();
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const router = useRouter();
@@ -83,11 +83,6 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
     setIsDialogOpen(open);
   }
 
-  const handleLogout = () => {
-    handleDialogChange(false);
-    logout();
-  }
-  
   const handleClose = () => {
     setIsDialogOpen(false);
   }
@@ -147,7 +142,6 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                   </DialogHeader>
                   <SettingsContainer
                     dictionary={settingsDictionary}
-                    onLogout={handleLogout}
                     onClose={handleClose}
                   />
                 </DialogContent>

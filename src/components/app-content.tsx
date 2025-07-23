@@ -43,7 +43,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
     
     const handleIdle = () => {
         if(isAuthenticated) {
-            logout();
+            logout({ redirect: false });
             setIsIdle(true);
         }
     };

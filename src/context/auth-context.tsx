@@ -50,7 +50,7 @@ interface AuthContextType {
   walletItems: Ticket[];
   isAuthenticated: boolean;
   login: (email: string, pass: string) => Promise<any>;
-  logout: () => Promise<void>;
+  logout: (options?: { redirect: boolean }) => Promise<void>;
   signup: (email: string, pass: string, additionalData: Record<string, any>) => Promise<any>;
   checkEmailExists: (email: string) => Promise<boolean>;
   checkUsernameExists: (username: string) => Promise<boolean>;
@@ -184,12 +184,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return userCredential;
   };
 
-  const logout = async () => {
+  const logout = async (options: { redirect?: boolean } = { redirect: true }) => {
     setIsLoggingOut(true);
-    const locale = getCurrentLocale();
     await signOut(auth);
     eraseCookie('firebaseIdToken');
-    window.location.href = `/${locale}/login`;
+    if (options.redirect) {
+      const locale = getCurrentLocale();
+      window.location.href = `/${locale}/login`;
+    }
+    setIsLoggingOut(false);
   };
   
   const checkEmailExists = async (email: string) => {
