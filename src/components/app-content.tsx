@@ -13,6 +13,7 @@ import { type Dictionary } from '@/dictionaries';
 import { Skeleton } from './ui/skeleton';
 import { LoadingOverlay } from './ui/loading-overlay';
 import { Toaster } from './ui/toaster';
+import { LockScreenDialog } from './lock-screen-dialog';
 
 
 const AppLoader = () => (
@@ -35,28 +36,29 @@ const AppLoader = () => (
 );
 
 function AuthDependentContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { isAuthenticated, isLoading, logout, isLoggingOut } = useAuth();
+    const { isAuthenticated, isLoading, logout, isLoggingOut, userData } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
+    const [isLocked, setIsLocked] = useState(false);
+
+    const isBusiness = userData?.accountType === 'business';
     
     const handleIdle = () => {
         if(isAuthenticated) {
-            logout({ redirect: false });
-            setIsIdle(true);
+            if (isBusiness) {
+                setIsLocked(true);
+            } else {
+                logout({ redirect: false });
+                setIsIdle(true);
+            }
         }
     };
     
-    const handleActive = () => {
-      setIsIdle(false);
-    }
-    
     useIdleTimeout({
         onIdle: handleIdle,
-        onActive: handleActive,
         idleTimeout: 180000, // 3 minutes
-        isIdle: isIdle,
     });
     
     const localeSegment = `/${dictionary.locale}`;
@@ -88,6 +90,14 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         setIsIdle(false); // Close dialog
         router.push(`/${dictionary.locale}/login`);
     };
+
+    const handleUnlock = () => {
+        setIsLocked(false);
+    }
+
+    if (isLocked) {
+        return <LockScreenDialog onConfirm={handleUnlock} dictionary={dictionary.lockScreen} />;
+    }
 
     if (isMobile && isFullScreenPage) {
          return (

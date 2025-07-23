@@ -320,6 +320,11 @@
         "description": "由於您閒置過久，系統已將您登出。",
         "confirm": "確定"
     },
+    "lockScreen": {
+        "title": "畫面已鎖定",
+        "description": "為保護您的資料安全，由於閒置過久，畫面已被鎖定。",
+        "unlock": "點擊解鎖"
+    },
     "welcome": {
         "title": "歡迎來到 BluePay",
         "subtitle": "您全新的安全、簡易支付錢包。",

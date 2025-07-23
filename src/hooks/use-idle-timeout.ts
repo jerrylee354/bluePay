@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 const EVENTS = [
   "mousemove",
@@ -14,35 +14,27 @@ const EVENTS = [
 
 interface UseIdleTimeoutParams {
   onIdle: () => void;
-  onActive?: () => void;
   idleTimeout: number;
-  isIdle: boolean;
 }
 
-export function useIdleTimeout({ onIdle, onActive, idleTimeout, isIdle }: UseIdleTimeoutParams) {
+export function useIdleTimeout({ onIdle, idleTimeout }: UseIdleTimeoutParams) {
   const timer = useRef<number | null>(null);
+  const eventHandler = useRef(onIdle);
+
+  useEffect(() => {
+    eventHandler.current = onIdle;
+  }, [onIdle]);
 
   const handleEvent = () => {
-    if (isIdle) {
-      if (onActive) {
-        onActive();
-      }
-    } else {
-       if (timer.current) {
-        window.clearTimeout(timer.current);
-      }
-      timer.current = window.setTimeout(onIdle, idleTimeout);
+    if (timer.current) {
+      window.clearTimeout(timer.current);
     }
+    timer.current = window.setTimeout(() => {
+      eventHandler.current();
+    }, idleTimeout);
   };
 
   useEffect(() => {
-    if (isIdle) {
-       if (timer.current) {
-        window.clearTimeout(timer.current);
-      }
-      return;
-    }
-
     handleEvent(); // Start the timer on initial mount
 
     EVENTS.forEach(event => {
@@ -57,7 +49,7 @@ export function useIdleTimeout({ onIdle, onActive, idleTimeout, isIdle }: UseIdl
         window.removeEventListener(event, handleEvent);
       });
     };
-  }, [onIdle, idleTimeout, isIdle]);
+  }, [idleTimeout]);
 
   return null;
 }

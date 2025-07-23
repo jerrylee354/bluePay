@@ -320,6 +320,11 @@
         "description": "You have been logged out due to inactivity.",
         "confirm": "OK"
     },
+    "lockScreen": {
+        "title": "Screen Locked",
+        "description": "For your security, the screen has been locked due to inactivity.",
+        "unlock": "Click to Unlock"
+    },
     "welcome": {
         "title": "Welcome to BluePay",
         "subtitle": "Your new secure and simple payment wallet.",
