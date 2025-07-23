@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy } from 'lucide-react';
+import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, X } from 'lucide-react';
 import { Dictionary } from '@/dictionaries';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
@@ -267,7 +267,7 @@ const CreateEditTicketDialog = ({
 
 export default function TicketsPageClient({ dictionary }: { dictionary: Dictionary}) {
     const d = dictionary.tickets;
-    const { user, ticketTemplates, isLoading } = useAuth();
+    const { user, userData, ticketTemplates, isLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     
@@ -277,13 +277,17 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const [isEditing, setIsEditing] = useState(false);
     const [qrValue, setQrValue] = useState('');
 
+    useEffect(() => {
+        if (!isLoading && userData?.accountType !== 'business') {
+          router.push('/home');
+        }
+      }, [userData, isLoading, router]);
+
     const handleShare = (template: TicketTemplate) => {
         if (typeof window !== 'undefined' && user) {
             const baseUrl = window.location.origin;
             const addUrl = `${baseUrl}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
-            // This JSON string is for the QR code to be scanned by our app
-            const qrCodePayload = JSON.stringify({ type: 'ticket_url', url: addUrl });
-            setQrValue(qrCodePayload);
+            setQrValue(addUrl);
             setSelectedTemplate(template);
             setIsShareOpen(true);
         }
@@ -302,15 +306,17 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     }
     
     const copyToClipboard = () => {
-        if (!selectedTemplate || !user) return;
-         const baseUrl = window.location.origin;
-         const addUrl = `${baseUrl}/wallet/add?templateId=${selectedTemplate.id}&issuerId=${user.uid}`;
-        navigator.clipboard.writeText(addUrl).then(() => {
+        if (!qrValue) return;
+        navigator.clipboard.writeText(qrValue).then(() => {
             toast({ title: d.linkCopied });
         }, (err) => {
             toast({ variant: 'destructive', title: d.copyFailed, description: err.message });
         });
     };
+
+    if (isLoading || !userData || userData.accountType !== 'business') {
+        return <LoadingOverlay isLoading={true} />;
+    }
 
     return (
         <div className="space-y-6">

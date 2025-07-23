@@ -100,7 +100,7 @@ const PendingOrdersList = ({ transactions, currency, onTransactionClick, diction
 }
 
 export default function OrdersPageClient({ dictionary }: { dictionary: Dictionary }) {
-  const { transactions, userData, getUserById, user, cancelTransaction } = useAuth();
+  const { transactions, userData, getUserById, user, cancelTransaction, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
   const currency = userData?.currency || 'USD';
   const d_orders = dictionary.orders;
@@ -118,13 +118,13 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (userData && userData.accountType !== 'business') {
+    if (!isAuthLoading && userData?.accountType !== 'business') {
         router.push('/home');
     }
-  }, [userData, router]);
+  }, [userData, isAuthLoading, router]);
 
   useEffect(() => {
-    if (!userData) return;
+    if (!userData || isAuthLoading) return;
 
     const fetchTransactionDetails = async () => {
         setIsLoading(true);
@@ -152,7 +152,7 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
     };
     
     fetchTransactionDetails();
-  }, [transactions, getUserById, dictionary.status, userData]);
+  }, [transactions, getUserById, dictionary.status, userData, isAuthLoading]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && user) {
@@ -212,6 +212,9 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
       return `@${firstName?.toLowerCase() || 'user'}`;
   }
 
+  if (isAuthLoading || !userData || userData.accountType !== 'business') {
+    return <LoadingOverlay isLoading={true} />;
+  }
 
   return (
     <div className="space-y-6">

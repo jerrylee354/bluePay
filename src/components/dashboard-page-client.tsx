@@ -120,7 +120,7 @@ export default function DashboardPageClient({ dictionary }: { dictionary: Dictio
     fetchTransactionDetails();
   }, [transactions, getUserById]);
 
-  if (isLoading || userData?.accountType !== 'business') {
+  if (isLoading || !userData || userData.accountType !== 'business') {
     return <LoadingOverlay isLoading={true} />;
   }
 
