@@ -49,7 +49,8 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
     const currency = userData?.currency || 'USD';
     const d = dictionary.paymentSuccess;
 
-    const titleText = transaction.type === 'payment' ? d.paymentSuccessful : d.requestSent;
+    const isRequest = transaction.status === 'Requested';
+    const titleText = isRequest ? d.requestSent : d.paymentSuccessful;
     
     const getInitials = (name?: string) => {
         if (!name) return '?';
@@ -57,7 +58,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
     }
 
     return (
-        <div className="flex min-h-dvh flex-col items-center justify-center bg-background p-4 text-center sm:p-8">
+        <div className="flex flex-col items-center justify-center bg-background p-4 text-center min-h-dvh sm:p-8">
             <Card className="w-full max-w-md animate-fade-in-up">
                 <CardContent className="p-6 md:p-8">
                     <AnimatedCheckmark />
@@ -74,7 +75,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
                             <AvatarFallback>{getInitials(transaction.name)}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="text-muted-foreground text-sm">{transaction.type === 'payment' ? d.paidTo : d.requestedFrom}</p>
+                            <p className="text-muted-foreground text-sm">{isRequest ? d.requestedFrom : d.paidTo}</p>
                             <p className="font-semibold text-lg">{transaction.name}</p>
                         </div>
                     </div>
@@ -83,7 +84,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
 
                     <div className="space-y-1 text-left">
                         <DetailRow label={d.transactionDate} value={formatDate(transaction.date, dictionary.locale)} />
-                        <DetailRow label={d.transactionStatus} value={transaction.status} />
+                        <DetailRow label={d.transactionStatus} value={dictionary.status[transaction.status] || transaction.status} />
                          <DetailRow label={d.transactionId} value={<span className="font-mono text-xs">{transaction.id}</span>} />
                     </div>
                     
