@@ -1,6 +1,12 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import './globals.css';
 import { type Locale } from '@/i18n';
+
+export const metadata: Metadata = {
+  title: 'BluePay',
+  description: 'A simplified payment system',
+};
 
 // This RootLayout is now simpler and doesn't fetch data itself.
 // The locale-based layouts will handle data fetching.
