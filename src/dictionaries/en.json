@@ -116,6 +116,7 @@
         "activity": "Activity",
         "pay": "Pay",
         "wallet": "Wallet",
+        "tickets": "Tickets",
         "settings": "Settings",
         "orders": "Orders",
         "dashboard": "Dashboard"
@@ -246,7 +247,33 @@
     },
     "wallet": {
         "title": "Wallet",
-        "underConstruction": "Wallet feature coming soon!"
+        "underConstruction": "Wallet feature coming soon!",
+        "noTicketsTitle": "Your wallet is empty",
+        "noTicketsDescription": "Add tickets or coupons by scanning a merchant's QR code.",
+        "addFirstTicket": "Add Your First Ticket",
+        "showTicketToMerchant": "Show QR Code to Merchant",
+        "addTicketSuccess": "Ticket Added!",
+        "addTicketError": "Failed to Add Ticket",
+        "scanTicketTitle": "Scan Ticket QR Code"
+    },
+    "tickets": {
+        "title": "Tickets",
+        "noTemplatesTitle": "No tickets created yet",
+        "noTemplatesDescription": "Create your first ticket to get started.",
+        "createFirstTicket": "Create Your First Ticket",
+        "scanToRedeem": "Scan to Redeem",
+        "createTicket": "Create Ticket",
+        "ticketName": "Ticket Name",
+        "ticketNamePlaceholder": "e.g., Free Coffee Coupon",
+        "style": "Style",
+        "publish": "Publish",
+        "ticketCreated": "Ticket Created!",
+        "shareThisQr": "Share this QR code with your customers.",
+        "scanUserTicket": "Scan User's Ticket",
+        "confirmRedemption": "Confirm Redemption",
+        "confirmRedemptionDescription": "Do you want to mark this ticket as used?",
+        "ticketUsedSuccess": "Ticket Redeemed!",
+        "ticketUsedError": "Failed to Redeem Ticket"
     },
     "settings": {
         "title": "Settings",

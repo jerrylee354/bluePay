@@ -13,8 +13,8 @@ import {
   signOut,
   fetchSignInMethodsForEmail,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, query, onSnapshot, DocumentData, orderBy, where, getDocs, limit, runTransaction, writeBatch, updateDoc } from 'firebase/firestore';
-import type { Transaction, Ticket } from '@/lib/data';
+import { doc, setDoc, getDoc, collection, query, onSnapshot, DocumentData, orderBy, where, getDocs, limit, runTransaction, writeBatch, updateDoc, serverTimestamp, addDoc, Timestamp } from 'firebase/firestore';
+import type { Transaction, WalletItem, TicketTemplate } from '@/lib/data';
 import { sendReceipt, type ReceiptDetails } from '@/ai/flows/send-receipt-flow';
 import { getDictionary, type Dictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/i18n';
@@ -48,7 +48,8 @@ interface AuthContextType {
   user: FirebaseUser | null;
   userData: DocumentData | null;
   transactions: Transaction[];
-  walletItems: Ticket[];
+  walletItems: WalletItem[];
+  ticketTemplates: TicketTemplate[];
   isAuthenticated: boolean;
   login: (email: string, pass: string) => Promise<any>;
   logout: (options?: { redirect: boolean }) => Promise<void>;
@@ -66,6 +67,9 @@ interface AuthContextType {
   isLoading: boolean;
   isLoggingOut: boolean;
   refreshUserData: () => Promise<void>;
+  addTicketToWallet: (templateId: string, issuerId: string) => Promise<void>;
+  useTicket: (ticketId: string, userId: string) => Promise<void>;
+  createTicketTemplate: (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt'>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,7 +92,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userData, setUserData] = useState<DocumentData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [walletItems, setWalletItems] = useState<Ticket[]>([]);
+  const [walletItems, setWalletItems] = useState<WalletItem[]>([]);
+  const [ticketTemplates, setTicketTemplates] = useState<TicketTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
@@ -124,23 +129,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const unsubUser = onSnapshot(userDocRef, async (docSnapshot) => {
           if (docSnapshot.exists()) {
             const currentData = docSnapshot.data();
-
-            // Check for 'status' and 'hasAppealed' fields, add if they don't exist
-            const updates: { status?: string, hasAppealed?: boolean, verify?: string } = {};
-            if (currentData.status === undefined) {
-              updates.status = 'Yes';
-            }
-            if (currentData.hasAppealed === undefined) {
-                updates.hasAppealed = false;
-            }
-            if (currentData.verify === undefined) {
-                updates.verify = 'No';
-            }
-            if (Object.keys(updates).length > 0) {
-              await updateDoc(userDocRef, updates);
-              setUserData({ ...currentData, ...updates });
-            } else {
-              setUserData(currentData);
+            
+            setUserData(currentData);
+            
+            if (currentData.accountType === 'business') {
+                const templatesColRef = collection(db, "users", user.uid, "ticketTemplates");
+                const templatesQuery = query(templatesColRef, orderBy("createdAt", "desc"));
+                onSnapshot(templatesQuery, (snapshot) => {
+                    const newTemplates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TicketTemplate));
+                    setTicketTemplates(newTemplates);
+                });
             }
           } else {
             setUserData(null);
@@ -157,7 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const walletColRef = collection(db, "users", user.uid, "walletItems");
         const unsubWallet = onSnapshot(walletColRef, (snapshot) => {
-          const newWalletItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Ticket));
+          const newWalletItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WalletItem));
           setWalletItems(newWalletItems);
         });
 
@@ -524,9 +522,74 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await updateDoc(userDocRef, { hasAppealed: true });
     await refreshUserData();
   };
+  
+  const createTicketTemplate = async (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt'>) => {
+    if (!user || !userData) throw new Error("User not authenticated");
+    
+    const templateData = {
+        ...template,
+        issuerId: user.uid,
+        issuerName: `${userData.firstName} ${userData.lastName}`,
+        createdAt: new Date().toISOString()
+    };
+    
+    const templatesColRef = collection(db, "users", user.uid, "ticketTemplates");
+    await addDoc(templatesColRef, templateData);
+  }
+
+  const addTicketToWallet = async (templateId: string, issuerId: string) => {
+    if (!user) throw new Error("User not authenticated");
+    
+    const templateRef = doc(db, "users", issuerId, "ticketTemplates", templateId);
+    const templateSnap = await getDoc(templateRef);
+    
+    if (!templateSnap.exists()) {
+      throw new Error("Ticket template not found.");
+    }
+    const templateData = templateSnap.data() as TicketTemplate;
+    
+    const walletItemData: Omit<WalletItem, 'id'> = {
+        templateId: templateId,
+        issuerId: templateData.issuerId,
+        issuerName: templateData.issuerName,
+        title: templateData.title,
+        style: templateData.style,
+        addedAt: new Date().toISOString(),
+        status: 'valid'
+    };
+    
+    const walletColRef = collection(db, "users", user.uid, "walletItems");
+    await addDoc(walletColRef, walletItemData);
+  };
+
+  const useTicket = async (ticketId: string, userId: string) => {
+    if (!user || userData?.accountType !== 'business') throw new Error("Only businesses can redeem tickets.");
+    
+    const ticketRef = doc(db, "users", userId, "walletItems", ticketId);
+    const ticketSnap = await getDoc(ticketRef);
+
+    if (!ticketSnap.exists()) {
+      throw new Error("Ticket not found in user's wallet.");
+    }
+    
+    const ticketData = ticketSnap.data() as WalletItem;
+    
+    if (ticketData.issuerId !== user.uid) {
+        throw new Error("This ticket was not issued by you.");
+    }
+    
+    if (ticketData.status === 'used') {
+        throw new Error("This ticket has already been used.");
+    }
+
+    await updateDoc(ticketRef, {
+        status: 'used',
+        usedAt: new Date().toISOString()
+    });
+  };
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate }}>
       {children}
     </AuthContext.Provider>
   );

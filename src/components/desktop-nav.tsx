@@ -12,7 +12,8 @@ import {
   CircleDollarSign,
   Wallet as WalletIcon,
   Package,
-  LayoutDashboard
+  LayoutDashboard,
+  Ticket
 } from "lucide-react";
 import {
   Tooltip,
@@ -50,7 +51,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
     { href: "/home", label: dictionary.home, icon: Home },
     { href: "/dashboard", label: dictionary.dashboard, icon: LayoutDashboard },
     { href: "/orders", label: dictionary.orders, icon: Package },
-    { href: "/wallet", label: dictionary.wallet, icon: WalletIcon },
+    { href: "/tickets", label: dictionary.tickets, icon: Ticket },
   ];
 
   const navItems = isBusiness ? businessNavItems : personalNavItems;

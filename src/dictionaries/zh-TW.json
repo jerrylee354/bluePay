@@ -116,6 +116,7 @@
         "activity": "活動",
         "pay": "支付",
         "wallet": "錢包",
+        "tickets": "票卡",
         "settings": "設定",
         "orders": "訂單",
         "dashboard": "儀表板"
@@ -246,7 +247,33 @@
     },
     "wallet": {
         "title": "錢包",
-        "underConstruction": "錢包功能即將推出！"
+        "underConstruction": "錢包功能即將推出！",
+        "noTicketsTitle": "您的錢包是空的",
+        "noTicketsDescription": "掃描商家的 QR Code 以新增票卡或優惠券。",
+        "addFirstTicket": "新增您的第一張票卡",
+        "showTicketToMerchant": "向商家出示 QR Code",
+        "addTicketSuccess": "已成功新增票卡！",
+        "addTicketError": "新增票卡失敗",
+        "scanTicketTitle": "掃描票卡 QR Code"
+    },
+    "tickets": {
+        "title": "票卡",
+        "noTemplatesTitle": "尚未建立任何票卡",
+        "noTemplatesDescription": "建立您的第一張票卡以開始使用。",
+        "createFirstTicket": "建立您的第一張票卡",
+        "scanToRedeem": "掃描以核銷",
+        "createTicket": "建立票卡",
+        "ticketName": "票卡名稱",
+        "ticketNamePlaceholder": "例如：免費咖啡券",
+        "style": "樣式",
+        "publish": "發布",
+        "ticketCreated": "已成功建立票卡！",
+        "shareThisQr": "與您的顧客分享此 QR Code。",
+        "scanUserTicket": "掃描顧客的票卡",
+        "confirmRedemption": "確認核銷",
+        "confirmRedemptionDescription": "您確定要將此票卡標記為已使用嗎？",
+        "ticketUsedSuccess": "已成功核銷票卡！",
+        "ticketUsedError": "核銷票卡失敗"
     },
     "settings": {
         "title": "設定",

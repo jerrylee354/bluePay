@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, History, CircleDollarSign, Wallet, Package, LayoutDashboard } from "lucide-react";
+import { Home, History, CircleDollarSign, Wallet, Package, LayoutDashboard, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dictionary } from "@/dictionaries";
 import { useAuth } from "@/context/auth-context";
@@ -25,7 +25,7 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
     { href: "/home", label: dictionary.home, icon: Home },
     { href: "/dashboard", label: dictionary.dashboard, icon: LayoutDashboard },
     { href: "/orders", label: dictionary.orders, icon: Package },
-    { href: "/wallet", label: dictionary.wallet, icon: Wallet },
+    { href: "/tickets", label: dictionary.tickets, icon: Ticket },
   ];
   
   const navItems = isBusiness ? businessNavItems : personalNavItems;

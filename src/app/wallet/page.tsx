@@ -5,6 +5,8 @@ import { i18n, type Locale } from '@/i18n';
 import { headers } from 'next/headers';
 import { match as matchLocale } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
+import { Suspense } from 'react';
+import { LoadingOverlay } from '@/components/ui/loading-overlay';
 
 function getLocale(): Locale {
   const negotiatorHeaders: Record<string, string> = {};
@@ -25,5 +27,9 @@ function getLocale(): Locale {
 export default async function WalletPage() {
   const lang = getLocale();
   const dictionary = await getDictionary(lang);
-  return <WalletPageClient dictionary={dictionary} />;
+  return (
+    <Suspense fallback={<LoadingOverlay isLoading={true} />}>
+      <WalletPageClient dictionary={dictionary} />
+    </Suspense>
+  );
 }

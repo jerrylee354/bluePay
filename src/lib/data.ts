@@ -15,12 +15,29 @@ export type Transaction = {
   orderItems?: OrderItem[];
 };
 
-export type Ticket = {
+export type WalletItem = {
   id: string;
-  type: 'ticket' | 'coupon';
+  templateId: string;
+  issuerId: string;
+  issuerName: string;
   title: string;
-  issuer: string;
-  expiryDate: string;
-  imageUrl: string;
-  imageHint: string;
+  addedAt: string;
+  status: 'valid' | 'used';
+  usedAt?: string;
+  style?: {
+    backgroundColor: string;
+    textColor: string;
+  }
+};
+
+export type TicketTemplate = {
+    id: string;
+    issuerId: string;
+    issuerName: string;
+    title: string;
+    createdAt: string;
+    style: {
+        backgroundColor: string;
+        textColor: string;
+    };
 };
