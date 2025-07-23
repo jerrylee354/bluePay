@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
@@ -37,20 +37,26 @@ const AppLoader = () => (
 export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     const { isAuthenticated, isLoading, logout, isLoggingOut } = useAuth();
     const pathname = usePathname();
+    const router = useRouter();
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
     
     const handleIdle = () => {
         if(isAuthenticated) {
+            logout();
             setIsIdle(true);
         }
     };
-
+    
+    const handleActive = () => {
+      setIsIdle(false);
+    }
+    
     useIdleTimeout({
         onIdle: handleIdle,
-        activeTimeout: 180000, // 3 minutes
-        inactiveTimeout: 120000, // 2 minutes
-        isIdle: !isAuthenticated || isLoading,
+        onActive: handleActive,
+        idleTimeout: 180000, // 3 minutes
+        isIdle: isIdle,
     });
     
     const localeSegment = `/${dictionary.locale}`;
@@ -67,7 +73,7 @@ export default function AppContent({ children, dictionary }: { children: React.R
         return <>{children}</>;
     }
     
-    if (isLoading || isMobile === undefined || isLoggingOut) {
+    if (isLoading || isMobile === undefined || (isLoggingOut && !isIdle)) {
       return (
         <div className="min-h-screen bg-background">
             <LoadingOverlay isLoading={true} />
@@ -79,8 +85,8 @@ export default function AppContent({ children, dictionary }: { children: React.R
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
 
     const handleConfirmIdle = () => {
-        logout();
-        setIsIdle(false);
+        setIsIdle(false); // Close dialog
+        router.push(`/${dictionary.locale}/login`);
     };
 
     if (isMobile && isFullScreenPage) {

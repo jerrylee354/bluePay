@@ -14,52 +14,40 @@ const EVENTS = [
 
 interface UseIdleTimeoutParams {
   onIdle: () => void;
-  activeTimeout: number; // e.g., 3 minutes
-  inactiveTimeout: number; // e.g., 2 minutes
+  onActive?: () => void;
+  idleTimeout: number;
   isIdle: boolean;
 }
 
-export function useIdleTimeout({ onIdle, activeTimeout, inactiveTimeout, isIdle }: UseIdleTimeoutParams) {
+export function useIdleTimeout({ onIdle, onActive, idleTimeout, isIdle }: UseIdleTimeoutParams) {
   const timer = useRef<number | null>(null);
-  const [isPageVisible, setIsPageVisible] = useState(true);
 
-  const reset = () => {
-    if (timer.current) {
-      window.clearTimeout(timer.current);
+  const handleEvent = () => {
+    if (isIdle) {
+      if (onActive) {
+        onActive();
+      }
+    } else {
+       if (timer.current) {
+        window.clearTimeout(timer.current);
+      }
+      timer.current = window.setTimeout(onIdle, idleTimeout);
     }
-    const timeout = isPageVisible ? activeTimeout : inactiveTimeout;
-    timer.current = window.setTimeout(onIdle, timeout);
   };
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsPageVisible(!document.hidden);
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-
-  useEffect(() => {
     if (isIdle) {
+       if (timer.current) {
+        window.clearTimeout(timer.current);
+      }
       return;
     }
 
-    reset();
+    handleEvent(); // Start the timer on initial mount
 
-    const handleEvent = () => {
-      reset();
-    };
-    
-    // Only add user activity listeners if the page is visible
-    if (isPageVisible) {
-        EVENTS.forEach(event => {
-          window.addEventListener(event, handleEvent);
-        });
-    }
+    EVENTS.forEach(event => {
+      window.addEventListener(event, handleEvent);
+    });
 
     return () => {
       if (timer.current) {
@@ -69,7 +57,7 @@ export function useIdleTimeout({ onIdle, activeTimeout, inactiveTimeout, isIdle 
         window.removeEventListener(event, handleEvent);
       });
     };
-  }, [onIdle, activeTimeout, inactiveTimeout, isIdle, isPageVisible]);
+  }, [onIdle, idleTimeout, isIdle]);
 
   return null;
 }
