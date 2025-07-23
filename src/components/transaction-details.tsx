@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dictionary } from "@/dictionaries";
+import { OrderItem } from "./payment-confirm";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -33,6 +34,24 @@ const DetailRow = ({ label, value }: { label: string; value: string | React.Reac
     <div className="flex justify-between items-center text-sm">
         <p className="text-muted-foreground">{label}</p>
         <p className="font-medium text-right">{value}</p>
+    </div>
+);
+
+
+const OrderItemsList = ({ items, currency, dictionary }: { items: OrderItem[], currency: string, dictionary: Dictionary['paymentConfirm'] }) => (
+    <div className="text-left bg-muted/50 p-4 rounded-lg space-y-2">
+        <h4 className="font-semibold text-sm">{dictionary.orderSummary}</h4>
+        {items.map(item => (
+            <div key={item.id} className="flex justify-between items-center text-sm">
+                <span>{item.name}</span>
+                <span className="font-medium">{formatCurrency(parseFloat(item.price), currency)}</span>
+            </div>
+        ))}
+         <Separator className="my-2 bg-muted-foreground/20" />
+         <div className="flex justify-between items-center font-bold">
+             <span>{dictionary.total}</span>
+             <span>{formatCurrency(items.reduce((acc, item) => acc + parseFloat(item.price), 0), currency)}</span>
+         </div>
     </div>
 );
 
@@ -97,6 +116,10 @@ export default function TransactionDetails({ transaction, dictionary }: { transa
                 </div>
             </div>
 
+            {transaction.orderItems && transaction.orderItems.length > 0 && (
+                 <OrderItemsList items={transaction.orderItems} currency={currency} dictionary={dictionary.paymentConfirm} />
+            )}
+
             {transaction.description && (
                 <div className="text-center bg-muted/50 p-4 rounded-lg">
                     <p>{transaction.description}</p>
@@ -113,16 +136,16 @@ export default function TransactionDetails({ transaction, dictionary }: { transa
             
             <div className="space-y-3">
                  <DetailRow 
-                    label="Transaction Type" 
+                    label={dictionary.transactionTypeLabel} 
                     value={
                         <span className="inline-flex items-center gap-1.5">
                             {transaction.type === 'payment' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
-                            {transaction.type === 'payment' ? 'Payment Sent' : 'Payment Received'}
+                            {transaction.type === 'payment' ? dictionary.paymentSent : dictionary.paymentReceived}
                         </span>
                     } 
                 />
-                <DetailRow label="Date" value={formatDate(transaction.date)} />
-                <DetailRow label="Transaction ID" value={<span className="font-mono text-xs">{transaction.id}</span>} />
+                <DetailRow label={dictionary.dateLabel} value={formatDate(transaction.date)} />
+                <DetailRow label={dictionary.transactionIdLabel} value={<span className="font-mono text-xs">{transaction.id}</span>} />
             </div>
 
         </div>

@@ -152,7 +152,16 @@
         "confirmAndPay": "Confirm & Pay"
     },
     "transactionDetails": {
-        "title": "Transaction Details"
+        "title": "Transaction Details",
+        "transactionTypeLabel": "Transaction Type",
+        "paymentSent": "Payment Sent",
+        "paymentReceived": "Payment Received",
+        "dateLabel": "Date",
+        "transactionIdLabel": "Transaction ID",
+        "paymentConfirm": {
+            "orderSummary": "Order Summary",
+            "total": "Total"
+        }
     },
     "paymentSuccess": {
         "paymentSuccessful": "Payment Successful",
@@ -164,6 +173,28 @@
         "transactionId": "Transaction ID",
         "note": "Note",
         "done": "Done"
+    },
+    "paymentConfirm": {
+        "payTitle": "Pay",
+        "requestTitle": "Request Payment",
+        "addNote": "Add Note",
+        "editOrder": "Edit Order",
+        "done": "Done",
+        "addNotePlaceholder": "What's this for?",
+        "uploadImage": "Upload Image",
+        "imageAttached": "Image attached",
+        "items": "items",
+        "addItem": "Add Item",
+        "itemName": "Item Name",
+        "price": "Price",
+        "orderSummary": "Order Summary",
+        "total": "Total",
+        "invalidTransaction": "Invalid Transaction",
+        "invalidTransactionDescription": "Please enter a valid amount and ensure recipient is correct.",
+        "insufficientFunds": "Insufficient Funds",
+        "insufficientFundsDescription": "Your balance is {balance}, but you tried to send {amount}.",
+        "transactionFailed": "Transaction Failed",
+        "genericError": "An unexpected error occurred."
     },
     "pay": {
         "title": "Pay or Request",
@@ -274,5 +305,35 @@
         "title": "Session Expired",
         "description": "You have been logged out due to inactivity.",
         "confirm": "OK"
+    },
+    "welcome": {
+        "title": "Welcome to BluePay",
+        "subtitle": "Your new secure and simple payment wallet.",
+        "getStarted": "Get Started",
+        "createUsernameTitle": "Create Your Username",
+        "createUsernameSubtitle": "This will be your unique ID for payments.",
+        "saveAndContinue": "Save & Continue",
+        "setupProfileTitle": "Set Up Your Profile",
+        "setupProfileSubtitle": "Add a profile picture to personalize your account.",
+        "changeAvatar": "Change Avatar",
+        "saveAndFinish": "Save & Finish",
+        "finishSetup": "Finish Setup",
+        "skipForNow": "Skip for now",
+        "businessInfoTitle": "Business Information",
+        "businessInfoSubtitle": "Provide your business details to continue.",
+        "uploadLogo": "Upload Logo",
+        "businessPhonePlaceholder": "Business Phone Number",
+        "phoneRequiredError": "Business phone number is required.",
+        "usernameLengthError": "Username must be at least 3 characters long.",
+        "usernameTakenError": "This username is already taken. Please choose another.",
+        "usernameUpdateError": "Could not save username. Please try again.",
+        "authError": "Authentication Error",
+        "updateFailed": "Update Failed",
+        "imageProcessFailed": "Image Processing Failed",
+        "imageProcessError": "Could not process image.",
+        "setupComplete": "Setup Complete!",
+        "welcomeToBluePay": "Welcome to BluePay.",
+        "setupFailed": "Setup Failed",
+        "genericError": "Something went wrong. Please try again."
     }
 }

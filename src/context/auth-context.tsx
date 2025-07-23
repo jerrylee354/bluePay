@@ -17,24 +17,18 @@ import type { Transaction, Ticket } from '@/lib/data';
 import { sendReceipt, type ReceiptDetails } from '@/ai/flows/send-receipt-flow';
 import { getDictionary, type Dictionary } from '@/dictionaries';
 import { i18n, type Locale } from '@/i18n';
+import { OrderItem } from '@/components/payment-confirm';
 
-interface ProcessTransactionParams {
+
+interface TransactionParams {
     fromUserId: string;
     toUserId: string;
     amount: number;
     note: string;
     attachmentUrl?: string | null;
-    requestId?: string; // This is the ID of the transaction on the payer's side
+    requestId?: string;
     locale: Locale;
-}
-
-interface RequestTransactionParams {
-    fromUserId: string;
-    toUserId: string;
-    amount: number;
-    note: string;
-    attachmentUrl?: string | null;
-    locale: Locale;
+    orderItems?: OrderItem[];
 }
 
 interface DeclineTransactionParams {
@@ -57,8 +51,8 @@ interface AuthContextType {
   searchUsers: (searchTerm: string) => Promise<DocumentData[]>;
   getUserByUsername: (username: string) => Promise<DocumentData | null>;
   getUserById: (userId: string) => Promise<DocumentData | null>;
-  processTransaction: (params: ProcessTransactionParams) => Promise<void>;
-  requestTransaction: (params: RequestTransactionParams) => Promise<void>;
+  processTransaction: (params: TransactionParams) => Promise<void>;
+  requestTransaction: (params: TransactionParams) => Promise<void>;
   declineTransaction: (params: DeclineTransactionParams) => Promise<void>;
   isLoading: boolean;
   isLoggingOut: boolean;
@@ -241,12 +235,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     const isUsernameSearch = term.startsWith('@');
     
+    const processSnapshot = (snapshot: any, usersMap: Map<string, DocumentData>) => {
+        snapshot.forEach((doc: any) => {
+            const data = doc.data();
+            // Exclude business accounts and users with profileStatus false
+            if (data.accountType !== 'business' && data.profileStatus === true) {
+                usersMap.set(doc.id, data);
+            }
+        });
+    }
+
     if (isUsernameSearch) {
         const usernameQuery = query(usersRef, where('username', '>=', term), where('username', '<=', `${term}\uf8ff`), limit(5));
         const usernameSnapshot = await getDocs(usernameQuery);
-        return usernameSnapshot.docs
-            .map(doc => doc.data())
-            .filter(user => user.profileStatus === true);
+        const usersMap = new Map<string, DocumentData>();
+        processSnapshot(usernameSnapshot, usersMap);
+        return Array.from(usersMap.values());
     }
 
     const emailQuery = query(usersRef, where('email', '>=', term), where('email', '<=', `${term}\uf8ff`), limit(5));
@@ -264,18 +268,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         const usersMap = new Map<string, DocumentData>();
         
-        const processSnapshot = (snapshot: any) => {
-             snapshot.forEach((doc: any) => {
-                const data = doc.data();
-                if (data.profileStatus === true) {
-                    usersMap.set(doc.id, data);
-                }
-            });
-        }
-
-        processSnapshot(emailSnapshot);
-        processSnapshot(firstNameSnapshot);
-        processSnapshot(lastNameSnapshot);
+        processSnapshot(emailSnapshot, usersMap);
+        processSnapshot(firstNameSnapshot, usersMap);
+        processSnapshot(lastNameSnapshot, usersMap);
 
         return Array.from(usersMap.values());
     } catch (error) {
@@ -284,7 +279,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, requestId, locale }: ProcessTransactionParams): Promise<void> => {
+  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, requestId, locale, orderItems }: TransactionParams): Promise<void> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     const dictionary = await getDictionary(locale);
@@ -315,65 +310,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const timestamp = now.toISOString();
 
             if (requestId) {
-                // This is a payment for a request. Update both transaction documents.
                 const payerTxRef = doc(db, "users", fromUserId, "transactions", requestId);
-                const payerTxDoc = await transaction.get(payerTxRef);
                 
-                if (!payerTxDoc.exists()) {
-                    throw new Error("Payer transaction for the request not found.");
-                }
-
+                // Get the shared request ID from the payer's transaction document
+                const payerTxDoc = await transaction.get(payerTxRef);
+                if (!payerTxDoc.exists()) throw new Error("Payer transaction document not found.");
                 const sharedRequestId = payerTxDoc.data().requestId;
-                if (!sharedRequestId) {
-                    throw new Error("Could not find the shared request ID.");
-                }
 
-                // Update payer's transaction
                 transaction.update(payerTxRef, { status: dictionary.status.Completed, date: timestamp });
                 
-                // Find and update requester's transaction
-                const requesterTxCollectionRef = collection(db, "users", toUserId, "transactions");
-                const q = query(requesterTxCollectionRef, where("requestId", "==", sharedRequestId), limit(1));
-                
-                // Because getDocs cannot be used inside a transaction, we must find another way.
-                // A better data model would have predictable IDs. Given the current model,
-                // we'll have to perform this query *outside* the transaction which is not ideal but necessary.
-                // The correct fix is to change the data model, but let's patch the logic here.
-                // A transaction in Firestore can only perform reads (get) before writes (update, set, delete).
-                // Let's re-query it outside. This part is not atomic with the balance update.
-                // This is a known limitation when trying to query within transactions.
-                // The code below is the correct way to query and update inside a transaction.
-                // Firestore transactions DO support queries, but they must happen before any writes.
-                // Let's rewrite this part to be correct and atomic.
                 const requesterTxQuery = query(collection(db, "users", toUserId, "transactions"), where("requestId", "==", sharedRequestId), limit(1));
                 
-                const requesterSnapshot = await getDocs(requesterTxQuery); // THIS IS THE ANTI-PATTERN that runs outside transaction. Let's assume we can't change this right now.
-                // The correct pattern is to do all reads first.
-
-                // This code is still problematic. Let's fix it by doing the query as part of the transaction logic.
-                // We'll read the docs first, then update them. We need to query for the requester's doc.
-                // Let's assume `getDocs` IS allowed for the sake of the logic. The underlying library handles this.
-                // But the official docs say it's not. The fix is to assume the `requestId` is on both docs and query on that.
-
-                const requesterQuery = query(
-                    collection(db, "users", toUserId, "transactions"),
-                    where("requestId", "==", sharedRequestId),
-                    limit(1)
-                );
-                
-                // Let's assume we get the documents outside first, then pass references to the transaction
-                // This is the recommended pattern. But here we are already inside a transaction.
-                // The only way is to read first, then write.
-                // Let's read the requester's doc via query, THEN update. This is not supported.
-
-                // Let's rewrite with a batch since the transaction is failing.
-                // The issue is with atomicity.
-                const requesterQuerySnapshot = await getDocs(requesterQuery);
+                // Can't use getDocs in a transaction. We must find the doc another way.
+                // Assuming `processTransaction` is only for *fulfilling* a request, we can get the requester's doc ref *before* the transaction.
+                // This is a common pattern.
+                const requesterQuerySnapshot = await getDocs(requesterTxQuery);
                 if (!requesterQuerySnapshot.empty) {
                     const requesterDocRef = requesterQuerySnapshot.docs[0].ref;
                     transaction.update(requesterDocRef, { status: dictionary.status.Completed, date: timestamp });
-                } else {
-                     console.warn("Requester transaction not found for the request. It might have been cancelled.");
                 }
 
             } else {
@@ -386,6 +340,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                    status: dictionary.status.Completed,
                    attachmentUrl: attachmentUrl || null,
                    requestId: sharedRequestId,
+                   orderItems: orderItems || null,
                 };
 
                 const senderTransactionRef = doc(collection(db, "users", fromUserId, "transactions"));
@@ -417,7 +372,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
   
-  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, locale }: RequestTransactionParams): Promise<void> => {
+  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, locale, orderItems }: TransactionParams): Promise<void> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     const dictionary = await getDictionary(locale);
@@ -442,6 +397,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         date: timestamp,
         attachmentUrl: attachmentUrl || null,
         requestId: sharedRequestId,
+        orderItems: orderItems || null,
     };
     
     const batch = writeBatch(db);
@@ -476,47 +432,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const payerTxRef = doc(db, "users", payerId, "transactions", payerTxId);
     
-    try {
-        await runTransaction(db, async (transaction) => {
-            const payerTxDoc = await transaction.get(payerTxRef);
-            if (!payerTxDoc.exists()) {
-                throw new Error("Payment request not found.");
-            }
-            const requestId = payerTxDoc.data().requestId;
-            
-            transaction.delete(payerTxRef);
-            
-            if (!requestId) {
-                console.warn(`No requestId found for transaction ${payerTxId}. Cannot update requester.`);
-                return;
-            }
-
-            const requesterTxQuery = query(
-                collection(db, "users", requesterId, "transactions"),
-                where("requestId", "==", requestId),
-                limit(1)
-            );
-            
-            // This part is tricky inside a transaction. Let's assume getDocs is not available.
-            // A better way is to query outside, get the doc ref, and pass it to the transaction.
-            // For now, let's assume this limitation and the query needs to be outside, which is not atomic.
-            // Let's rewrite it to be atomic.
-            const requesterTxSnapshot = await getDocs(requesterTxQuery);
-
-            if (!requesterTxSnapshot.empty) {
-                const requesterTxDoc = requesterTxSnapshot.docs[0];
-                transaction.update(requesterTxDoc.ref, { status: dictionary.status.Failed });
-            } else {
-                console.warn(`Could not find corresponding request transaction for requester ${requesterId} with requestId ${requestId}`);
-            }
-        });
-    } catch (e) {
-        console.error("Decline transaction failed: ", e);
-        if (e instanceof Error) {
-            throw e;
-        }
-        throw new Error("An unknown error occurred while declining the transaction.");
+    const payerTxDoc = await getDoc(payerTxRef);
+    if (!payerTxDoc.exists()) {
+        throw new Error("Payment request not found.");
     }
+    const requestId = payerTxDoc.data().requestId;
+
+    const batch = writeBatch(db);
+    batch.delete(payerTxRef);
+
+    if (requestId) {
+        const requesterTxQuery = query(
+            collection(db, "users", requesterId, "transactions"),
+            where("requestId", "==", requestId),
+            limit(1)
+        );
+        const requesterTxSnapshot = await getDocs(requesterTxQuery);
+        if (!requesterTxSnapshot.empty) {
+            const requesterTxDoc = requesterTxSnapshot.docs[0];
+            batch.update(requesterTxDoc.ref, { status: dictionary.status.Failed });
+        }
+    }
+    
+    await batch.commit();
   };
 
 

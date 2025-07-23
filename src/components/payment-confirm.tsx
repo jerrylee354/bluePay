@@ -1,12 +1,11 @@
 
-
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { DocumentData } from 'firebase/firestore';
-import { ChevronLeft, Delete, X, Image as ImageIcon, FileText } from 'lucide-react';
+import { ChevronLeft, Delete, X, Image as ImageIcon, FileText, PlusCircle, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,8 +19,13 @@ import PaymentSuccess from './payment-success';
 import { type Transaction } from '@/lib/data';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dictionary } from '@/dictionaries';
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  price: string;
+}
 
 const RecipientSkeleton = () => (
     <div className="flex items-center space-x-4 p-4">
@@ -85,6 +89,7 @@ export default function PaymentConfirm({
     const { toast } = useToast();
     const isMobile = useIsMobile();
     const d = dictionary.pay;
+    const d_confirm = dictionary.paymentConfirm;
 
     const [recipient, setRecipient] = useState<DocumentData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -98,9 +103,19 @@ export default function PaymentConfirm({
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
     const [completedTransaction, setCompletedTransaction] = useState<Transaction | null>(null);
+
+    const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     
     const userId = userIdFromProps || null;
     const mode = modeFromProps || 'pay';
+    const isBusinessRequest = userData?.accountType === 'business' && mode === 'request';
+
+    useEffect(() => {
+        const total = orderItems.reduce((sum, item) => sum + parseFloat(item.price || '0'), 0);
+        if (total > 0) {
+            setAmount(total.toFixed(2));
+        }
+    }, [orderItems]);
 
     useEffect(() => {
         if (!userId) {
@@ -131,7 +146,7 @@ export default function PaymentConfirm({
     }, [userId, getUserById]);
     
     const handleKeypadClick = useCallback((value: string) => {
-        if (isProcessing) return;
+        if (isProcessing || isBusinessRequest) return;
 
         setAmount(prevAmount => {
             if (value === '.') {
@@ -157,15 +172,15 @@ export default function PaymentConfirm({
     
             return prevAmount + value;
         });
-    }, [isProcessing]);
+    }, [isProcessing, isBusinessRequest]);
 
     const handleDelete = useCallback(() => {
-        if (isProcessing) return;
+        if (isProcessing || isBusinessRequest) return;
         setAmount(prev => {
             const newAmount = prev.slice(0, -1);
             return newAmount === '' ? '0' : newAmount;
         });
-    }, [isProcessing]);
+    }, [isProcessing, isBusinessRequest]);
 
     const handleImageChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -210,7 +225,7 @@ export default function PaymentConfirm({
         return name.charAt(0).toUpperCase();
     }
     
-    const formattedAmount = (() => {
+    const formattedAmount = useMemo(() => {
         if (amount === '0' && !amount.includes('.')) return '0';
         const [integerPart, decimalPart] = amount.split('.');
         const formattedIntegerPart = new Intl.NumberFormat('en-US').format(BigInt(integerPart.replace(/,/g, '') || '0'));
@@ -221,48 +236,45 @@ export default function PaymentConfirm({
             return `${formattedIntegerPart}.`;
         }
         return formattedIntegerPart;
-    })();
+    }, [amount]);
+
 
     const handlePayment = async () => {
         const numericAmount = parseFloat(amount);
         if (!user || !userData || !recipient || numericAmount <= 0) {
             toast({
                 variant: 'destructive',
-                title: 'Invalid Transaction',
-                description: 'Please enter a valid amount and ensure recipient is correct.',
+                title: d_confirm.invalidTransaction,
+                description: d_confirm.invalidTransactionDescription,
             });
             return;
         }
         
         setIsProcessing(true);
         try {
+            const transactionPayload = {
+                fromUserId: user.uid,
+                toUserId: recipient.uid,
+                amount: numericAmount,
+                note,
+                attachmentUrl: attachedImage,
+                locale: dictionary.locale as 'en' | 'zh-TW',
+                orderItems: isBusinessRequest ? orderItems.filter(item => item.name && item.price) : undefined,
+            };
+
             if (mode === 'pay') {
                 if (numericAmount > userData.balance) {
                     toast({
                         variant: 'destructive',
-                        title: 'Insufficient Funds',
-                        description: `Your balance is ${formatCurrency(userData.balance, userData.currency)}, but you tried to send ${formatCurrency(numericAmount, userData.currency)}.`,
+                        title: d_confirm.insufficientFunds,
+                        description: d_confirm.insufficientFundsDescription.replace('{balance}', formatCurrency(userData.balance, userData.currency)).replace('{amount}', formatCurrency(numericAmount, userData.currency)),
                     });
                     setIsProcessing(false);
                     return;
                 }
-                await processTransaction({
-                    fromUserId: user.uid,
-                    toUserId: recipient.uid,
-                    amount: numericAmount,
-                    note,
-                    attachmentUrl: attachedImage,
-                    locale: dictionary.locale as 'en' | 'zh-TW',
-                });
+                await processTransaction(transactionPayload);
             } else { // Request logic
-                 await requestTransaction({
-                    fromUserId: user.uid,
-                    toUserId: recipient.uid,
-                    amount: numericAmount,
-                    note,
-                    attachmentUrl: attachedImage,
-                    locale: dictionary.locale as 'en' | 'zh-TW',
-                 });
+                 await requestTransaction(transactionPayload);
             }
 
             const mockTransaction: Transaction = {
@@ -276,6 +288,7 @@ export default function PaymentConfirm({
                 name: `${recipient.firstName} ${recipient.lastName}`,
                 otherPartyUid: recipient.uid,
                 otherParty: recipient,
+                orderItems: isBusinessRequest ? orderItems : undefined,
             };
 
             setCompletedTransaction(mockTransaction);
@@ -284,8 +297,8 @@ export default function PaymentConfirm({
         } catch (error: any) {
             toast({
                 variant: 'destructive',
-                title: 'Transaction Failed',
-                description: error.message || 'An unexpected error occurred.',
+                title: d_confirm.transactionFailed,
+                description: error.message || d_confirm.genericError,
             });
             setIsProcessing(false);
         }
@@ -315,6 +328,19 @@ export default function PaymentConfirm({
             router.push(`/${dictionary.locale}/home`);
         }
     }
+    
+    // Business Request Order Item Management
+    const addOrderItem = () => {
+        setOrderItems(prev => [...prev, { id: Date.now().toString(), name: '', price: '' }]);
+    };
+    
+    const updateOrderItem = (id: string, field: 'name' | 'price', value: string) => {
+        setOrderItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+    };
+
+    const removeOrderItem = (id: string) => {
+        setOrderItems(prev => prev.filter(item => item.id !== id));
+    };
 
     if (isPaymentSuccessful && completedTransaction) {
         return (
@@ -329,98 +355,98 @@ export default function PaymentConfirm({
     if (isMobile === undefined) {
         return <LoadingOverlay isLoading={true} />;
     }
+    
+    const noteSheetTitle = isBusinessRequest ? d_confirm.editOrder : d_confirm.addNote;
+    const noteSheetButtonText = isBusinessRequest ? d_confirm.editOrder : d_confirm.addNote;
 
-    const content = (
-        <div className="flex-1 flex flex-col justify-between p-4 md:p-6 text-center">
-            <div className="space-y-4">
-                 {isLoading && <RecipientSkeleton />}
-                 {error && <p className="text-center text-destructive">{error}</p>}
-                 {recipient && (
-                     <div className="flex flex-col items-center space-y-2">
-                        <Avatar className="h-16 w-16">
-                            <AvatarImage src={recipient.photoURL} alt={recipient.firstName} />
-                            <AvatarFallback className="text-2xl">{getInitials(recipient.firstName)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="font-semibold text-xl">{recipient.firstName} {recipient.lastName}</p>
-                            <p className="text-muted-foreground">{recipient.username || recipient.email}</p>
-                        </div>
-                    </div>
-                 )}
-
-                 <div className="flex items-center justify-center gap-2 py-4">
-                    <div className="flex items-baseline">
-                         <span className="text-5xl md:text-6xl font-light text-muted-foreground">{currencySymbol}</span>
-                        <span className="text-5xl md:text-6xl font-light tracking-tighter" style={{ minWidth: '1ch' }}>
-                            {formattedAmount}
-                            <span className="animate-pulse">|</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-             <div className="flex-shrink-0 space-y-4">
-                 <Sheet open={isNoteSheetOpen} onOpenChange={setIsNoteSheetOpen}>
-                    <SheetTrigger asChild>
-                        <Button variant="outline" className="h-12 md:h-14 rounded-full text-base w-full bg-muted/50">
-                            {!note && !imagePreview && <><FileText className="mr-2 h-5 w-5" />新增附註</>}
-                            {note && !imagePreview && <p className="truncate">{note}</p>}
-                            {imagePreview && (
-                                <div className="flex items-center gap-2 truncate">
-                                    <img src={imagePreview} alt="Note attachment" className="h-8 w-8 rounded-md object-cover" />
-                                    <p className="truncate">{note || "圖片附件"}</p>
+    const renderNoteSheetContent = () => {
+        if (isBusinessRequest) {
+            return (
+                 <div className="flex flex-col h-full">
+                    <SheetHeader className="p-4 border-b text-left">
+                        <SheetTitle className="flex justify-between items-center">
+                            <span>{noteSheetTitle}</span>
+                            <Button onClick={() => setIsNoteSheetOpen(false)}>{d_confirm.done}</Button>
+                        </SheetTitle>
+                    </SheetHeader>
+                    <div className="p-4 flex-1 overflow-y-auto space-y-4">
+                        {orderItems.map((item, index) => (
+                             <div key={item.id} className="flex items-center gap-2">
+                                <Input
+                                    placeholder={`${d_confirm.itemName} ${index + 1}`}
+                                    value={item.name}
+                                    onChange={e => updateOrderItem(item.id, 'name', e.target.value)}
+                                    className="h-11"
+                                />
+                                <div className="relative">
+                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{currencySymbol}</span>
+                                     <Input
+                                        type="number"
+                                        placeholder={d_confirm.price}
+                                        value={item.price}
+                                        onChange={e => updateOrderItem(item.id, 'price', e.target.value)}
+                                        className="h-11 pl-7 w-28"
+                                    />
                                 </div>
-                            )}
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="bottom" className="rounded-t-2xl p-0" hideCloseButton={true}>
-                         <div className="flex flex-col h-full">
-                            <SheetHeader className="p-4 border-b text-left">
-                                <SheetTitle className="flex justify-between items-center">
-                                    <span>新增附註</span>
-                                    <Button onClick={() => setIsNoteSheetOpen(false)}>完成</Button>
-                                </SheetTitle>
-                            </SheetHeader>
-                            <div className="p-4 flex-1 space-y-4">
-                                 <Textarea 
-                                    placeholder="你想說些什麼？"
-                                    value={note}
-                                    onChange={e => setNote(e.target.value)}
-                                    className="h-32 text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
-                                 />
-                                 {imagePreview && (
-                                    <div className="relative w-24 h-24">
-                                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-md" />
-                                        <Button size="icon" variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={removeImage}>
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                 )}
-                            </div>
-                            <div className="p-4 border-t">
-                                 <input type="file" accept="image/*" ref={imageInputRef} onChange={handleImageChange} className="hidden" />
-                                 <Button variant="outline" onClick={() => imageInputRef.current?.click()}>
-                                    <ImageIcon className="mr-2 h-5 w-5" />
-                                    上傳圖片
+                                <Button size="icon" variant="ghost" onClick={() => removeOrderItem(item.id)}>
+                                    <Trash2 className="h-5 w-5 text-destructive" />
                                 </Button>
                             </div>
+                        ))}
+                        <Button variant="outline" onClick={addOrderItem} className="w-full">
+                            <PlusCircle className="mr-2 h-5 w-5" />
+                            {d_confirm.addItem}
+                        </Button>
+                        <Textarea 
+                            placeholder={d_confirm.addNotePlaceholder}
+                            value={note}
+                            onChange={e => setNote(e.target.value)}
+                            className="h-24 text-base resize-none"
+                         />
+                    </div>
+                </div>
+            )
+        }
+        
+        // Default note sheet for personal accounts or payments
+        return (
+             <div className="flex flex-col h-full">
+                <SheetHeader className="p-4 border-b text-left">
+                    <SheetTitle className="flex justify-between items-center">
+                        <span>{noteSheetTitle}</span>
+                        <Button onClick={() => setIsNoteSheetOpen(false)}>{d_confirm.done}</Button>
+                    </SheetTitle>
+                </SheetHeader>
+                <div className="p-4 flex-1 space-y-4">
+                     <Textarea 
+                        placeholder={d_confirm.addNotePlaceholder}
+                        value={note}
+                        onChange={e => setNote(e.target.value)}
+                        className="h-32 text-base resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+                     />
+                     {imagePreview && (
+                        <div className="relative w-24 h-24">
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-md" />
+                            <Button size="icon" variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={removeImage}>
+                                <X className="h-4 w-4" />
+                            </Button>
                         </div>
-                    </SheetContent>
-                </Sheet>
-                 <Button 
-                    className="h-12 md:h-14 rounded-full text-lg font-bold w-full"
-                    onClick={handlePayment}
-                    disabled={isProcessing || isLoading || !recipient || parseFloat(amount) <= 0}
-                >
-                    {mode === 'pay' ? d.pay : d.request}
-                </Button>
+                     )}
+                </div>
+                <div className="p-4 border-t">
+                     <input type="file" accept="image/*" ref={imageInputRef} onChange={handleImageChange} className="hidden" />
+                     <Button variant="outline" onClick={() => imageInputRef.current?.click()}>
+                        <ImageIcon className="mr-2 h-5 w-5" />
+                        {d_confirm.uploadImage}
+                    </Button>
+                </div>
             </div>
-        </div>
-    );
-
+        );
+    }
+    
     return (
       <div className={cn("bg-background", isMobile ? "flex flex-col h-dvh" : "flex flex-row h-[580px] rounded-xl overflow-hidden")}>
-          <LoadingOverlay isLoading={isProcessing} />
+          <LoadingOverlay isLoading={isProcessing || isLoading} />
           <div className="flex-1 flex flex-col md:border-r">
               {isMobile && (
                   <header className="relative flex items-center justify-between p-4 flex-shrink-0">
@@ -428,15 +454,67 @@ export default function PaymentConfirm({
                           <ChevronLeft className="h-6 w-6" />
                           <span className="sr-only">Back</span>
                       </Button>
-                      <h1 className="text-xl font-semibold">{mode === 'pay' ? '付款' : '要求付款'}</h1>
+                      <h1 className="text-xl font-semibold">{mode === 'pay' ? d_confirm.payTitle : d_confirm.requestTitle}</h1>
                       <div className="w-10"></div>
                   </header>
               )}
-              {content}
+              <div className="flex-1 flex flex-col justify-between p-4 md:p-6 text-center">
+                <div className="space-y-4">
+                     {recipient && (
+                         <div className="flex flex-col items-center space-y-2">
+                            <Avatar className="h-16 w-16">
+                                <AvatarImage src={recipient.photoURL} alt={recipient.firstName} />
+                                <AvatarFallback className="text-2xl">{getInitials(recipient.firstName)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold text-xl">{recipient.firstName} {recipient.lastName}</p>
+                                <p className="text-muted-foreground">{recipient.username || recipient.email}</p>
+                            </div>
+                        </div>
+                     )}
+
+                     <div className="flex items-center justify-center gap-2 py-4">
+                        <div className="flex items-baseline">
+                             <span className="text-5xl md:text-6xl font-light text-muted-foreground">{currencySymbol}</span>
+                            <span className={cn("text-5xl md:text-6xl font-light tracking-tighter", isBusinessRequest && 'text-muted-foreground')} style={{ minWidth: '1ch' }}>
+                                {formattedAmount}
+                                {!isBusinessRequest && <span className="animate-pulse">|</span>}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                 <div className="flex-shrink-0 space-y-4">
+                     <Sheet open={isNoteSheetOpen} onOpenChange={setIsNoteSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" className="h-12 md:h-14 rounded-full text-base w-full bg-muted/50">
+                                {note || imagePreview || orderItems.length > 0 ? (
+                                    <p className="truncate">
+                                        {isBusinessRequest ? (note || `${orderItems.length} ${d_confirm.items}`) : (note || d_confirm.imageAttached) }
+                                    </p>
+                                ) : (
+                                    <><FileText className="mr-2 h-5 w-5" />{noteSheetButtonText}</>
+                                )}
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="bottom" className="rounded-t-2xl p-0" hideCloseButton={true}>
+                             {renderNoteSheetContent()}
+                        </SheetContent>
+                    </Sheet>
+                     <Button 
+                        className="h-12 md:h-14 rounded-full text-lg font-bold w-full"
+                        onClick={handlePayment}
+                        disabled={isProcessing || isLoading || !recipient || parseFloat(amount) <= 0}
+                    >
+                        {mode === 'pay' ? d.pay : d.request}
+                    </Button>
+                </div>
+            </div>
           </div>
-          <div className={cn("flex-shrink-0", isMobile ? "block" : "w-80")}>
+          <div className={cn("flex-shrink-0", isMobile ? "block" : "w-80", isBusinessRequest && "opacity-50 pointer-events-none")}>
               <Keypad onKeyClick={handleKeypadClick} onDelete={handleDelete} />
           </div>
       </div>
     );
 }
+

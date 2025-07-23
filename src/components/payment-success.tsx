@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Dictionary } from "@/dictionaries";
-
+import { OrderItem } from "./payment-confirm";
 
 const AnimatedCheckmark = () => (
     <div className="mx-auto my-8 h-[100px] w-[100px]">
@@ -43,14 +43,27 @@ const DetailRow = ({ label, value }: { label: string; value: string | React.Reac
     </div>
 );
 
+const OrderItemsList = ({ items, currency, dictionary }: { items: OrderItem[], currency: string, dictionary: Dictionary['paymentConfirm'] }) => (
+    <div className="mt-6 text-left bg-muted/50 p-3 rounded-md space-y-2">
+        <p className="text-sm font-semibold text-muted-foreground">{dictionary.orderSummary}</p>
+        {items.map(item => (
+            <div key={item.id} className="flex justify-between items-center text-sm">
+                <span>{item.name}</span>
+                <span>{formatCurrency(parseFloat(item.price), currency)}</span>
+            </div>
+        ))}
+    </div>
+);
+
 
 export default function PaymentSuccess({ transaction, onFinish, dictionary }: { transaction: Transaction, onFinish: () => void, dictionary: Dictionary }) {
     const { userData } = useAuth();
     const currency = userData?.currency || 'USD';
-    const d = dictionary.paymentSuccess;
+    const d_success = dictionary.paymentSuccess;
+    const d_confirm = dictionary.paymentConfirm;
 
     const isRequest = transaction.status === 'Requested';
-    const titleText = isRequest ? d.requestSent : d.paymentSuccessful;
+    const titleText = isRequest ? d_success.requestSent : d_success.paymentSuccessful;
     
     const getInitials = (name?: string) => {
         if (!name) return '?';
@@ -75,7 +88,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
                             <AvatarFallback>{getInitials(transaction.name)}</AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="text-muted-foreground text-sm">{isRequest ? d.requestedFrom : d.paidTo}</p>
+                            <p className="text-muted-foreground text-sm">{isRequest ? d_success.requestedFrom : d_success.paidTo}</p>
                             <p className="font-semibold text-lg">{transaction.name}</p>
                         </div>
                     </div>
@@ -83,14 +96,18 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
                     <Separator className="my-6" />
 
                     <div className="space-y-1 text-left">
-                        <DetailRow label={d.transactionDate} value={formatDate(transaction.date, dictionary.locale)} />
-                        <DetailRow label={d.transactionStatus} value={dictionary.status[transaction.status] || transaction.status} />
-                         <DetailRow label={d.transactionId} value={<span className="font-mono text-xs">{transaction.id}</span>} />
+                        <DetailRow label={d_success.transactionDate} value={formatDate(transaction.date, dictionary.locale)} />
+                        <DetailRow label={d_success.transactionStatus} value={dictionary.status[transaction.status] || transaction.status} />
+                         <DetailRow label={d_success.transactionId} value={<span className="font-mono text-xs">{transaction.id}</span>} />
                     </div>
                     
+                    {transaction.orderItems && transaction.orderItems.length > 0 && (
+                        <OrderItemsList items={transaction.orderItems} currency={currency} dictionary={d_confirm} />
+                    )}
+
                     {transaction.description && (
                         <div className="mt-6 text-left bg-muted/50 p-3 rounded-md">
-                            <p className="text-sm text-muted-foreground">{d.note}:</p>
+                            <p className="text-sm text-muted-foreground">{d_success.note}:</p>
                             <p className="text-sm">{transaction.description}</p>
                         </div>
                     )}
@@ -98,7 +115,7 @@ export default function PaymentSuccess({ transaction, onFinish, dictionary }: { 
                 </CardContent>
             </Card>
             <div className="w-full max-w-md mt-6">
-                <Button onClick={onFinish} className="w-full h-12 text-lg">{d.done}</Button>
+                <Button onClick={onFinish} className="w-full h-12 text-lg">{d_success.done}</Button>
             </div>
         </div>
     );

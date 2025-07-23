@@ -1,4 +1,5 @@
 import { DocumentData } from "firebase/firestore";
+import { OrderItem } from "@/components/payment-confirm";
 
 export type Transaction = {
   id: string;
@@ -11,6 +12,7 @@ export type Transaction = {
   attachmentUrl?: string | null;
   otherPartyUid: string;
   otherParty?: DocumentData | null;
+  orderItems?: OrderItem[];
 };
 
 export type Ticket = {
