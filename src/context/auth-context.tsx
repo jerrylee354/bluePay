@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -13,7 +12,7 @@ import {
   signOut,
   fetchSignInMethodsForEmail,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, query, onSnapshot, DocumentData, orderBy, where, getDocs, limit, runTransaction, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, query, onSnapshot, DocumentData, orderBy, where, getDocs, limit, runTransaction, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Transaction, Ticket } from '@/lib/data';
 import { sendReceipt, type ReceiptDetails } from '@/ai/flows/send-receipt-flow';
 import { getDictionary, type Dictionary } from '@/dictionaries';
@@ -119,13 +118,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const userDocRef = doc(db, "users", user.uid);
 
-        const unsubUser = onSnapshot(userDocRef, (doc) => {
-          if (doc.exists()) {
-            setUserData(doc.data());
+        const unsubUser = onSnapshot(userDocRef, async (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const currentData = docSnapshot.data();
+            // Check for 'status' field and add if it doesn't exist
+            if (currentData.status === undefined) {
+              await updateDoc(userDocRef, { status: 'Yes' });
+              setUserData({ ...currentData, status: 'Yes' });
+            } else {
+              setUserData(currentData);
+            }
           } else {
             setUserData(null);
           }
-          setIsLoading(false); 
+          setIsLoading(false);
         });
 
         const transactionsColRef = collection(db, "users", user.uid, "transactions");
@@ -176,6 +182,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       currency: 'USD',
       hasCompletedOnboarding: false,
       profileStatus: true,
+      status: 'Yes',
       createdAt: new Date(),
     };
 

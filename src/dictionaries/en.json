@@ -365,5 +365,13 @@
         "avgOrderValue": "Avg. Order Value",
         "cancellationRate": "Cancellation Rate",
         "revenueChartTitle": "Revenue"
+    },
+    "accountSuspended": {
+        "title": "Account Suspended",
+        "description": "Your account has been disabled due to detection of unusual activity.",
+        "logout": "Log Out",
+        "appeal": "Appeal",
+        "appealSuccessTitle": "Appeal Submitted",
+        "appealSuccessDescription": "You have successfully appealed. We will re-examine your account."
     }
 }

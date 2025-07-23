@@ -365,5 +365,13 @@
         "avgOrderValue": "平均訂單金額",
         "cancellationRate": "取消率",
         "revenueChartTitle": "收入"
+    },
+    "accountSuspended": {
+        "title": "帳號已停用",
+        "description": "您的帳號已經偵測到有異常行為，因此已被停用。",
+        "logout": "登出",
+        "appeal": "申訴",
+        "appealSuccessTitle": "申訴已提交",
+        "appealSuccessDescription": "您已成功申訴，我們會重新檢查您的帳號。"
     }
 }

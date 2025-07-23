@@ -192,7 +192,7 @@ export default function Dashboard({
     <div className="space-y-6">
       {!showRevenueChartOnly && headerContent}
       {!showRevenueChartOnly && statCards}
-      {chartData.length > 0 && revenueChart}
+      {revenueChart}
     </div>
   );
 }

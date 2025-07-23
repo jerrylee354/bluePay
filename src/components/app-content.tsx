@@ -14,6 +14,10 @@ import { Skeleton } from './ui/skeleton';
 import { LoadingOverlay } from './ui/loading-overlay';
 import { Toaster } from './ui/toaster';
 import { LockScreenDialog } from './lock-screen-dialog';
+import { AlertTriangle, LogOut } from 'lucide-react';
+import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 
 const AppLoader = () => (
@@ -35,8 +39,37 @@ const AppLoader = () => (
     </div>
 );
 
+const AccountSuspendedScreen = ({ dictionary, onLogout, onAppeal }: { dictionary: Dictionary['accountSuspended'], onLogout: () => void, onAppeal: () => void }) => {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+            <Card className="w-full max-w-md text-center shadow-lg">
+                <CardHeader>
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+                        <AlertTriangle className="h-10 w-10 text-destructive" />
+                    </div>
+                     <CardTitle className="mt-4 text-2xl font-bold">{dictionary.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <p className="text-muted-foreground">{dictionary.description}</p>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <Button variant="outline" className="w-full" onClick={onLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            {dictionary.logout}
+                        </Button>
+                        <Button className="w-full" onClick={onAppeal}>
+                            {dictionary.appeal}
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+};
+
+
 function AuthDependentContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     const { isAuthenticated, isLoading, logout, isLoggingOut, userData } = useAuth();
+    const { toast } = useToast();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
@@ -81,6 +114,16 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
             <LoadingOverlay isLoading={true} />
         </div>
       );
+    }
+    
+    if (userData?.status === 'No') {
+        const handleAppeal = () => {
+            toast({
+                title: dictionary.accountSuspended.appealSuccessTitle,
+                description: dictionary.accountSuspended.appealSuccessDescription,
+            });
+        };
+        return <AccountSuspendedScreen dictionary={dictionary.accountSuspended} onLogout={logout} onAppeal={handleAppeal} />
     }
     
     const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
