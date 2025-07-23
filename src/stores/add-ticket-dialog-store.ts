@@ -1,17 +1,4 @@
-import { create } from 'zustand';
 
-type AddTicketDialogState = {
-  isOpen: boolean;
-  templateId: string | null;
-  issuerId: string | null;
-  openDialog: (templateId: string, issuerId: string) => void;
-  closeDialog: () => void;
-};
-
-export const useAddTicketDialogStore = create<AddTicketDialogState>((set) => ({
-  isOpen: false,
-  templateId: null,
-  issuerId: null,
-  openDialog: (templateId, issuerId) => set({ isOpen: true, templateId, issuerId }),
-  closeDialog: () => set({ isOpen: false, templateId: null, issuerId: null }),
-}));
+// This file is no longer used and can be removed in a future cleanup.
+// The logic has been moved to a dedicated page: /wallet/add
+export {};

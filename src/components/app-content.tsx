@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
 import DesktopNav from './desktop-nav';
@@ -21,9 +21,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { DocumentData } from 'firebase/firestore';
 import VerificationStatusDialog from './VerificationStatusDialog';
-import AddTicketDialog from './add-ticket-dialog';
-import { useAddTicketDialogStore } from '@/stores/add-ticket-dialog-store';
-
 
 const AppLoader = () => (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -206,7 +203,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     }
 
     const pathname = usePathname();
-    const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
+    const fullScreenRoutes = ['/pay/confirm', '/pay/scan', '/wallet/add'];
     const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
 
     if (isMobile && isFullScreenPage) {
@@ -250,29 +247,12 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
 function AppContentWithAuth({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     const { user, userData, isLoading, isLoggingOut, logout, submitAppeal } = useAuth();
     const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const openAddTicketDialog = useAddTicketDialogStore((state) => state.openDialog);
     const prevUserDataRef = useRef<DocumentData | null>();
     const { toast } = useToast();
 
     const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
     const [showVerificationDialog, setShowVerificationDialog] = useState(false);
     const [verificationChangeType, setVerificationChangeType] = useState<'granted' | 'revoked' | null>(null);
-    
-    useEffect(() => {
-        if (isLoading) return;
-
-        const templateId = searchParams.get('templateId');
-        const issuerId = searchParams.get('issuerId');
-        
-        if(templateId && issuerId) {
-            openAddTicketDialog(templateId, issuerId);
-            const newPath = pathname;
-            router.replace(newPath, { scroll: false });
-        }
-    }, [searchParams, openAddTicketDialog, pathname, router, isLoading]);
-
 
     useEffect(() => {
         if (prevUserDataRef.current && userData) {
@@ -313,7 +293,8 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
         if (p === '/') return `/${dictionary.locale}`;
         return `${localeSegment}${p}`;
     });
-    const isPublicRoute = publicPaths.includes(pathname);
+    
+    const isPublicRoute = publicPaths.includes(pathname) || pathname.includes('/wallet/add');
 
     if (isPublicRoute) {
         return <>{children}</>;
@@ -359,7 +340,6 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
                     dictionary={dictionary.verificationStatus}
                 />
             )}
-            <AddTicketDialog dictionary={dictionary} />
         </>
     );
 }

@@ -228,7 +228,7 @@ const CreateEditTicketDialog = ({
     };
     
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
+        <Dialog open={isOpen} modal={false}>
             <DialogContent className="max-w-lg flex flex-col h-full sm:h-auto max-h-[90vh]">
                 <LoadingOverlay isLoading={isProcessing} />
                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
@@ -286,9 +286,9 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const handleShare = (template: TicketTemplate) => {
         if (typeof window !== 'undefined' && user) {
             const baseUrl = window.location.origin;
-            const addUrl = `${baseUrl}/home?templateId=${template.id}&issuerId=${user.uid}`;
-            const qrJson = JSON.stringify({ type: 'ticket_url', url: addUrl });
-            setQrValue(qrJson);
+            const lang = dictionary.locale;
+            const addUrl = `${baseUrl}/${lang}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
+            setQrValue(addUrl);
             setSelectedTemplate(template);
             setIsShareOpen(true);
         }
@@ -307,10 +307,8 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     }
     
     const copyToClipboard = () => {
-        if (!selectedTemplate || !user) return;
-        const baseUrl = window.location.origin;
-        const addUrl = `${baseUrl}/home?templateId=${selectedTemplate.id}&issuerId=${user.uid}`;
-        navigator.clipboard.writeText(addUrl).then(() => {
+        if (!qrValue) return;
+        navigator.clipboard.writeText(qrValue).then(() => {
             toast({ title: d.linkCopied });
         }, (err) => {
             toast({ variant: 'destructive', title: d.copyFailed, description: err.message });

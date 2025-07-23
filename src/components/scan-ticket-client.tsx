@@ -23,7 +23,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useAddTicketDialogStore } from '@/stores/add-ticket-dialog-store';
 
 interface ScanTicketPageClientProps {
     dictionary: Dictionary;
@@ -31,10 +30,7 @@ interface ScanTicketPageClientProps {
 }
 
 interface ScannedTicketData {
-    type: 'ticket_url' | 'ticket_redemption';
-    url?: string;
-    templateId?: string;
-    issuerId?: string;
+    type: 'ticket_redemption';
     ticketId?: string;
     userId?: string;
 }
@@ -45,7 +41,6 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     const router = useRouter();
     const { toast } = useToast();
     const { useTicket } = useAuth();
-    const openAddTicketDialog = useAddTicketDialogStore((state) => state.openDialog);
     
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -123,22 +118,23 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     useEffect(() => {
         if (isProcessing && scanResult) {
           try {
-            const parsedData: ScannedTicketData = JSON.parse(scanResult);
-
-            if (mode === 'add' && parsedData.type === 'ticket_url' && parsedData.url) {
-                const url = new URL(parsedData.url);
+            if (mode === 'add') {
+                const url = new URL(scanResult);
                 const templateId = url.searchParams.get('templateId');
                 const issuerId = url.searchParams.get('issuerId');
-    
-                if (templateId && issuerId) {
-                    openAddTicketDialog(templateId, issuerId);
-                    router.back();
+
+                if (url.pathname.includes('/wallet/add') && templateId && issuerId) {
+                    router.push(url.pathname + url.search);
                 } else {
                     throw new Error("Invalid QR code for this action.");
                 }
-
-            } else if (mode === 'redeem' && parsedData.type === 'ticket_redemption') {
-                setDialogData(parsedData);
+            } else if (mode === 'redeem') {
+                const parsedData: ScannedTicketData = JSON.parse(scanResult);
+                if (parsedData.type === 'ticket_redemption') {
+                    setDialogData(parsedData);
+                } else {
+                    throw new Error("Unsupported QR code format for this action.");
+                }
             } else {
               throw new Error("Unsupported QR code format for this action.");
             }
@@ -148,7 +144,7 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
             setTimeout(resetScanner, 2000);
           }
         }
-      }, [scanResult, isProcessing, mode, openAddTicketDialog, router, toast, resetScanner]);
+      }, [scanResult, isProcessing, mode, router, toast, resetScanner]);
 
     const handleRedeemTicket = useCallback(async () => {
         if (!dialogData || !dialogData.ticketId || !dialogData.userId) return;
