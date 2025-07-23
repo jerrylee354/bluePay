@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -14,7 +15,7 @@ import { Skeleton } from './ui/skeleton';
 import { LoadingOverlay } from './ui/loading-overlay';
 import { Toaster } from './ui/toaster';
 import { LockScreenDialog } from './lock-screen-dialog';
-import { AlertTriangle, LogOut } from 'lucide-react';
+import { AlertTriangle, LogOut, CheckCircle2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -39,27 +40,60 @@ const AppLoader = () => (
     </div>
 );
 
-const AccountSuspendedScreen = ({ dictionary, onLogout, onAppeal }: { dictionary: Dictionary['accountSuspended'], onLogout: () => void, onAppeal: () => void }) => {
+const AnimatedCheckmark = () => (
+    <div className="mx-auto my-4 h-[80px] w-[80px]">
+        <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+            <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+    </div>
+);
+
+const AccountSuspendedScreen = ({ dictionary, onLogout }: { dictionary: Dictionary['accountSuspended'], onLogout: () => void }) => {
+    const { toast } = useToast();
+    const [isAppealSubmitted, setIsAppealSubmitted] = useState(false);
+    
+    const handleAppeal = () => {
+        setIsAppealSubmitted(true);
+        toast({
+            title: dictionary.appealSuccessTitle,
+            description: dictionary.appealSuccessDescription,
+        });
+    };
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
             <Card className="w-full max-w-md text-center shadow-lg">
                 <CardHeader>
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                        <AlertTriangle className="h-10 w-10 text-destructive" />
+                       {!isAppealSubmitted && <AlertTriangle className="h-10 w-10 text-destructive" />}
                     </div>
-                     <CardTitle className="mt-4 text-2xl font-bold">{dictionary.title}</CardTitle>
+                     <CardTitle className="mt-4 text-2xl font-bold">{isAppealSubmitted ? dictionary.appealSuccessTitle : dictionary.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <p className="text-muted-foreground">{dictionary.description}</p>
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                        <Button variant="outline" className="w-full" onClick={onLogout}>
-                            <LogOut className="mr-2 h-4 w-4" />
-                            {dictionary.logout}
-                        </Button>
-                        <Button className="w-full" onClick={onAppeal}>
-                            {dictionary.appeal}
-                        </Button>
-                    </div>
+                    {isAppealSubmitted ? (
+                        <div className="flex flex-col items-center">
+                            <AnimatedCheckmark />
+                            <p className="text-muted-foreground">{dictionary.appealSuccessDescription}</p>
+                            <Button variant="outline" className="w-full mt-6" onClick={onLogout}>
+                                <LogOut className="mr-2 h-4 w-4" />
+                                {dictionary.logout}
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            <p className="text-muted-foreground">{dictionary.description}</p>
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                <Button variant="outline" className="w-full" onClick={onLogout}>
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    {dictionary.logout}
+                                </Button>
+                                <Button className="w-full" onClick={handleAppeal}>
+                                    {dictionary.appeal}
+                                </Button>
+                            </div>
+                        </>
+                    )}
                 </CardContent>
             </Card>
         </div>
@@ -69,7 +103,6 @@ const AccountSuspendedScreen = ({ dictionary, onLogout, onAppeal }: { dictionary
 
 function AuthDependentContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     const { isAuthenticated, isLoading, logout, isLoggingOut, userData } = useAuth();
-    const { toast } = useToast();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
@@ -117,13 +150,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     }
     
     if (userData?.status === 'No') {
-        const handleAppeal = () => {
-            toast({
-                title: dictionary.accountSuspended.appealSuccessTitle,
-                description: dictionary.accountSuspended.appealSuccessDescription,
-            });
-        };
-        return <AccountSuspendedScreen dictionary={dictionary.accountSuspended} onLogout={logout} onAppeal={handleAppeal} />
+        return <AccountSuspendedScreen dictionary={dictionary.accountSuspended} onLogout={logout} />
     }
     
     const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
