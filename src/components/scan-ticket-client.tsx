@@ -123,7 +123,7 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
         if (isProcessing && scanResult) {
           try {
             const parsedData = JSON.parse(scanResult);
-            // Handle ticket add via URL from QR
+
             if (parsedData.type === 'ticket_url' && parsedData.url) {
                 const url = new URL(parsedData.url);
                 const templateId = url.searchParams.get('templateId');

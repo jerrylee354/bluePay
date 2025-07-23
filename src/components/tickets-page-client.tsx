@@ -287,7 +287,8 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
         if (typeof window !== 'undefined' && user) {
             const baseUrl = window.location.origin;
             const addUrl = `${baseUrl}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
-            setQrValue(addUrl);
+            const qrJson = JSON.stringify({ type: 'ticket_url', url: addUrl });
+            setQrValue(qrJson);
             setSelectedTemplate(template);
             setIsShareOpen(true);
         }
@@ -306,8 +307,10 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     }
     
     const copyToClipboard = () => {
-        if (!qrValue) return;
-        navigator.clipboard.writeText(qrValue).then(() => {
+        if (!selectedTemplate || !user) return;
+        const baseUrl = window.location.origin;
+        const addUrl = `${baseUrl}/wallet/add?templateId=${selectedTemplate.id}&issuerId=${user.uid}`;
+        navigator.clipboard.writeText(addUrl).then(() => {
             toast({ title: d.linkCopied });
         }, (err) => {
             toast({ variant: 'destructive', title: d.copyFailed, description: err.message });
