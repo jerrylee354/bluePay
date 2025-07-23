@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useAddTicketDialogStore } from '@/stores/add-ticket-dialog-store';
 
 interface ScanTicketPageClientProps {
     dictionary: Dictionary;
@@ -41,13 +42,14 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     const d_tickets = dictionary.tickets;
     const router = useRouter();
     const { toast } = useToast();
-    const { addTicketToWallet, useTicket } = useAuth();
+    const { useTicket } = useAuth();
+    const openAddTicketDialog = useAddTicketDialogStore((state) => state.openDialog);
     
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-    const [scanResult, setScanResult] = useState<ScannedTicketData | null>(null);
+    const [scanResult, setScanResult] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
@@ -91,53 +93,80 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
                     });
 
                     if (code && code.data) {
-                        try {
-                            const parsedData = JSON.parse(code.data);
-                            setScanResult(parsedData);
-                            setIsProcessing(true); // Stop scanning
-                        } catch (e) {
-                            // Not a valid JSON, ignore
-                        }
+                        setScanResult(code.data);
+                        setIsProcessing(true); // Stop scanning
                     }
                 }
             }
         }
     }, []);
-
+    
     useEffect(() => {
         if (!hasCameraPermission || isProcessing) return;
         const intervalId = setInterval(handleScan, 200);
         return () => clearInterval(intervalId);
     }, [hasCameraPermission, isProcessing, handleScan]);
 
+
     const resetScanner = () => {
         setScanResult(null);
         setIsProcessing(false);
     }
-    
-    const handleAddTicket = async () => {
-        if (!scanResult || !scanResult.templateId || !scanResult.issuerId) return;
 
-        try {
-            await addTicketToWallet(scanResult.templateId, scanResult.issuerId);
-            toast({ title: d_wallet.addTicketSuccess });
-            router.push('/wallet');
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: d_wallet.addTicketError, description: error.message });
-            resetScanner();
+    const [dialogData, setDialogData] = useState<ScannedTicketData | null>(null);
+
+    useEffect(() => {
+        if (scanResult && !isProcessing) {
+          setIsProcessing(true);
         }
-    };
+    
+        if (isProcessing && scanResult) {
+          try {
+            const parsedData = JSON.parse(scanResult);
+            // Handle ticket add via URL from QR
+            if (parsedData.type === 'ticket_url' && parsedData.url) {
+                const url = new URL(parsedData.url);
+                const templateId = url.searchParams.get('templateId');
+                const issuerId = url.searchParams.get('issuerId');
+    
+                if (mode === 'add' && templateId && issuerId) {
+                    openAddTicketDialog(templateId, issuerId);
+                    router.back();
+                } else {
+                    throw new Error("Invalid QR code for this action.");
+                }
+
+            } else if (parsedData.type === 'ticket_redemption') {
+                if (mode === 'redeem') {
+                    setDialogData(parsedData);
+                } else {
+                    throw new Error("Invalid QR code for this action.");
+                }
+            } else {
+              throw new Error("Unsupported QR code format.");
+            }
+    
+          } catch (e: any) {
+            toast({ variant: 'destructive', title: "Invalid QR Code", description: e.message || "This QR code is not valid." });
+            setTimeout(() => {
+              resetScanner();
+            }, 2000);
+          }
+        }
+      }, [scanResult, isProcessing, mode, openAddTicketDialog, router, toast]);
 
     const handleRedeemTicket = async () => {
-        if (!scanResult || !scanResult.ticketId || !scanResult.userId) return;
+        if (!dialogData || !dialogData.ticketId || !dialogData.userId) return;
 
         try {
-            await useTicket(scanResult.ticketId, scanResult.userId);
+            await useTicket(dialogData.ticketId, dialogData.userId);
             toast({ title: d_tickets.ticketUsedSuccess });
             router.push('/tickets');
         } catch (error: any) {
             toast({ variant: 'destructive', title: d_tickets.ticketUsedError, description: error.message });
             resetScanner();
+        } finally {
+            setDialogData(null);
         }
     };
 
@@ -145,28 +174,9 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     const pageTitle = mode === 'add' ? d_wallet.scanTicketTitle : d_tickets.scanUserTicket;
 
     const renderDialog = () => {
-        if (!scanResult) return null;
+        if (!dialogData) return null;
 
-        if (mode === 'add' && scanResult.type === 'ticket_add') {
-             return (
-                <AlertDialog open={true} onOpenChange={() => !isProcessing && resetScanner()}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Add Ticket?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Do you want to add this ticket to your wallet?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel onClick={resetScanner}>Close</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleAddTicket}>Add</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            );
-        }
-
-        if (mode === 'redeem' && scanResult.type === 'ticket_redemption') {
+        if (mode === 'redeem' && dialogData.type === 'ticket_redemption') {
              return (
                 <AlertDialog open={true} onOpenChange={() => !isProcessing && resetScanner()}>
                     <AlertDialogContent>
@@ -177,7 +187,7 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel onClick={resetScanner}>No</AlertDialogCancel>
+                            <AlertDialogCancel onClick={() => { resetScanner(); setDialogData(null); }}>No</AlertDialogCancel>
                             <AlertDialogAction onClick={handleRedeemTicket}>Yes</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -185,11 +195,6 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
             );
         }
         
-        // Invalid QR for the current mode
-        if (isProcessing) { // ensures this runs only once after scan
-            toast({ variant: 'destructive', title: "Invalid QR Code", description: "This QR code cannot be used for this action." });
-            setTimeout(resetScanner, 2000);
-        }
         return null;
     }
 

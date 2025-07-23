@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { DocumentData } from 'firebase/firestore';
 import VerificationStatusDialog from './VerificationStatusDialog';
+import AddTicketDialog from './add-ticket-dialog';
 
 
 const AppLoader = () => (
@@ -343,6 +344,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
                     dictionary={dictionary.verificationStatus}
                 />
             )}
+            <AddTicketDialog dictionary={dictionary} />
         </>
     );
 }

@@ -1,9 +1,10 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy } from 'lucide-react';
 import { Dictionary } from '@/dictionaries';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
@@ -95,7 +96,7 @@ const CreateEditTicketDialog = ({
     useEffect(() => {
         if (isOpen) {
             setStep(1);
-            if (isEditing) {
+            if (isEditing && existingTemplate) {
                 setTitle(existingTemplate.title);
                 setDescription(existingTemplate.description);
                 setSelectedStyle(colorOptions.find(c => c.bg === existingTemplate.style.backgroundColor) || colorOptions[0]);
@@ -124,6 +125,7 @@ const CreateEditTicketDialog = ({
             const issuanceLimit = limit === '' ? null : parseInt(limit, 10);
             if (limit !== '' && (isNaN(issuanceLimit) || issuanceLimit < 0)) {
                 toast({ variant: 'destructive', title: "Invalid issuance limit" });
+                setIsProcessing(false);
                 return;
             }
 
@@ -138,7 +140,7 @@ const CreateEditTicketDialog = ({
                 expiresAt: expiresAt ? expiresAt.toISOString() : null
             };
 
-            if (isEditing) {
+            if (isEditing && existingTemplate) {
                 await updateTicketTemplate(existingTemplate.id, templateData);
                 toast({ title: dictionary.ticketUpdated });
             } else {
@@ -232,7 +234,12 @@ const CreateEditTicketDialog = ({
                 <DialogHeader>
                     <div className="flex justify-between items-center">
                         <DialogTitle className="text-2xl font-bold">{dialogTitle}</DialogTitle>
-                        <span className="text-sm text-muted-foreground">{dictionary.step} {step}/{totalSteps}</span>
+                         <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">{dictionary.step} {step}/{totalSteps}</span>
+                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </div>
                     </div>
                     <DialogDescription>{dictionary.createTicketDescription}</DialogDescription>
                 </DialogHeader>
@@ -273,14 +280,15 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const handleShare = (template: TicketTemplate) => {
         if (typeof window !== 'undefined' && user) {
             const baseUrl = window.location.origin;
-            const lang = dictionary.locale;
-            const url = `${baseUrl}/${lang}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
-            setQrValue(url);
+            const addUrl = `${baseUrl}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
+            // This JSON string is for the QR code to be scanned by our app
+            const qrCodePayload = JSON.stringify({ type: 'ticket_url', url: addUrl });
+            setQrValue(qrCodePayload);
             setSelectedTemplate(template);
             setIsShareOpen(true);
         }
     };
-
+    
     const handleEdit = (template: TicketTemplate) => {
         setSelectedTemplate(template);
         setIsEditing(true);
@@ -294,8 +302,10 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     }
     
     const copyToClipboard = () => {
-        if (!qrValue) return;
-        navigator.clipboard.writeText(qrValue).then(() => {
+        if (!selectedTemplate || !user) return;
+         const baseUrl = window.location.origin;
+         const addUrl = `${baseUrl}/wallet/add?templateId=${selectedTemplate.id}&issuerId=${user.uid}`;
+        navigator.clipboard.writeText(addUrl).then(() => {
             toast({ title: d.linkCopied });
         }, (err) => {
             toast({ variant: 'destructive', title: d.copyFailed, description: err.message });
@@ -350,7 +360,10 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
                     </DialogHeader>
                     <div className="flex flex-col items-center justify-center text-center p-4 space-y-4">
                         {qrValue && <QRCode value={qrValue} size={256} />}
-                        <Button onClick={copyToClipboard} variant="secondary" className="w-full">{d.copyLink}</Button>
+                        <Button onClick={copyToClipboard} variant="secondary" className="w-full">
+                            <Copy className="mr-2 h-4 w-4" />
+                            {d.copyLink}
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>

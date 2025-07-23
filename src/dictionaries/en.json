@@ -254,7 +254,10 @@
         "showTicketToMerchant": "Show QR Code to Merchant",
         "addTicketSuccess": "Ticket Added!",
         "addTicketError": "Failed to Add Ticket",
-        "scanTicketTitle": "Scan Ticket QR Code"
+        "scanTicketTitle": "Scan Ticket QR Code",
+        "addTicketToWallet": "Add Ticket to Wallet",
+        "close": "Close",
+        "add": "Add to Wallet"
     },
     "tickets": {
         "title": "Tickets",

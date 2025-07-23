@@ -254,7 +254,10 @@
         "showTicketToMerchant": "向商家出示 QR Code",
         "addTicketSuccess": "已成功新增票卡！",
         "addTicketError": "新增票卡失敗",
-        "scanTicketTitle": "掃描票卡 QR Code"
+        "scanTicketTitle": "掃描票卡 QR Code",
+        "addTicketToWallet": "新增票卡至錢包",
+        "close": "關閉",
+        "add": "新增至錢包"
     },
     "tickets": {
         "title": "票卡",
