@@ -94,6 +94,7 @@ const CreateEditTicketDialog = ({
 
     useEffect(() => {
         if (isOpen) {
+            setStep(1);
             if (isEditing) {
                 setTitle(existingTemplate.title);
                 setDescription(existingTemplate.description);
@@ -101,7 +102,6 @@ const CreateEditTicketDialog = ({
                 setLimit(existingTemplate.issuanceLimit?.toString() ?? '');
                 setExpiresAt(existingTemplate.expiresAt ? new Date(existingTemplate.expiresAt) : null);
             } else {
-                setStep(1);
                 setTitle('');
                 setDescription('');
                 setSelectedStyle(colorOptions[0]);
@@ -227,17 +227,17 @@ const CreateEditTicketDialog = ({
     
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-w-xl flex flex-col h-full sm:h-auto">
+            <DialogContent className="max-w-xl flex flex-col h-full sm:h-auto max-h-[90vh]">
                 <LoadingOverlay isLoading={isProcessing} />
                 <DialogHeader>
                     <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-bold">{dialogTitle}</h2>
+                        <DialogTitle className="text-2xl font-bold">{dialogTitle}</DialogTitle>
                         <span className="text-sm text-muted-foreground">{dictionary.step} {step}/{totalSteps}</span>
                     </div>
                     <DialogDescription>{dictionary.createTicketDescription}</DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 flex items-center justify-center py-8">
+                <div className="flex-1 flex items-center justify-center py-8 overflow-y-auto">
                     {renderStepContent()}
                 </div>
 
@@ -358,5 +358,3 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
         </div>
     );
 }
-
-    

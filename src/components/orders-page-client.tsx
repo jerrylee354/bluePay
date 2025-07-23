@@ -8,7 +8,7 @@ import { useAuth } from '@/context/auth-context';
 import { Card, CardContent } from "@/components/ui/card";
 import { type Transaction } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import TransactionDetails from '@/components/transaction-details';
 import { Button } from '@/components/ui/button';
 import {
