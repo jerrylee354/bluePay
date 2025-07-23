@@ -65,8 +65,13 @@ const AccountSuspendedScreen = ({
     onContinue: () => void,
     showAppealSuccess: boolean,
 }) => {
-    const [showTemporarySuccess, setShowTemporarySuccess] = useState(false);
+    // Defensive check: Do not render if the dictionary is not yet loaded.
+    if (!dictionary) {
+        return <div />;
+    }
+    
     const d = dictionary.accountSuspended;
+    const [showTemporarySuccess, setShowTemporarySuccess] = useState(false);
 
     const handleAppealClick = () => {
         onAppeal();
@@ -231,14 +236,25 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         }
     };
     
-    if (userData?.status !== 'Yes' || showAppealSuccessScreen) {
+    if (showAppealSuccessScreen) {
+        return <AccountSuspendedScreen
+                    dictionary={dictionary}
+                    onLogout={logout}
+                    onAppeal={handleAppeal}
+                    userData={userData}
+                    onContinue={() => setShowAppealSuccessScreen(false)}
+                    showAppealSuccess={true}
+                />
+    }
+
+    if (userData?.status !== 'Yes') {
         return <AccountSuspendedScreen 
                     dictionary={dictionary} 
                     onLogout={logout}
                     onAppeal={handleAppeal}
                     userData={userData}
-                    onContinue={() => setShowAppealSuccessScreen(false)}
-                    showAppealSuccess={showAppealSuccessScreen}
+                    onContinue={() => {}}
+                    showAppealSuccess={false}
                 />
     }
     
