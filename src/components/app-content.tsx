@@ -230,14 +230,16 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     }
 
     return (
-        <div className="flex min-h-screen">
+        <div className="flex h-screen overflow-hidden">
             {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
             <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary} />
-            <main className="flex-1 p-8">
-               <div className="mx-auto max-w-7xl">
-                    {children}
-               </div>
-            </main>
+            <div className="flex-1 overflow-y-auto">
+                <main className="p-8">
+                   <div className="mx-auto max-w-7xl">
+                        {children}
+                   </div>
+                </main>
+            </div>
         </div>
     );
 }
@@ -289,7 +291,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
             </div>
         );
     }
-
+    
     if (showAppealSuccessScreen) {
         return <AccountSuspendedScreen
                     dictionary={dictionary.accountSuspended}
@@ -301,7 +303,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
                 />
     }
 
-    if (userData?.status !== 'Yes') {
+    if (userData && userData.status !== 'Yes') {
         return <AccountSuspendedScreen 
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}

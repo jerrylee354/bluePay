@@ -102,17 +102,17 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
   return (
     <nav 
         className={cn(
-            "hidden md:flex flex-col border-r bg-background p-4 gap-4 transition-[width] duration-300 ease-in-out",
+            "hidden md:flex flex-col h-screen border-r bg-background transition-[width] duration-300 ease-in-out",
             isExpanded ? "w-60" : "w-20"
         )}
         onMouseEnter={() => setIsExpanded(true)}
         onMouseLeave={() => setIsExpanded(false)}
     >
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col flex-grow p-4 gap-4">
         <Link 
             href="/home" 
             className={cn(
-                "flex items-center h-12 w-full px-4 font-semibold",
+                "flex items-center h-12 w-full px-4 font-semibold shrink-0",
                 isExpanded ? "justify-start gap-4" : "justify-center"
             )}
         >
@@ -125,13 +125,13 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
             </span>
         </Link>
         
-        {navItems.map((item) => (
-            <NavLink key={item.href} item={item} isExpanded={isExpanded} />
-        ))}
-      </div>
+        <div className="flex-grow">
+          {navItems.map((item) => (
+              <NavLink key={item.href} item={item} isExpanded={isExpanded} />
+          ))}
+        </div>
 
-
-      <div className="mt-auto flex flex-col items-center gap-2">
+        <div className="shrink-0">
           <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
                 <DialogTrigger asChild>
                   <button className={cn(
@@ -158,6 +158,7 @@ export default function DesktopNav({ dictionary, settingsDictionary }: { diction
                   />
                 </DialogContent>
           </Dialog>
+        </div>
       </div>
     </nav>
   );
