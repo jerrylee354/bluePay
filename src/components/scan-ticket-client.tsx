@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import jsQR from 'jsqr';
-import { ChevronLeft, AlertCircle } from 'lucide-react';
+import { ChevronLeft, AlertCircle, TicketCheck, TicketX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -30,7 +30,8 @@ interface ScanTicketPageClientProps {
 }
 
 interface ScannedTicketData {
-    type: 'ticket_add' | 'ticket_redemption';
+    type: 'ticket_url' | 'ticket_redemption';
+    url?: string;
     templateId?: string;
     issuerId?: string;
     ticketId?: string;
@@ -51,6 +52,9 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [scanResult, setScanResult] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [dialogData, setDialogData] = useState<ScannedTicketData | null>(null);
+    const [redeemError, setRedeemError] = useState<string | null>(null);
+
 
     useEffect(() => {
         const getCameraPermission = async () => {
@@ -92,14 +96,14 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
                         inversionAttempts: "dontInvert",
                     });
 
-                    if (code && code.data) {
+                    if (code && code.data && !scanResult) {
                         setScanResult(code.data);
                         setIsProcessing(true); // Stop scanning
                     }
                 }
             }
         }
-    }, []);
+    }, [scanResult]);
     
     useEffect(() => {
         if (!hasCameraPermission || isProcessing) return;
@@ -108,54 +112,44 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     }, [hasCameraPermission, isProcessing, handleScan]);
 
 
-    const resetScanner = () => {
+    const resetScanner = useCallback(() => {
         setScanResult(null);
+        setDialogData(null);
+        setRedeemError(null);
         setIsProcessing(false);
-    }
-
-    const [dialogData, setDialogData] = useState<ScannedTicketData | null>(null);
+    }, []);
 
     useEffect(() => {
-        if (scanResult && !isProcessing) {
-          setIsProcessing(true);
-        }
-    
         if (isProcessing && scanResult) {
           try {
-            const parsedData = JSON.parse(scanResult);
+            const parsedData: ScannedTicketData = JSON.parse(scanResult);
 
-            if (parsedData.type === 'ticket_url' && parsedData.url) {
+            if (mode === 'add' && parsedData.type === 'ticket_url' && parsedData.url) {
                 const url = new URL(parsedData.url);
                 const templateId = url.searchParams.get('templateId');
                 const issuerId = url.searchParams.get('issuerId');
     
-                if (mode === 'add' && templateId && issuerId) {
+                if (templateId && issuerId) {
                     openAddTicketDialog(templateId, issuerId);
                     router.back();
                 } else {
                     throw new Error("Invalid QR code for this action.");
                 }
 
-            } else if (parsedData.type === 'ticket_redemption') {
-                if (mode === 'redeem') {
-                    setDialogData(parsedData);
-                } else {
-                    throw new Error("Invalid QR code for this action.");
-                }
+            } else if (mode === 'redeem' && parsedData.type === 'ticket_redemption') {
+                setDialogData(parsedData);
             } else {
               throw new Error("Unsupported QR code format.");
             }
     
           } catch (e: any) {
             toast({ variant: 'destructive', title: "Invalid QR Code", description: e.message || "This QR code is not valid." });
-            setTimeout(() => {
-              resetScanner();
-            }, 2000);
+            setTimeout(resetScanner, 2000);
           }
         }
-      }, [scanResult, isProcessing, mode, openAddTicketDialog, router, toast]);
+      }, [scanResult, isProcessing, mode, openAddTicketDialog, router, toast, resetScanner]);
 
-    const handleRedeemTicket = async () => {
+    const handleRedeemTicket = useCallback(async () => {
         if (!dialogData || !dialogData.ticketId || !dialogData.userId) return;
 
         try {
@@ -163,20 +157,44 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
             toast({ title: d_tickets.ticketUsedSuccess });
             router.push('/tickets');
         } catch (error: any) {
-            toast({ variant: 'destructive', title: d_tickets.ticketUsedError, description: error.message });
-            resetScanner();
+            if (error.message.includes('already been used') || error.message.includes('expired')) {
+                 setRedeemError(error.message);
+            } else {
+                toast({ variant: 'destructive', title: d_tickets.ticketUsedError, description: error.message });
+                resetScanner();
+            }
         } finally {
             setDialogData(null);
         }
-    };
+    }, [dialogData, useTicket, toast, d_tickets, router, resetScanner]);
 
     const backPath = mode === 'add' ? '/wallet' : '/tickets';
     const pageTitle = mode === 'add' ? d_wallet.scanTicketTitle : d_tickets.scanUserTicket;
 
     const renderDialog = () => {
-        if (!dialogData) return null;
+        if (redeemError) {
+             const isExpired = redeemError.includes('expired');
+             return (
+                 <AlertDialog open={true} onOpenChange={() => !isProcessing && resetScanner()}>
+                     <AlertDialogContent>
+                         <AlertDialogHeader className="text-center">
+                            <div className="flex justify-center mb-4">
+                                {isExpired ? <TicketX className="h-16 w-16 text-destructive" /> : <TicketCheck className="h-16 w-16 text-destructive" />}
+                            </div>
+                             <AlertDialogTitle>{isExpired ? d_tickets.ticketExpired : d_tickets.ticketAlreadyUsed}</AlertDialogTitle>
+                             <AlertDialogDescription>
+                                {isExpired ? d_tickets.ticketExpiredDescription : d_tickets.ticketAlreadyUsedDescription}
+                             </AlertDialogDescription>
+                         </AlertDialogHeader>
+                         <AlertDialogFooter>
+                             <AlertDialogAction onClick={() => router.push('/tickets')}>{d_tickets.backToList}</AlertDialogAction>
+                         </AlertDialogFooter>
+                     </AlertDialogContent>
+                 </AlertDialog>
+             )
+        }
 
-        if (mode === 'redeem' && dialogData.type === 'ticket_redemption') {
+        if (dialogData && mode === 'redeem' && dialogData.type === 'ticket_redemption') {
              return (
                 <AlertDialog open={true} onOpenChange={() => !isProcessing && resetScanner()}>
                     <AlertDialogContent>
@@ -187,7 +205,7 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => { resetScanner(); setDialogData(null); }}>No</AlertDialogCancel>
+                            <AlertDialogCancel onClick={resetScanner}>No</AlertDialogCancel>
                             <AlertDialogAction onClick={handleRedeemTicket}>Yes</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
@@ -200,7 +218,7 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
 
     return (
         <div className="space-y-6">
-            <LoadingOverlay isLoading={isProcessing && !!scanResult} />
+            <LoadingOverlay isLoading={isProcessing && !!scanResult && !dialogData && !redeemError} />
             <header className="relative flex items-center justify-center h-14">
                 <Link href={backPath} className="absolute left-0">
                     <Button variant="ghost" size="icon">

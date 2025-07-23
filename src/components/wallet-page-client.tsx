@@ -109,7 +109,7 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                     {selectedTicket && (
                         <div className="flex flex-col items-center justify-center text-center p-4 space-y-4">
                             <div className="p-4 bg-white rounded-lg border">
-                                <QRCode value={qrValue} size={192} />
+                                {qrValue ? <QRCode value={qrValue} size={192} /> : <Skeleton className="w-[192px] h-[192px]" />}
                             </div>
                             <div 
                                 className="w-full rounded-lg p-4 text-white shadow-md"
