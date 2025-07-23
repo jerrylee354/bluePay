@@ -171,7 +171,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     const { toast } = useToast();
     
     useEffect(() => {
-        if (prevUserDataRef.current && prevUserDataRef.current.status !== 'Yes' && userData?.status === 'Yes') {
+        if (prevUserDataRef.current && (prevUserDataRef.current.status.startsWith('No') && userData?.status === 'Yes')) {
              setShowAppealSuccessScreen(true);
         }
         prevUserDataRef.current = userData;
@@ -230,7 +230,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         }
     };
     
-    if (userData?.status !== 'Yes' || showAppealSuccessScreen) {
+    if ((userData?.status !== 'Yes' && !userData?.status.startsWith('No')) || (userData?.status.startsWith('No')) || showAppealSuccessScreen) {
         return <AccountSuspendedScreen 
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
