@@ -38,6 +38,12 @@ interface DeclineTransactionParams {
     locale: Locale;
 }
 
+interface CancelTransactionParams {
+    requesterId: string;
+    transactionId: string;
+    requesteeId: string;
+}
+
 interface AuthContextType {
   user: FirebaseUser | null;
   userData: DocumentData | null;
@@ -55,6 +61,7 @@ interface AuthContextType {
   processTransaction: (params: TransactionParams) => Promise<void>;
   requestTransaction: (params: TransactionParams) => Promise<void>;
   declineTransaction: (params: DeclineTransactionParams) => Promise<void>;
+  cancelTransaction: (params: CancelTransactionParams) => Promise<void>;
   isLoading: boolean;
   isLoggingOut: boolean;
   refreshUserData: () => Promise<void>;
@@ -285,7 +292,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const dictionary = await getDictionary(locale);
 
     try {
-        // --- PRE-TRANSACTION READS (QUERIES) ---
         let requesterDocRef: any = null;
         if (payerTxId) {
             const tempPayerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
@@ -294,32 +300,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 throw new Error("Could not find the request details to process the payment.");
             }
             const sharedRequestId = tempPayerTxDoc.data().requestId;
-
             const requesterTxQuery = query(collection(db, "users", toUserId, "transactions"), where("requestId", "==", sharedRequestId), limit(1));
             const requesterQuerySnapshot = await getDocs(requesterTxQuery);
-
             if (requesterQuerySnapshot.empty) {
                 throw new Error(`Could not find the corresponding request document for the recipient.`);
             }
             requesterDocRef = requesterQuerySnapshot.docs[0].ref;
         }
 
-        // --- ATOMIC TRANSACTION ---
         await runTransaction(db, async (transaction) => {
-            // --- TRANSACTIONAL READS ---
             const fromUserDoc = await transaction.get(fromUserRef);
             const toUserDoc = await transaction.get(toUserRef);
 
             if (!fromUserDoc.exists() || !toUserDoc.exists()) {
                 throw new Error("User not found.");
             }
+
+            if (payerTxId && requesterDocRef) {
+                const payerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
+                const payerTxDoc = await transaction.get(payerTxRef);
+                if (!payerTxDoc.exists()) throw new Error("Payer transaction document not found for update.");
+            }
+            
             const fromUserData = fromUserDoc.data();
             const toUserData = toUserDoc.data();
             if (fromUserData.balance < amount) {
                 throw new Error("Insufficient funds.");
             }
-            
-            // --- TRANSACTIONAL WRITES ---
+
             const now = new Date();
             const timestamp = now.toISOString();
 
@@ -329,11 +337,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             transaction.update(fromUserRef, { balance: newFromBalance });
             transaction.update(toUserRef, { balance: newToBalance });
 
-            if (payerTxId && requesterDocRef) { // Fulfilling a request
+            if (payerTxId && requesterDocRef) {
                 const payerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
                 transaction.update(payerTxRef, { status: dictionary.status.Completed, date: timestamp });
                 transaction.update(requesterDocRef, { status: dictionary.status.Completed, date: timestamp });
-            } else { // Direct payment
+            } else { 
                 const sharedRequestId = doc(collection(db, "dummy")).id;
                 const sharedTxData = {
                     amount: amount,
@@ -458,9 +466,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await batch.commit();
   };
 
+  const cancelTransaction = async ({ requesterId, transactionId, requesteeId }: CancelTransactionParams) => {
+    const requesterTxRef = doc(db, 'users', requesterId, 'transactions', transactionId);
+    const requesterTxDoc = await getDoc(requesterTxRef);
+    if (!requesterTxDoc.exists()) {
+      throw new Error('Original request transaction not found.');
+    }
+    const { requestId } = requesterTxDoc.data();
+    if (!requestId) {
+      throw new Error('Request ID is missing.');
+    }
+
+    const requesteeTxQuery = query(
+      collection(db, 'users', requesteeId, 'transactions'),
+      where('requestId', '==', requestId),
+      limit(1)
+    );
+    const requesteeQuerySnapshot = await getDocs(requesteeTxQuery);
+    if (requesteeQuerySnapshot.empty) {
+      throw new Error('Could not find the corresponding transaction for the other party.');
+    }
+    const requesteeTxRef = requesteeQuerySnapshot.docs[0].ref;
+
+    const batch = writeBatch(db);
+    batch.delete(requesterTxRef);
+    batch.delete(requesteeTxRef);
+    await batch.commit();
+  };
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, isLoading, isLoggingOut, refreshUserData }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, isLoading, isLoggingOut, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
@@ -473,4 +508,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

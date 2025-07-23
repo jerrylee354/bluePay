@@ -149,7 +149,14 @@
         "confirmPaymentTitle": "Confirm Payment",
         "confirmPaymentDescription": "Do you want to send <strong>{amount}</strong> to <strong>{name}</strong>?",
         "decline": "Decline",
-        "confirmAndPay": "Confirm & Pay"
+        "confirmAndPay": "Confirm & Pay",
+        "cancelRequestTitle": "Cancel Request",
+        "cancelRequestDescription": "Are you sure you want to cancel this payment request? This action cannot be undone.",
+        "goBack": "Go Back",
+        "confirmCancel": "Yes, Cancel Request",
+        "cancelSuccessTitle": "Request Cancelled",
+        "cancelSuccessDescription": "The payment request has been successfully cancelled.",
+        "cancelFailedTitle": "Cancellation Failed"
     },
     "transactionDetails": {
         "title": "Transaction Details",
@@ -158,6 +165,7 @@
         "paymentReceived": "Payment Received",
         "dateLabel": "Date",
         "transactionIdLabel": "Transaction ID",
+        "cancelRequest": "Cancel Request",
         "paymentConfirm": {
             "orderSummary": "Order Summary",
             "total": "Total"

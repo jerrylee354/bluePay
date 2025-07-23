@@ -149,7 +149,14 @@
         "confirmPaymentTitle": "確認付款",
         "confirmPaymentDescription": "您確定要傳送 <strong>{amount}</strong> 給 <strong>{name}</strong> 嗎？",
         "decline": "拒絕",
-        "confirmAndPay": "確認並付款"
+        "confirmAndPay": "確認並付款",
+        "cancelRequestTitle": "取消請求",
+        "cancelRequestDescription": "您確定要取消此付款請求嗎？此操作無法復原。",
+        "goBack": "返回",
+        "confirmCancel": "是的，取消請求",
+        "cancelSuccessTitle": "請求已取消",
+        "cancelSuccessDescription": "此付款請求已成功取消。",
+        "cancelFailedTitle": "取消失敗"
     },
     "transactionDetails": {
         "title": "交易詳情",
@@ -158,6 +165,7 @@
         "paymentReceived": "收款",
         "dateLabel": "日期",
         "transactionIdLabel": "交易 ID",
+        "cancelRequest": "取消請求",
         "paymentConfirm": {
             "orderSummary": "訂單摘要",
             "total": "總計"

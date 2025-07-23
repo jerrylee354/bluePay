@@ -108,7 +108,7 @@ const PendingOrdersList = ({ transactions, currency, onTransactionClick, diction
 }
 
 export default function OrdersPageClient({ dictionary }: { dictionary: Dictionary }) {
-  const { transactions, userData, getUserById, user } = useAuth();
+  const { transactions, userData, getUserById, user, cancelTransaction } = useAuth();
   const router = useRouter();
   const currency = userData?.currency || 'USD';
   const d_orders = dictionary.orders;
@@ -117,6 +117,10 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [pendingTransactions, setPendingTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [txToCancel, setTxToCancel] = useState<Transaction | null>(null);
+
+  const { toast } = useToast();
   
   const [qrValue, setQrValue] = useState('');
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
@@ -177,6 +181,36 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
     setTimeout(() => setSelectedTx(null), 300);
   }
 
+  const handleCancelRequest = (tx: Transaction) => {
+    setTxToCancel(tx);
+    setIsDetailOpen(false); // Close details dialog
+  };
+
+  const executeCancel = async () => {
+    if (!txToCancel || !user) return;
+    setIsProcessing(true);
+    try {
+      await cancelTransaction({
+        requesterId: user.uid,
+        transactionId: txToCancel.id,
+        requesteeId: txToCancel.otherPartyUid,
+      });
+      toast({
+        title: dictionary.activity.cancelSuccessTitle,
+        description: dictionary.activity.cancelSuccessDescription,
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: dictionary.activity.cancelFailedTitle,
+        description: error.message || dictionary.activity.genericError,
+      });
+    } finally {
+      setIsProcessing(false);
+      setTxToCancel(null);
+    }
+  };
+
   const getInitials = (name?: string) => {
     if (!name) return '?';
     return name.charAt(0).toUpperCase();
@@ -194,6 +228,7 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
 
   return (
     <div className="space-y-6">
+      <LoadingOverlay isLoading={isProcessing} />
       <header className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{d_orders.title}</h1>
         <Popover>
@@ -260,11 +295,30 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
                 <DialogTitle>{dictionary.transactionDetails.title}</DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto px-6 pb-6">
-                {selectedTx && <TransactionDetails transaction={selectedTx} dictionary={dictionary.transactionDetails} />}
+                {selectedTx && <TransactionDetails transaction={selectedTx} onCancel={handleCancelRequest} dictionary={dictionary.transactionDetails} />}
             </div>
         </DialogContent>
       </Dialog>
       
+      {txToCancel && (
+        <AlertDialog open={!!txToCancel} onOpenChange={() => setTxToCancel(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{dictionary.activity.cancelRequestTitle}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {dictionary.activity.cancelRequestDescription}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{dictionary.activity.goBack}</AlertDialogCancel>
+              <AlertDialogAction onClick={executeCancel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {dictionary.activity.confirmCancel}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
     </div>
   );
 }

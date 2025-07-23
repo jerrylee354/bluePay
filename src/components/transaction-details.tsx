@@ -8,10 +8,11 @@ import { DocumentData } from "firebase/firestore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { CheckCircle2, ArrowUpRight, ArrowDownLeft, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dictionary } from "@/dictionaries";
 import { OrderItem } from "./payment-confirm";
+import { Button } from "./ui/button";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -55,10 +56,19 @@ const OrderItemsList = ({ items, currency, dictionary }: { items: OrderItem[], c
     </div>
 );
 
-export default function TransactionDetails({ transaction, dictionary }: { transaction: Transaction, dictionary: Dictionary['transactionDetails'] }) {
-    const { getUserById, userData } = useAuth();
+interface TransactionDetailsProps {
+    transaction: Transaction;
+    dictionary: Dictionary['transactionDetails'];
+    onCancel: (transaction: Transaction) => void;
+}
+
+export default function TransactionDetails({ transaction, dictionary, onCancel }: TransactionDetailsProps) {
+    const { getUserById, userData, user } = useAuth();
     const [otherParty, setOtherParty] = useState<DocumentData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const isRequester = transaction.type === 'receipt';
+    const isCancellable = isRequester && transaction.status === dictionary.status.Pending;
 
     useEffect(() => {
         if (!transaction.otherPartyUid) {
@@ -147,6 +157,15 @@ export default function TransactionDetails({ transaction, dictionary }: { transa
                 <DetailRow label={dictionary.dateLabel} value={formatDate(transaction.date)} />
                 <DetailRow label={dictionary.transactionIdLabel} value={<span className="font-mono text-xs">{transaction.id}</span>} />
             </div>
+
+            {isCancellable && (
+                <div className="pt-4">
+                    <Button variant="destructive" className="w-full" onClick={() => onCancel(transaction)}>
+                        <XCircle className="mr-2 h-4 w-4" />
+                        {dictionary.cancelRequest}
+                    </Button>
+                </div>
+            )}
 
         </div>
     )

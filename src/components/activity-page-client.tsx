@@ -240,7 +240,7 @@ const OrderItemsSummary = ({ items, currency }: { items: OrderItem[], currency: 
 );
 
 export default function ActivityPageClient({ dictionary }: { dictionary: Dictionary }) {
-  const { transactions, userData, getUserById, user, processTransaction, declineTransaction } = useAuth();
+  const { transactions, userData, getUserById, user, processTransaction, declineTransaction, cancelTransaction } = useAuth();
   const currency = userData?.currency || 'USD';
   const { toast } = useToast();
   
@@ -250,6 +250,7 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
   const [isLoading, setIsLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
   const [txToConfirm, setTxToConfirm] = useState<Transaction | null>(null);
+  const [txToCancel, setTxToCancel] = useState<Transaction | null>(null);
   const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
   const [completedTransaction, setCompletedTransaction] = useState<Transaction | null>(null);
 
@@ -295,6 +296,11 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
     setTxToConfirm(tx);
   };
   
+  const handleCancelRequest = (tx: Transaction) => {
+    setTxToCancel(tx);
+    setIsDetailOpen(false); // Close details dialog
+  };
+
   const executePaymentConfirmation = async () => {
     if (!txToConfirm || !user || !userData) return;
     
@@ -368,6 +374,31 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
       }
   };
 
+  const executeCancel = async () => {
+    if (!txToCancel || !user) return;
+    setIsConfirming(true);
+    try {
+      await cancelTransaction({
+        requesterId: user.uid,
+        transactionId: txToCancel.id,
+        requesteeId: txToCancel.otherPartyUid,
+      });
+      toast({
+        title: dictionary.activity.cancelSuccessTitle,
+        description: dictionary.activity.cancelSuccessDescription,
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: dictionary.activity.cancelFailedTitle,
+        description: error.message || dictionary.activity.genericError,
+      });
+    } finally {
+      setIsConfirming(false);
+      setTxToCancel(null);
+    }
+  };
+
   const handleFinishSuccess = () => {
     setIsPaymentSuccessful(false);
     setCompletedTransaction(null);
@@ -410,7 +441,7 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
                 <DialogTitle>{dictionary.transactionDetails.title}</DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto px-6 pb-6">
-                {selectedTx && <TransactionDetails transaction={selectedTx} dictionary={dictionary.transactionDetails} />}
+                {selectedTx && <TransactionDetails transaction={selectedTx} onCancel={handleCancelRequest} dictionary={dictionary.transactionDetails} />}
             </div>
         </DialogContent>
       </Dialog>
@@ -445,6 +476,25 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
                     <AlertDialogAction onClick={executePaymentConfirmation}>{dictionary.activity.confirmAndPay}</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {txToCancel && (
+        <AlertDialog open={!!txToCancel} onOpenChange={() => setTxToCancel(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{dictionary.activity.cancelRequestTitle}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {dictionary.activity.cancelRequestDescription}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{dictionary.activity.goBack}</AlertDialogCancel>
+              <AlertDialogAction onClick={executeCancel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {dictionary.activity.confirmCancel}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
         </AlertDialog>
       )}
 
