@@ -44,7 +44,7 @@ export default async function GroupPayPage() {
                 <Users className="w-16 h-16 text-muted-foreground" />
                 <p className="text-muted-foreground">{d.featureUnderConstruction}</p>
             </div>
-            <Button className="w-full">
+            <Button className="w-full" disabled>
                 {d.createNewGroup}
             </Button>
         </div>
