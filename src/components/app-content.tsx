@@ -49,29 +49,18 @@ const AnimatedCheckmark = () => (
     </div>
 );
 
-const AccountSuspendedScreen = ({ dictionary, onLogout }: { dictionary: Dictionary['accountSuspended'], onLogout: () => void }) => {
-    const { toast } = useToast();
-    const [isAppealSubmitted, setIsAppealSubmitted] = useState(false);
-    
-    const handleAppeal = () => {
-        setIsAppealSubmitted(true);
-        toast({
-            title: dictionary.appealSuccessTitle,
-            description: dictionary.appealSuccessDescription,
-        });
-    };
-
+const AccountSuspendedScreen = ({ dictionary, onLogout, onAppeal, hasAppealed }: { dictionary: Dictionary['accountSuspended'], onLogout: () => void, onAppeal: () => void, hasAppealed: boolean }) => {
     return (
         <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
             <Card className="w-full max-w-md text-center shadow-lg">
                 <CardHeader>
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                       {!isAppealSubmitted && <AlertTriangle className="h-10 w-10 text-destructive" />}
+                       {!hasAppealed && <AlertTriangle className="h-10 w-10 text-destructive" />}
                     </div>
-                     <CardTitle className="mt-4 text-2xl font-bold">{isAppealSubmitted ? dictionary.appealSuccessTitle : dictionary.title}</CardTitle>
+                     <CardTitle className="mt-4 text-2xl font-bold">{hasAppealed ? dictionary.appealSuccessTitle : dictionary.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {isAppealSubmitted ? (
+                    {hasAppealed ? (
                         <div className="flex flex-col items-center">
                             <AnimatedCheckmark />
                             <p className="text-muted-foreground">{dictionary.appealSuccessDescription}</p>
@@ -88,7 +77,7 @@ const AccountSuspendedScreen = ({ dictionary, onLogout }: { dictionary: Dictiona
                                     <LogOut className="mr-2 h-4 w-4" />
                                     {dictionary.logout}
                                 </Button>
-                                <Button className="w-full" onClick={handleAppeal}>
+                                <Button className="w-full" onClick={onAppeal}>
                                     {dictionary.appeal}
                                 </Button>
                             </div>
@@ -102,12 +91,13 @@ const AccountSuspendedScreen = ({ dictionary, onLogout }: { dictionary: Dictiona
 
 
 function AuthDependentContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { isAuthenticated, isLoading, logout, isLoggingOut, userData } = useAuth();
+    const { user, isAuthenticated, isLoading, logout, isLoggingOut, userData, submitAppeal } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
+    const { toast } = useToast();
 
     const isBusiness = userData?.accountType === 'business';
     
@@ -148,9 +138,32 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         </div>
       );
     }
+
+    const handleAppeal = async () => {
+        if (!user) return;
+        try {
+            await submitAppeal(user.uid);
+            toast({
+                title: dictionary.accountSuspended.appealSuccessTitle,
+                description: dictionary.accountSuspended.appealSuccessDescription,
+            });
+        } catch (error) {
+            // Handle error, maybe show a toast
+            toast({
+                variant: 'destructive',
+                title: "Appeal Failed",
+                description: "Could not submit appeal. Please try again later."
+            })
+        }
+    };
     
     if (userData?.status === 'No') {
-        return <AccountSuspendedScreen dictionary={dictionary.accountSuspended} onLogout={logout} />
+        return <AccountSuspendedScreen 
+                    dictionary={dictionary.accountSuspended} 
+                    onLogout={logout}
+                    onAppeal={handleAppeal}
+                    hasAppealed={userData?.hasAppealed === true}
+                />
     }
     
     const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];

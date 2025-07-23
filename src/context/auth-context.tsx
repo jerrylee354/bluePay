@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -61,6 +62,7 @@ interface AuthContextType {
   requestTransaction: (params: TransactionParams) => Promise<void>;
   declineTransaction: (params: DeclineTransactionParams) => Promise<void>;
   cancelTransaction: (params: CancelTransactionParams) => Promise<void>;
+  submitAppeal: (userId: string) => Promise<void>;
   isLoading: boolean;
   isLoggingOut: boolean;
   refreshUserData: () => Promise<void>;
@@ -121,10 +123,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const unsubUser = onSnapshot(userDocRef, async (docSnapshot) => {
           if (docSnapshot.exists()) {
             const currentData = docSnapshot.data();
-            // Check for 'status' field and add if it doesn't exist
+            // Check for 'status' and 'hasAppealed' fields, add if they don't exist
+            const updates: { status?: string, hasAppealed?: boolean } = {};
             if (currentData.status === undefined) {
-              await updateDoc(userDocRef, { status: 'Yes' });
-              setUserData({ ...currentData, status: 'Yes' });
+              updates.status = 'Yes';
+            }
+            if (currentData.hasAppealed === undefined) {
+                updates.hasAppealed = false;
+            }
+            if (Object.keys(updates).length > 0) {
+              await updateDoc(userDocRef, updates);
+              setUserData({ ...currentData, ...updates });
             } else {
               setUserData(currentData);
             }
@@ -183,6 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       hasCompletedOnboarding: false,
       profileStatus: true,
       status: 'Yes',
+      hasAppealed: false,
       createdAt: new Date(),
     };
 
@@ -500,9 +510,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     batch.delete(requesteeTxRef);
     await batch.commit();
   };
+  
+  const submitAppeal = async (userId: string) => {
+    if (!userId) throw new Error("User ID is required to submit an appeal.");
+    const userDocRef = doc(db, 'users', userId);
+    await updateDoc(userDocRef, { hasAppealed: true });
+    await refreshUserData();
+  };
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, isLoading, isLoggingOut, refreshUserData }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
