@@ -33,9 +33,9 @@ export default function VerifiedAvatar({ user, className, fallbackClassName, sho
             return (
                  <div className={cn(
                     "absolute bottom-0 right-0 h-5 w-5 rounded-full flex items-center justify-center",
-                    isVerified ? "bg-primary text-primary-foreground" : "bg-background"
+                    isVerified ? "bg-primary" : "bg-muted"
                 )}>
-                    <Store className={cn("h-4 w-4", !isVerified && "text-primary")} />
+                    <Store className={cn("h-4 w-4", isVerified ? "text-primary-foreground" : "text-muted-foreground")} />
                 </div>
             )
         }
