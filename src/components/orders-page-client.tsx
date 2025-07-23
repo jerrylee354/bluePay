@@ -275,7 +275,7 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
 
       <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>
         <DialogContent className="sm:max-w-2xl p-0 flex flex-col max-h-[85vh]">
-            <DialogHeader className="p-6 pb-4 sr-only">
+            <DialogHeader className="sr-only">
                 <DialogTitle>{dictionary.transactionDetails.title}</DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto px-6 pb-6">
