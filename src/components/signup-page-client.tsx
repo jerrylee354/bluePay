@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -342,23 +343,7 @@ export default function SignupPageClient({ dictionary }: { dictionary: Dictionar
              <div className="w-full max-w-md">
                 <Card className="w-full">
                     <CardHeader>
-                        {step > 1 && (
-                             <div className="space-y-2 pt-2">
-                                <Progress value={progress} className="h-2" />
-                             </div>
-                        )}
-                         {step === 1 && (
-                            <div className="flex flex-col items-center justify-center gap-2 text-center">
-                                <div className="flex items-center gap-2">
-                                    <Wallet className="w-12 h-12 text-primary" />
-                                    <span className="text-4xl font-bold text-foreground">BluePay</span>
-                                </div>
-                                <div className="space-y-1">
-                                    <h1 className="text-2xl font-bold">{d.joinTitle}</h1>
-                                    <p className="text-muted-foreground">{d.chooseAccountType}</p>
-                                </div>
-                            </div>
-                         )}
+
                     </CardHeader>
                     <CardContent className="p-6">
                          <form onSubmit={(e) => { e.preventDefault(); buttonAction(); }} className="space-y-6">
