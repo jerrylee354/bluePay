@@ -300,7 +300,9 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
         return <>{children}</>;
     }
     
-    if (isLoading || (isLoggingOut && !pathname.includes('/login'))) {
+    // First, handle the initial loading state before any other checks.
+    // This prevents race conditions where userData is checked before it's loaded.
+    if (isLoading || !userData || (isLoggingOut && !pathname.includes('/login'))) {
         return <LoadingOverlay isLoading={true} />;
     }
     
@@ -314,8 +316,9 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
                     showAppealSuccess={true}
                 />
     }
-
-    if (userData?.status !== 'Yes') {
+    
+    // Now that we know userData is loaded, we can safely check its status.
+    if (userData.status !== 'Yes') {
         return <AccountSuspendedScreen 
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
