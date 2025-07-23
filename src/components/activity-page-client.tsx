@@ -441,7 +441,7 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
                 <DialogTitle>{dictionary.transactionDetails.title}</DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto px-6 pb-6">
-                {selectedTx && <TransactionDetails transaction={selectedTx} onCancel={handleCancelRequest} dictionary={dictionary.transactionDetails} />}
+                {selectedTx && <TransactionDetails transaction={selectedTx} onCancel={handleCancelRequest} dictionary={dictionary} />}
             </div>
         </DialogContent>
       </Dialog>
