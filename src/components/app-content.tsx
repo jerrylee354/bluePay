@@ -171,7 +171,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     const { toast } = useToast();
     
     useEffect(() => {
-        if (prevUserDataRef.current && (prevUserDataRef.current.status.startsWith('No') && userData?.status === 'Yes')) {
+        if (prevUserDataRef.current && (prevUserDataRef.current.status !== 'Yes' && userData?.status === 'Yes')) {
              setShowAppealSuccessScreen(true);
         }
         prevUserDataRef.current = userData;
