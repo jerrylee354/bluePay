@@ -28,6 +28,7 @@ import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { Dictionary } from '@/dictionaries';
 import { Store } from 'lucide-react';
 import { OrderItem } from './payment-confirm';
+import PaymentSuccess from './payment-success';
 
 
 function formatCurrency(amount: number, currency: string) {
@@ -249,6 +250,8 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
   const [isLoading, setIsLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
   const [txToConfirm, setTxToConfirm] = useState<Transaction | null>(null);
+  const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
+  const [completedTransaction, setCompletedTransaction] = useState<Transaction | null>(null);
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
@@ -315,12 +318,19 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
             attachmentUrl: txToConfirm.attachmentUrl,
             payerTxId: txToConfirm.id,
             locale: dictionary.locale as 'en' | 'zh-TW',
+            orderItems: txToConfirm.orderItems,
         });
 
-        toast({
-            title: dictionary.activity.paymentSuccessTitle,
-            description: `${dictionary.activity.paymentSuccessDescription} ${formatCurrency(txToConfirm.amount, currency)} to ${txToConfirm.name}.`,
-        });
+        const mockTransaction: Transaction = {
+            ...txToConfirm,
+            type: 'payment',
+            status: dictionary.status.Completed,
+            date: new Date().toISOString(),
+        };
+
+        setCompletedTransaction(mockTransaction);
+        setIsPaymentSuccessful(true);
+
     } catch (error: any) {
         toast({
             variant: "destructive",
@@ -357,6 +367,21 @@ export default function ActivityPageClient({ dictionary }: { dictionary: Diction
           setTxToConfirm(null);
       }
   };
+
+  const handleFinishSuccess = () => {
+    setIsPaymentSuccessful(false);
+    setCompletedTransaction(null);
+  };
+
+  if (isPaymentSuccessful && completedTransaction) {
+    return (
+        <PaymentSuccess 
+            transaction={completedTransaction}
+            onFinish={handleFinishSuccess}
+            dictionary={dictionary}
+        />
+    )
+  }
 
   return (
     <div className="space-y-6">

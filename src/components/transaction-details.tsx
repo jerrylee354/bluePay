@@ -50,7 +50,7 @@ const OrderItemsList = ({ items, currency, dictionary }: { items: OrderItem[], c
          <Separator className="my-2 bg-muted-foreground/20" />
          <div className="flex justify-between items-center font-bold">
              <span>{dictionary.total}</span>
-             <span>{formatCurrency(items.reduce((acc, item) => acc + parseFloat(item.price), 0), currency)}</span>
+             <span>{formatCurrency(items.reduce((acc, item) => acc + parseFloat(item.price || '0'), 0), currency)}</span>
          </div>
     </div>
 );
