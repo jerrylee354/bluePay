@@ -1,4 +1,5 @@
 
+
 {
     "locale": "en",
     "landing": {
@@ -263,17 +264,34 @@
         "createFirstTicket": "Create Your First Ticket",
         "scanToRedeem": "Scan to Redeem",
         "createTicket": "Create Ticket",
+        "editTicket": "Edit Ticket",
         "ticketName": "Ticket Name",
         "ticketNamePlaceholder": "e.g., Free Coffee Coupon",
+        "ticketDescription": "Description",
+        "ticketDescriptionPlaceholder": "e.g., Valid for one medium latte",
         "style": "Style",
         "publish": "Publish",
+        "saveChanges": "Save Changes",
         "ticketCreated": "Ticket Created!",
-        "shareThisQr": "Share this QR code with your customers.",
+        "ticketUpdated": "Ticket Updated!",
+        "shareThisQr": "Share this QR code with your customers to add this ticket.",
         "scanUserTicket": "Scan User's Ticket",
         "confirmRedemption": "Confirm Redemption",
         "confirmRedemptionDescription": "Do you want to mark this ticket as used?",
         "ticketUsedSuccess": "Ticket Redeemed!",
-        "ticketUsedError": "Failed to Redeem Ticket"
+        "ticketUsedError": "Failed to Redeem Ticket",
+        "createTicketDescription": "Create a new ticket template for your customers.",
+        "step1": "Info",
+        "step2": "Style",
+        "step3": "Limit",
+        "issuanceLimit": "Issuance Limit",
+        "issuanceLimitPlaceholder": "Leave blank for unlimited",
+        "next": "Next",
+        "back": "Back",
+        "shareTicket": "Share Ticket",
+        "copyLink": "Copy Link",
+        "linkCopied": "Link copied to clipboard!",
+        "copyFailed": "Failed to copy link."
     },
     "settings": {
         "title": "Settings",

@@ -35,9 +35,12 @@ export type TicketTemplate = {
     issuerId: string;
     issuerName: string;
     title: string;
+    description: string;
     createdAt: string;
     style: {
         backgroundColor: string;
         textColor: string;
     };
+    issuanceLimit: number | null; // null for unlimited
+    issuanceCount: number;
 };

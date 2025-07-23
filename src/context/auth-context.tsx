@@ -69,7 +69,8 @@ interface AuthContextType {
   refreshUserData: () => Promise<void>;
   addTicketToWallet: (templateId: string, issuerId: string) => Promise<void>;
   useTicket: (ticketId: string, userId: string) => Promise<void>;
-  createTicketTemplate: (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt'>) => Promise<void>;
+  createTicketTemplate: (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>) => Promise<void>;
+  updateTicketTemplate: (templateId: string, data: Partial<Pick<TicketTemplate, 'title' | 'description' | 'style' | 'issuanceLimit'>>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -523,43 +524,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await refreshUserData();
   };
   
-  const createTicketTemplate = async (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt'>) => {
+  const createTicketTemplate = async (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>) => {
     if (!user || !userData) throw new Error("User not authenticated");
     
     const templateData = {
         ...template,
         issuerId: user.uid,
         issuerName: `${userData.firstName} ${userData.lastName}`,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        issuanceCount: 0
     };
     
     const templatesColRef = collection(db, "users", user.uid, "ticketTemplates");
     await addDoc(templatesColRef, templateData);
   }
 
+  const updateTicketTemplate = async (templateId: string, data: Partial<Pick<TicketTemplate, 'title' | 'description' | 'style' | 'issuanceLimit'>>) => {
+    if (!user) throw new Error("User not authenticated");
+    const templateRef = doc(db, "users", user.uid, "ticketTemplates", templateId);
+    await updateDoc(templateRef, data);
+  };
+
   const addTicketToWallet = async (templateId: string, issuerId: string) => {
     if (!user) throw new Error("User not authenticated");
     
     const templateRef = doc(db, "users", issuerId, "ticketTemplates", templateId);
-    const templateSnap = await getDoc(templateRef);
     
-    if (!templateSnap.exists()) {
-      throw new Error("Ticket template not found.");
-    }
-    const templateData = templateSnap.data() as TicketTemplate;
-    
-    const walletItemData: Omit<WalletItem, 'id'> = {
-        templateId: templateId,
-        issuerId: templateData.issuerId,
-        issuerName: templateData.issuerName,
-        title: templateData.title,
-        style: templateData.style,
-        addedAt: new Date().toISOString(),
-        status: 'valid'
-    };
-    
-    const walletColRef = collection(db, "users", user.uid, "walletItems");
-    await addDoc(walletColRef, walletItemData);
+    await runTransaction(db, async (transaction) => {
+        const templateSnap = await transaction.get(templateRef);
+
+        if (!templateSnap.exists()) {
+          throw new Error("Ticket template not found.");
+        }
+        const templateData = templateSnap.data() as TicketTemplate;
+
+        if (templateData.issuanceLimit !== null && templateData.issuanceCount >= templateData.issuanceLimit) {
+            throw new Error("This ticket has reached its issuance limit.");
+        }
+        
+        const walletItemData: Omit<WalletItem, 'id'> = {
+            templateId: templateId,
+            issuerId: templateData.issuerId,
+            issuerName: templateData.issuerName,
+            title: templateData.title,
+            style: templateData.style,
+            addedAt: new Date().toISOString(),
+            status: 'valid'
+        };
+        
+        const walletColRef = collection(db, "users", user.uid, "walletItems");
+        const newWalletItemRef = doc(walletColRef);
+        transaction.set(newWalletItemRef, walletItemData);
+
+        transaction.update(templateRef, { issuanceCount: templateData.issuanceCount + 1 });
+    });
   };
 
   const useTicket = async (ticketId: string, userId: string) => {
@@ -589,7 +607,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate, updateTicketTemplate }}>
       {children}
     </AuthContext.Provider>
   );
