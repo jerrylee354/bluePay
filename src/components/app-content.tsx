@@ -58,7 +58,7 @@ const AccountSuspendedScreen = ({
     onContinue,
     showAppealSuccess,
 }: { 
-    dictionary: Dictionary,
+    dictionary: Dictionary['accountSuspended'],
     onLogout: () => void, 
     onAppeal: () => void, 
     userData: DocumentData | null,
@@ -70,7 +70,7 @@ const AccountSuspendedScreen = ({
         return <div />;
     }
     
-    const d = dictionary.accountSuspended;
+    const d = dictionary;
     const [showTemporarySuccess, setShowTemporarySuccess] = useState(false);
 
     const handleAppealClick = () => {
@@ -292,7 +292,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
 
     if (showAppealSuccessScreen) {
         return <AccountSuspendedScreen
-                    dictionary={dictionary}
+                    dictionary={dictionary.accountSuspended}
                     onLogout={logout}
                     onAppeal={handleAppeal}
                     userData={userData}
@@ -303,7 +303,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
 
     if (userData?.status !== 'Yes') {
         return <AccountSuspendedScreen 
-                    dictionary={dictionary} 
+                    dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
                     onAppeal={handleAppeal}
                     userData={userData}
