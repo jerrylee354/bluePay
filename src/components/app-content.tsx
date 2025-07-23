@@ -58,7 +58,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     
     useIdleTimeout({
         onIdle: handleIdle,
-        idleTimeout: 180000, // 3 minutes
+        idleTimeout: isBusiness ? 60000 : 180000, // 1 minute for business, 3 minutes for personal
     });
     
     const localeSegment = `/${dictionary.locale}`;
