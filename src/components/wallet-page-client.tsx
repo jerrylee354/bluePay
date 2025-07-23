@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -64,14 +65,17 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
     const { user, walletItems, isLoading } = useAuth();
     const router = useRouter();
     const [selectedTicket, setSelectedTicket] = useState<WalletItem | null>(null);
+    const [qrValue, setQrValue] = useState('');
 
     const validTickets = walletItems.filter(item => item.status === 'valid');
 
     const handleTicketClick = (ticket: WalletItem) => {
-        setSelectedTicket(ticket);
+        if (user) {
+            const redemptionData = { type: 'ticket_redemption', ticketId: ticket.id, userId: user.uid };
+            setQrValue(JSON.stringify(redemptionData));
+            setSelectedTicket(ticket);
+        }
     }
-    
-    const qrValue = selectedTicket && user ? JSON.stringify({ type: 'ticket_redemption', ticketId: selectedTicket.id, userId: user.uid }) : '';
 
     return (
         <div className="space-y-6">

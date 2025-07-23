@@ -261,6 +261,8 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
     const [verificationChangeType, setVerificationChangeType] = useState<'granted' | 'revoked' | null>(null);
     
     useEffect(() => {
+        if (isLoading) return;
+
         const templateId = searchParams.get('templateId');
         const issuerId = searchParams.get('issuerId');
         
@@ -269,7 +271,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
             const newPath = pathname;
             router.replace(newPath, { scroll: false });
         }
-    }, [searchParams, openAddTicketDialog, pathname, router]);
+    }, [searchParams, openAddTicketDialog, pathname, router, isLoading]);
 
 
     useEffect(() => {

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -139,7 +140,7 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
             } else if (mode === 'redeem' && parsedData.type === 'ticket_redemption') {
                 setDialogData(parsedData);
             } else {
-              throw new Error("Unsupported QR code format.");
+              throw new Error("Unsupported QR code format for this action.");
             }
     
           } catch (e: any) {
