@@ -20,6 +20,7 @@ import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { DocumentData } from 'firebase/firestore';
+import VerificationStatusDialog from './VerificationStatusDialog';
 
 
 const AppLoader = () => (
@@ -217,9 +218,9 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
 
     if (isMobile) {
         return (
-            <div className="relative flex min-h-dvh w-full flex-col items-center">
+             <div className="relative flex min-h-dvh w-full flex-col">
                 {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
-                <div className="w-full max-w-lg bg-background flex-1 flex flex-col">
+                <div className="w-full max-w-lg mx-auto bg-background flex-1 flex flex-col">
                     <main className="flex-1 overflow-y-auto p-4 pb-28">
                         {children}
                     </main>
@@ -245,13 +246,25 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
 }
 
 function AppContentWithAuth({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { user, userData, isLoading, isLoggingOut, logout, submitAppeal } = useAuth();
+    const { user, userData, isLoading, isLoggingOut, logout, submitAppeal, lastVerificationStatus } = useAuth();
     const pathname = usePathname();
-    const isMobile = useIsMobile();
 
     const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
     const prevUserDataRef = useRef<DocumentData | null>();
     const { toast } = useToast();
+
+    const [showVerificationDialog, setShowVerificationDialog] = useState(false);
+    const [verificationChangeType, setVerificationChangeType] = useState<'granted' | 'revoked' | null>(null);
+
+    useEffect(() => {
+        if (lastVerificationStatus === 'No' && userData?.verify === 'Yes') {
+            setVerificationChangeType('granted');
+            setShowVerificationDialog(true);
+        } else if (lastVerificationStatus === 'Yes' && userData?.verify === 'No') {
+            setVerificationChangeType('revoked');
+            setShowVerificationDialog(true);
+        }
+    }, [userData?.verify, lastVerificationStatus]);
 
     useEffect(() => {
         if (prevUserDataRef.current && (prevUserDataRef.current.status !== 'Yes' && userData?.status === 'Yes')) {
@@ -283,13 +296,9 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
     if (isPublicRoute) {
         return <>{children}</>;
     }
-
-    if (isLoading || isMobile === undefined || (isLoggingOut && !pathname.includes('/login'))) {
-        return (
-            <div className="min-h-screen bg-background">
-                <LoadingOverlay isLoading={true} />
-            </div>
-        );
+    
+    if (isLoading || (isLoggingOut && !pathname.includes('/login'))) {
+        return <LoadingOverlay isLoading={true} />;
     }
     
     if (showAppealSuccessScreen) {
@@ -315,9 +324,19 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
     }
 
     return (
-        <AuthDependentContent dictionary={dictionary}>
-            {children}
-        </AuthDependentContent>
+        <>
+            <AuthDependentContent dictionary={dictionary}>
+                {children}
+            </AuthDependentContent>
+            {showVerificationDialog && verificationChangeType && (
+                <VerificationStatusDialog
+                    user={userData}
+                    type={verificationChangeType}
+                    onClose={() => setShowVerificationDialog(false)}
+                    dictionary={dictionary.verificationStatus}
+                />
+            )}
+        </>
     );
 }
 

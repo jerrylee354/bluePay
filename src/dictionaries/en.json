@@ -380,5 +380,12 @@
         "appealApprovedTitle": "Appeal Successful",
         "appealApprovedDescription": "Your appeal was successful, you can continue to use our service. We are sorry for the inconvenience.",
         "continue": "Continue"
+    },
+    "verificationStatus": {
+        "grantedTitle": "Account Verified!",
+        "grantedDescription": "Congratulations, your account has been successfully verified.",
+        "revokedTitle": "Verification Removed",
+        "revokedDescription": "Your account verification has been removed. Please contact support if you have questions.",
+        "close": "Close"
     }
 }

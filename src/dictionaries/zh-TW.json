@@ -380,5 +380,12 @@
         "appealApprovedTitle": "申訴已成功",
         "appealApprovedDescription": "您的申訴已成功，可以繼續使用，我們很抱歉造成您的不便。",
         "continue": "繼續"
+    },
+    "verificationStatus": {
+        "grantedTitle": "帳號已驗證！",
+        "grantedDescription": "恭喜您，您的帳號已成功通過驗證。",
+        "revokedTitle": "驗證已移除",
+        "revokedDescription": "您的帳號驗證已被移除。如有問題，請聯繫客服。",
+        "close": "關閉"
     }
 }

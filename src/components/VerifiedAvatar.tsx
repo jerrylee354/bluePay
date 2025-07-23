@@ -11,6 +11,7 @@ interface VerifiedAvatarProps {
     className?: string;
     fallbackClassName?: string;
     showBadge?: boolean;
+    badgeAnimation?: 'granted' | 'revoked' | null;
 }
 
 const getInitials = (user: DocumentData | null) => {
@@ -20,20 +21,23 @@ const getInitials = (user: DocumentData | null) => {
     return "?";
 }
 
-export default function VerifiedAvatar({ user, className, fallbackClassName, showBadge = true }: VerifiedAvatarProps) {
+export default function VerifiedAvatar({ user, className, fallbackClassName, showBadge = true, badgeAnimation = null }: VerifiedAvatarProps) {
     if (!user) return null;
 
     const isVerified = user.verify === 'Yes';
     const isBusiness = user.accountType === 'business';
 
     const renderBadge = () => {
-        if (!showBadge) return null;
+        if (!showBadge && !badgeAnimation) return null;
+
+        const animationClass = badgeAnimation === 'granted' ? 'fly-in' : badgeAnimation === 'revoked' ? 'pop-out' : '';
 
         if (isBusiness) {
             return (
                  <div className={cn(
                     "absolute bottom-0 right-0 h-5 w-5 rounded-full flex items-center justify-center",
-                    isVerified ? "bg-primary" : "bg-muted"
+                    isVerified ? "bg-primary" : "bg-muted",
+                    animationClass
                 )}>
                     <Store className={cn("h-4 w-4", isVerified ? "text-primary-foreground" : "text-muted-foreground")} />
                 </div>
@@ -42,7 +46,7 @@ export default function VerifiedAvatar({ user, className, fallbackClassName, sho
         
         if (isVerified) {
             return (
-                 <div className="absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center">
+                 <div className={cn("absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center", animationClass)}>
                     <BadgeCheck className="h-5 w-5 text-primary fill-primary-foreground stroke-primary-foreground" />
                 </div>
             )
