@@ -3,6 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardContent } from "@/components/ui/card";
 import { type Transaction } from "@/lib/data";
@@ -77,13 +78,13 @@ const TransactionItem = ({ tx, currency, onClick }: { tx: Transaction, currency:
     );
 };
 
-const PendingOrdersList = ({ transactions, currency, onTransactionClick, dictionary }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, dictionary: Dictionary['orders'] }) => {
+const PendingOrdersList = ({ transactions, currency, onTransactionClick, dictionary }: { transactions: Transaction[], currency: string, onTransactionClick: (tx: Transaction) => void, dictionary: Dictionary }) => {
     if (transactions.length === 0) {
         return (
             <div className="p-8 text-center text-muted-foreground min-h-[300px] flex flex-col items-center justify-center">
                 <ShoppingCart className="w-16 h-16 mb-4 text-gray-400"/>
-                <p className="font-semibold text-lg">{dictionary.noPendingOrders}</p>
-                <p className="text-sm">{dictionary.noPendingOrdersDescription}</p>
+                <p className="font-semibold text-lg">{dictionary.orders.noPendingOrders}</p>
+                <p className="text-sm">{dictionary.orders.noPendingOrdersDescription}</p>
             </div>
         );
     }
@@ -108,6 +109,7 @@ const PendingOrdersList = ({ transactions, currency, onTransactionClick, diction
 
 export default function OrdersPageClient({ dictionary }: { dictionary: Dictionary }) {
   const { transactions, userData, getUserById, user } = useAuth();
+  const router = useRouter();
   const currency = userData?.currency || 'USD';
   const d_orders = dictionary.orders;
   
@@ -120,6 +122,14 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
 
   useEffect(() => {
+    if (userData && userData.accountType !== 'business') {
+        router.push('/home');
+    }
+  }, [userData, router]);
+
+  useEffect(() => {
+    if (!userData) return;
+
     const fetchTransactionDetails = async () => {
         setIsLoading(true);
 
@@ -146,7 +156,7 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
     };
     
     fetchTransactionDetails();
-  }, [transactions, getUserById, dictionary.status]);
+  }, [transactions, getUserById, dictionary.status, userData]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && user) {
@@ -241,7 +251,7 @@ export default function OrdersPageClient({ dictionary }: { dictionary: Dictionar
       {isLoading ? (
         <Card><CardContent className="p-8 text-center text-muted-foreground">Loading...</CardContent></Card>
       ) : (
-        <PendingOrdersList transactions={pendingTransactions} currency={currency} onTransactionClick={handleTransactionClick} dictionary={d_orders} />
+        <PendingOrdersList transactions={pendingTransactions} currency={currency} onTransactionClick={handleTransactionClick} dictionary={dictionary} />
       )}
 
       <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>

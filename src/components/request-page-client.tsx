@@ -65,6 +65,15 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
 
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+    const isCreateOrderPage = pathname.includes('/orders/create');
+
+    useEffect(() => {
+        if (userData && isCreateOrderPage && userData.accountType !== 'business') {
+            router.push('/home');
+        }
+    }, [userData, isCreateOrderPage, router]);
+
+
     const handleSearch = useCallback(async (term: string) => {
         if (!term) {
             setResults([]);
@@ -261,12 +270,12 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
         </div>
     );
     
-    const showToggle = !pathname.includes('/orders/create');
+    const showToggle = !isCreateOrderPage;
 
     return (
         <div className="flex flex-col h-full md:relative md:min-h-[calc(100vh-9rem)]">
             <header className="mb-6 flex-shrink-0">
-                <h1 className="text-3xl font-bold">{dictionary.orders.create.title}</h1>
+                <h1 className="text-3xl font-bold">{isCreateOrderPage ? dictionary.orders.create.title : d.request}</h1>
             </header>
 
             <div className="relative mb-6 flex-shrink-0">
