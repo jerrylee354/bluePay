@@ -26,6 +26,7 @@ import {
 import QRCode from 'qrcode.react';
 import PaymentConfirm from '@/components/payment-confirm';
 import { Dictionary } from '@/dictionaries';
+import { usePayDialogStore } from '@/stores/pay-dialog-store';
 
 function useDebounce(value: string, delay: number) {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -46,15 +47,19 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
     const { searchUsers, user: currentUser, userData } = useAuth();
     const isMobile = useIsMobile();
     const d = dictionary.pay;
+    const { 
+        isPayDialogOpen, 
+        setPayDialogState,
+        selectedUserId,
+        mode,
+        setSelectedUser,
+    } = usePayDialogStore();
 
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<DocumentData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showNoResults, setShowNoResults] = useState(false);
     
-    const [selectedUser, setSelectedUser] = useState<DocumentData | null>(null);
-    const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
-
     const [qrValue, setQrValue] = useState('');
     const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
 
@@ -128,14 +133,12 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
         if (isMobile) {
             router.push(url);
         } else {
-            setSelectedUser(user);
-            setIsRequestDialogOpen(true);
+            setSelectedUser(user.uid, 'request');
         }
     }
 
     const handleDialogClose = () => {
-        setIsRequestDialogOpen(false);
-        setSelectedUser(null);
+        setPayDialogState(false);
     }
     
     const renderSearchResults = () => {
@@ -250,9 +253,9 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
     );
 
     const PageContent = () => (
-        <>
+        <div className="flex-grow overflow-y-auto pb-20 md:pb-0">
             {searchTerm.length > 0 ? renderSearchResults() : renderDefaultContent()}
-        </>
+        </div>
     );
 
     return (
@@ -282,17 +285,15 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                 )}
             </div>
             
-            <div className="flex-grow overflow-y-auto pb-4 md:pb-0">
-                 <PageContent />
-            </div>
+            <PageContent />
             
-            <div className="flex-shrink-0 mt-auto pt-4 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-8">
+            <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-8">
                 <div className="flex w-full justify-center">
                     <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
                          <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname === `/${dictionary.locale}/pay` ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname.endsWith('/pay') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                             <Link href="/pay">{d.pay}</Link>
@@ -300,7 +301,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                         <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname === `/${dictionary.locale}/pay/request` ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname.endsWith('/pay/request') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                              <Link href="/pay/request">{d.request}</Link>
@@ -309,18 +310,18 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                 </div>
             </div>
 
-            <Dialog open={isRequestDialogOpen} onOpenChange={handleDialogClose}>
+            <Dialog open={isPayDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="p-0 max-w-4xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
                     <DialogHeader className="sr-only">
                         <DialogTitle>Confirm Request</DialogTitle>
                     </DialogHeader>
-                    {selectedUser && (
+                    {selectedUserId && (
                         <PaymentConfirm
                             isDialog={true}
                             onClose={handleDialogClose}
                             dictionary={dictionary}
-                            userIdFromProps={selectedUser.uid}
-                            modeFromProps="request"
+                            userIdFromProps={selectedUserId}
+                            modeFromProps={mode}
                         />
                     )}
                 </DialogContent>

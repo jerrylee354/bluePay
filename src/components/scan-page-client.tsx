@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dictionary } from '@/dictionaries';
+import { usePayDialogStore } from '@/stores/pay-dialog-store';
 
 export default function ScanToPayPageClient({ dictionary }: { dictionary: Dictionary}) {
     const d = dictionary.pay.scanQrCode;
@@ -19,6 +21,7 @@ export default function ScanToPayPageClient({ dictionary }: { dictionary: Dictio
     const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
     const [scanResult, setScanResult] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const { setSelectedUser } = usePayDialogStore();
 
     useEffect(() => {
         const getCameraPermission = async () => {
@@ -90,8 +93,17 @@ export default function ScanToPayPageClient({ dictionary }: { dictionary: Dictio
             setIsProcessing(true);
             try {
                 const url = new URL(scanResult);
-                if (url.pathname.includes('/pay/confirm') && url.searchParams.has('userId')) {
-                     router.push(url.pathname + url.search);
+                const userId = url.searchParams.get('userId');
+                const mode = url.searchParams.get('mode') || 'pay';
+
+                if (url.pathname.includes('/pay/confirm') && userId) {
+                     // For mobile, navigate. For desktop, set store and go back.
+                    if (window.innerWidth < 768) { // A simple check for mobile
+                        router.push(url.pathname + url.search);
+                    } else {
+                        setSelectedUser(userId, mode as 'pay' | 'request');
+                        router.back();
+                    }
                 } else {
                     throw new Error(d.invalidQrError);
                 }
@@ -103,7 +115,7 @@ export default function ScanToPayPageClient({ dictionary }: { dictionary: Dictio
                 }, 2000);
             }
         }
-    }, [scanResult, toast, router, isProcessing, d]);
+    }, [scanResult, toast, router, isProcessing, d, setSelectedUser]);
 
     return (
         <div className="space-y-6">
