@@ -26,21 +26,26 @@ export default function VerifiedAvatar({ user, className, fallbackClassName }: V
     const isBusiness = user.accountType === 'business';
 
     const renderBadge = () => {
-        if (!isVerified) return null;
-
         if (isBusiness) {
             return (
-                <div className="absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center">
-                    <Store className="h-4 w-4 text-primary" />
+                 <div className={cn(
+                    "absolute bottom-0 right-0 h-5 w-5 rounded-full flex items-center justify-center",
+                    isVerified ? "bg-primary text-primary-foreground" : "bg-background"
+                )}>
+                    <Store className={cn("h-4 w-4", !isVerified && "text-primary")} />
                 </div>
-            );
+            )
+        }
+        
+        if (isVerified) {
+            return (
+                 <div className="absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center">
+                    <BadgeCheck className="h-5 w-5 text-primary fill-primary-foreground stroke-primary-foreground" />
+                </div>
+            )
         }
 
-        return (
-             <div className="absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center">
-                <BadgeCheck className="h-5 w-5 text-primary fill-primary-foreground stroke-primary-foreground" />
-            </div>
-        )
+        return null;
     };
     
     return (
