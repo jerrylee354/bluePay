@@ -376,6 +376,7 @@
         "appeal": "Appeal",
         "appealSuccessTitle": "Appeal Submitted",
         "appealSuccessDescription": "You have successfully appealed. We will re-examine your account.",
+        "appealInReview": "Your appeal is under review. Thank you for your patience.",
         "appealApprovedTitle": "Appeal Successful",
         "appealApprovedDescription": "Your appeal was successful, you can continue to use our service. We are sorry for the inconvenience.",
         "continue": "Continue"

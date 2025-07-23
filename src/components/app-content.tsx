@@ -65,6 +65,15 @@ const AccountSuspendedScreen = ({
     showAppealSuccess: boolean,
     onContinue: () => void,
 }) => {
+    const [showTemporarySuccess, setShowTemporarySuccess] = useState(false);
+
+    const handleAppealClick = () => {
+        onAppeal();
+        setShowTemporarySuccess(true);
+        setTimeout(() => {
+            setShowTemporarySuccess(false);
+        }, 2000);
+    }
     
     if (showAppealSuccess) {
         return (
@@ -101,39 +110,46 @@ const AccountSuspendedScreen = ({
     const { title, description } = getSuspensionDetails();
     const hasAppealed = userData?.hasAppealed || false;
 
+    if (showTemporarySuccess) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+                <Card className="w-full max-w-md text-center shadow-lg">
+                    <CardHeader>
+                         <CardTitle className="mt-4 text-2xl font-bold">{dictionary.appealSuccessTitle}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                         <div className="flex flex-col items-center">
+                            <AnimatedCheckmark />
+                            <p className="text-muted-foreground">{dictionary.appealSuccessDescription}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
             <Card className="w-full max-w-md text-center shadow-lg">
                 <CardHeader>
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                       {!hasAppealed && <AlertTriangle className="h-10 w-10 text-destructive" />}
+                       <AlertTriangle className="h-10 w-10 text-destructive" />
                     </div>
-                     <CardTitle className="mt-4 text-2xl font-bold">{hasAppealed ? dictionary.appealSuccessTitle : title}</CardTitle>
+                     <CardTitle className="mt-4 text-2xl font-bold">{title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {hasAppealed ? (
-                        <div className="flex flex-col items-center">
-                            <AnimatedCheckmark />
-                            <p className="text-muted-foreground">{dictionary.appealSuccessDescription}</p>
-                            <Button variant="outline" className="w-full mt-6" onClick={onLogout}>
-                                <LogOut className="mr-2 h-4 w-4" />
-                                {dictionary.logout}
+                    <p className="text-muted-foreground">{hasAppealed ? dictionary.appealInReview : description}</p>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        <Button variant="outline" className="w-full" onClick={onLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            {dictionary.logout}
+                        </Button>
+                        {!hasAppealed && (
+                            <Button className="w-full" onClick={handleAppealClick}>
+                                {dictionary.appeal}
                             </Button>
-                        </div>
-                    ) : (
-                        <>
-                            <p className="text-muted-foreground">{description}</p>
-                            <div className="flex flex-col gap-3 sm:flex-row">
-                                <Button variant="outline" className="w-full" onClick={onLogout}>
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    {dictionary.logout}
-                                </Button>
-                                <Button className="w-full" onClick={onAppeal}>
-                                    {dictionary.appeal}
-                                </Button>
-                            </div>
-                        </>
-                    )}
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -205,11 +221,6 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         if (!user) return;
         try {
             await submitAppeal(user.uid);
-            // The onSnapshot listener in AuthContext will update userData and trigger a re-render.
-            toast({
-                title: dictionary.accountSuspended.appealSuccessTitle,
-                description: dictionary.accountSuspended.appealSuccessDescription,
-            });
         } catch (error) {
             toast({
                 variant: 'destructive',
