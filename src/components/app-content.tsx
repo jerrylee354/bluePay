@@ -246,30 +246,33 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
 }
 
 function AppContentWithAuth({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { user, userData, isLoading, isLoggingOut, logout, submitAppeal, lastVerificationStatus } = useAuth();
+    const { user, userData, isLoading, isLoggingOut, logout, submitAppeal } = useAuth();
     const pathname = usePathname();
-
-    const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
     const prevUserDataRef = useRef<DocumentData | null>();
     const { toast } = useToast();
 
+    const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
     const [showVerificationDialog, setShowVerificationDialog] = useState(false);
     const [verificationChangeType, setVerificationChangeType] = useState<'granted' | 'revoked' | null>(null);
 
     useEffect(() => {
-        if (lastVerificationStatus === 'No' && userData?.verify === 'Yes') {
-            setVerificationChangeType('granted');
-            setShowVerificationDialog(true);
-        } else if (lastVerificationStatus === 'Yes' && userData?.verify === 'No') {
-            setVerificationChangeType('revoked');
-            setShowVerificationDialog(true);
-        }
-    }, [userData?.verify, lastVerificationStatus]);
+        if (prevUserDataRef.current && userData) {
+            const prevVerify = prevUserDataRef.current.verify;
+            const currentVerify = userData.verify;
 
-    useEffect(() => {
-        if (prevUserDataRef.current && (prevUserDataRef.current.status !== 'Yes' && userData?.status === 'Yes')) {
-             setShowAppealSuccessScreen(true);
+            if (prevVerify === 'No' && currentVerify === 'Yes') {
+                setVerificationChangeType('granted');
+                setShowVerificationDialog(true);
+            } else if (prevVerify === 'Yes' && currentVerify === 'No') {
+                setVerificationChangeType('revoked');
+                setShowVerificationDialog(true);
+            }
+            
+            if (prevUserDataRef.current.status !== 'Yes' && userData.status === 'Yes') {
+                setShowAppealSuccessScreen(true);
+            }
         }
+        
         prevUserDataRef.current = userData;
     }, [userData]);
 
@@ -312,7 +315,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
                 />
     }
 
-    if (userData && userData.status !== 'Yes') {
+    if (userData?.status !== 'Yes') {
         return <AccountSuspendedScreen 
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
@@ -322,6 +325,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
                     showAppealSuccess={false}
                 />
     }
+
 
     return (
         <>

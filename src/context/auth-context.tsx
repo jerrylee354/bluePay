@@ -66,7 +66,6 @@ interface AuthContextType {
   isLoading: boolean;
   isLoggingOut: boolean;
   refreshUserData: () => Promise<void>;
-  lastVerificationStatus: 'Yes' | 'No' | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -92,7 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [walletItems, setWalletItems] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [lastVerificationStatus, setLastVerificationStatus] = useState<'Yes' | 'No' | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -107,11 +105,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
         const currentData = docSnap.data();
-        setLastVerificationStatus(userData?.verify || null);
         setUserData(currentData);
       }
     }
-  }, [userData?.verify]);
+  }, []);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -127,7 +124,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const unsubUser = onSnapshot(userDocRef, async (docSnapshot) => {
           if (docSnapshot.exists()) {
             const currentData = docSnapshot.data();
-            setLastVerificationStatus(userData?.verify || currentData.verify || null);
 
             // Check for 'status' and 'hasAppealed' fields, add if they don't exist
             const updates: { status?: string, hasAppealed?: boolean, verify?: string } = {};
@@ -298,7 +294,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const [emailSnapshot, firstNameSnapshot, lastNameSnapshot] = await Promise.all([
             getDocs(emailQuery),
             getDocs(firstNameQuery),
-            getDocs(lastNameQuery)
+            getDocs(lastNameSnapshot)
         ]);
         
         const usersMap = new Map<string, DocumentData>();
@@ -530,7 +526,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, lastVerificationStatus }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
