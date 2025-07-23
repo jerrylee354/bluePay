@@ -25,7 +25,7 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
     { href: "/home", label: dictionary.home, icon: Home },
     { href: "/dashboard", label: dictionary.dashboard, icon: LayoutDashboard },
     { href: "/orders", label: dictionary.orders, icon: Package },
-    { href: "/pay", label: dictionary.pay, icon: CircleDollarSign },
+    { href: "/wallet", label: dictionary.wallet, icon: Wallet },
   ];
   
   const navItems = isBusiness ? businessNavItems : personalNavItems;
