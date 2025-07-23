@@ -164,25 +164,10 @@ const AccountSuspendedScreen = ({
 
 
 function AuthDependentContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { user, isAuthenticated, isLoading, logout, isLoggingOut, userData, submitAppeal } = useAuth();
-    const pathname = usePathname();
-    const router = useRouter();
+    const { isAuthenticated, logout, userData } = useAuth();
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
-    const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
-
-    const prevUserDataRef = useRef<DocumentData | null>();
-
-    const { toast } = useToast();
-    
-    useEffect(() => {
-        if (prevUserDataRef.current && (prevUserDataRef.current.status !== 'Yes' && userData?.status === 'Yes')) {
-             setShowAppealSuccessScreen(true);
-        }
-        prevUserDataRef.current = userData;
-    }, [userData]);
-
 
     const isBusiness = userData?.accountType === 'business';
     
@@ -201,69 +186,12 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         onIdle: handleIdle,
         idleTimeout: isBusiness ? 60000 : 180000, 
     });
-    
-    const localeSegment = `/${dictionary.locale}`;
-    const publicPaths = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'].map(p => {
-        if (p === '/') {
-            return `/${dictionary.locale}`;
-        }
-        return `${localeSegment}${p}`;
-    });
-    const isPublicRoute = publicPaths.includes(pathname);
-
-    if (isPublicRoute) {
-        return <>{children}</>;
-    }
-    
-    if (isLoading || isMobile === undefined || (isLoggingOut && !isIdle)) {
-      return (
-        <div className="min-h-screen bg-background">
-            <LoadingOverlay isLoading={true} />
-        </div>
-      );
-    }
-
-    const handleAppeal = async () => {
-        if (!user) return;
-        try {
-            await submitAppeal(user.uid);
-        } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: "Appeal Failed",
-                description: "Could not submit appeal. Please try again later."
-            })
-        }
-    };
-    
-    if (showAppealSuccessScreen) {
-        return <AccountSuspendedScreen
-                    dictionary={dictionary}
-                    onLogout={logout}
-                    onAppeal={handleAppeal}
-                    userData={userData}
-                    onContinue={() => setShowAppealSuccessScreen(false)}
-                    showAppealSuccess={true}
-                />
-    }
-
-    if (userData?.status !== 'Yes') {
-        return <AccountSuspendedScreen 
-                    dictionary={dictionary} 
-                    onLogout={logout}
-                    onAppeal={handleAppeal}
-                    userData={userData}
-                    onContinue={() => {}}
-                    showAppealSuccess={false}
-                />
-    }
-    
-    const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
-    const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
 
     const handleConfirmIdle = () => {
-        setIsIdle(false); // Close dialog
-        router.push(`/${dictionary.locale}/login`);
+        setIsIdle(false);
+        const localeSegment = `/${dictionary.locale}`;
+        const router = useRouter();
+        router.push(`${localeSegment}/login`);
     };
 
     const handleUnlock = () => {
@@ -273,6 +201,10 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     if (isLocked) {
         return <LockScreenDialog onConfirm={handleUnlock} dictionary={dictionary.lockScreen} />;
     }
+
+    const pathname = usePathname();
+    const fullScreenRoutes = ['/pay/confirm', '/pay/scan'];
+    const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
 
     if (isMobile && isFullScreenPage) {
          return (
@@ -310,13 +242,90 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     );
 }
 
+function AppContentWithAuth({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
+    const { user, userData, isLoading, isLoggingOut, logout, submitAppeal } = useAuth();
+    const pathname = usePathname();
+    const isMobile = useIsMobile();
+
+    const [showAppealSuccessScreen, setShowAppealSuccessScreen] = useState(false);
+    const prevUserDataRef = useRef<DocumentData | null>();
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (prevUserDataRef.current && (prevUserDataRef.current.status !== 'Yes' && userData?.status === 'Yes')) {
+             setShowAppealSuccessScreen(true);
+        }
+        prevUserDataRef.current = userData;
+    }, [userData]);
+
+    const handleAppeal = async () => {
+        if (!user) return;
+        try {
+            await submitAppeal(user.uid);
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: "Appeal Failed",
+                description: "Could not submit appeal. Please try again later."
+            })
+        }
+    };
+    
+    const localeSegment = `/${dictionary.locale}`;
+    const publicPaths = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'].map(p => {
+        if (p === '/') return `/${dictionary.locale}`;
+        return `${localeSegment}${p}`;
+    });
+    const isPublicRoute = publicPaths.includes(pathname);
+
+    if (isPublicRoute) {
+        return <>{children}</>;
+    }
+
+    if (isLoading || isMobile === undefined || (isLoggingOut && !pathname.includes('/login'))) {
+        return (
+            <div className="min-h-screen bg-background">
+                <LoadingOverlay isLoading={true} />
+            </div>
+        );
+    }
+
+    if (showAppealSuccessScreen) {
+        return <AccountSuspendedScreen
+                    dictionary={dictionary}
+                    onLogout={logout}
+                    onAppeal={handleAppeal}
+                    userData={userData}
+                    onContinue={() => setShowAppealSuccessScreen(false)}
+                    showAppealSuccess={true}
+                />
+    }
+
+    if (userData?.status !== 'Yes') {
+        return <AccountSuspendedScreen 
+                    dictionary={dictionary} 
+                    onLogout={logout}
+                    onAppeal={handleAppeal}
+                    userData={userData}
+                    onContinue={() => {}} // This path is not used when showAppealSuccess is false
+                    showAppealSuccess={false}
+                />
+    }
+
+    return (
+        <AuthDependentContent dictionary={dictionary}>
+            {children}
+        </AuthDependentContent>
+    );
+}
+
 
 export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     return (
         <AuthProvider>
-            <AuthDependentContent dictionary={dictionary}>
+            <AppContentWithAuth dictionary={dictionary}>
                 {children}
-            </AuthDependentContent>
+            </AppContentWithAuth>
             <Toaster />
         </AuthProvider>
     );
