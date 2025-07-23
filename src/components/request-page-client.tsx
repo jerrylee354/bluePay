@@ -260,6 +260,8 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
             {searchTerm.length > 0 ? renderSearchResults() : renderDefaultContent()}
         </div>
     );
+    
+    const showToggle = !pathname.includes('/orders/create');
 
     return (
         <div className="flex flex-col h-full md:relative md:min-h-[calc(100vh-9rem)]">
@@ -290,28 +292,30 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
             
             <PageContent />
             
-            <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-8">
-                <div className="flex w-full justify-center">
-                    <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
-                         <Button 
-                            asChild
-                            className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname.includes('/pay') && !pathname.includes('/request') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
-                            )}
-                        >
-                            <Link href="/pay">{d.pay}</Link>
-                        </Button>
-                        <Button 
-                            asChild
-                            className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname.includes('/pay/request') || pathname.includes('/orders/create') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
-                            )}
-                        >
-                             <Link href="/pay/request">{d.request}</Link>
-                        </Button>
+            {showToggle && (
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-lg px-4 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-8">
+                    <div className="flex w-full justify-center">
+                        <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
+                             <Button 
+                                asChild
+                                className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
+                                    pathname.includes('/pay') && !pathname.includes('/request') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                )}
+                            >
+                                <Link href="/pay">{d.pay}</Link>
+                            </Button>
+                            <Button 
+                                asChild
+                                className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
+                                    pathname.includes('/pay/request') || pathname.includes('/orders/create') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                )}
+                            >
+                                 <Link href="/pay/request">{d.request}</Link>
+                            </Button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             <Dialog open={isPayDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="p-0 max-w-4xl h-auto sm:max-h-[90vh] flex flex-col" hideCloseButton>
