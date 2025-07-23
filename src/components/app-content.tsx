@@ -56,12 +56,14 @@ const AccountSuspendedScreen = ({
     onAppeal, 
     userData,
     onContinue,
+    showAppealSuccess,
 }: { 
     dictionary: Dictionary['accountSuspended'], 
     onLogout: () => void, 
     onAppeal: () => void, 
     userData: DocumentData | null,
     onContinue: () => void,
+    showAppealSuccess: boolean,
 }) => {
     const [showTemporarySuccess, setShowTemporarySuccess] = useState(false);
 
@@ -84,9 +86,27 @@ const AccountSuspendedScreen = ({
         }
     }
 
-    const { title, description } = getSuspensionDetails();
-    const hasAppealed = userData?.hasAppealed || false;
-
+    if (showAppealSuccess) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+                <Card className="w-full max-w-md text-center shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="mt-4 text-2xl font-bold">{dictionary.appealApprovedTitle}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="flex flex-col items-center">
+                            <AnimatedCheckmark />
+                            <p className="text-muted-foreground">{dictionary.appealApprovedDescription}</p>
+                            <Button className="w-full mt-6" onClick={onContinue}>
+                                {dictionary.continue}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+    
     if (showTemporarySuccess) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -104,6 +124,9 @@ const AccountSuspendedScreen = ({
             </div>
         )
     }
+
+    const { title, description } = getSuspensionDetails();
+    const hasAppealed = userData?.hasAppealed || false;
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -207,34 +230,14 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         }
     };
     
-    if (showAppealSuccessScreen) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
-                <Card className="w-full max-w-md text-center shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="mt-4 text-2xl font-bold">{dictionary.accountSuspended.appealApprovedTitle}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="flex flex-col items-center">
-                            <AnimatedCheckmark />
-                            <p className="text-muted-foreground">{dictionary.accountSuspended.appealApprovedDescription}</p>
-                            <Button className="w-full mt-6" onClick={() => setShowAppealSuccessScreen(false)}>
-                                {dictionary.accountSuspended.continue}
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
-
-    if (userData?.status !== 'Yes') {
+    if (userData?.status !== 'Yes' || showAppealSuccessScreen) {
         return <AccountSuspendedScreen 
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
                     onAppeal={handleAppeal}
                     userData={userData}
                     onContinue={() => setShowAppealSuccessScreen(false)}
+                    showAppealSuccess={showAppealSuccessScreen}
                 />
     }
     
