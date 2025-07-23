@@ -260,7 +260,7 @@ const CreateEditTicketDialog = ({
 
 export default function TicketsPageClient({ dictionary }: { dictionary: Dictionary}) {
     const d = dictionary.tickets;
-    const { ticketTemplates, isLoading } = useAuth();
+    const { user, ticketTemplates, isLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     
@@ -268,10 +268,17 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<TicketTemplate | null>(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [qrValue, setQrValue] = useState('');
 
     const handleShare = (template: TicketTemplate) => {
-        setSelectedTemplate(template);
-        setIsShareOpen(true);
+        if (typeof window !== 'undefined' && user) {
+            const baseUrl = window.location.origin;
+            const lang = dictionary.locale;
+            const url = `${baseUrl}/${lang}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
+            setQrValue(url);
+            setSelectedTemplate(template);
+            setIsShareOpen(true);
+        }
     };
 
     const handleEdit = (template: TicketTemplate) => {
@@ -285,8 +292,6 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
         setIsEditing(false);
         setIsCreateEditOpen(true);
     }
-    
-    const qrValue = selectedTemplate ? `{"type":"ticket_add","templateId":"${selectedTemplate.id}","issuerId":"${selectedTemplate.issuerId}"}` : '';
     
     const copyToClipboard = () => {
         if (!qrValue) return;
@@ -353,3 +358,5 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
         </div>
     );
 }
+
+    
