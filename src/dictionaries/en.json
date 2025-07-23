@@ -226,7 +226,16 @@
     },
     "orders": {
         "title": "Orders",
-        "underConstruction": "Order management feature coming soon!"
+        "underConstruction": "Order management feature coming soon!",
+        "noPendingOrders": "No pending orders",
+        "noPendingOrdersDescription": "New payment requests you create will appear here.",
+        "create": {
+            "title": "Create Order"
+        },
+        "actions": {
+            "showQr": "Show my QR Code",
+            "createOrder": "Create Order"
+        }
     },
     "wallet": {
         "title": "Wallet",

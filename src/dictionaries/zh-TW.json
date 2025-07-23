@@ -226,7 +226,16 @@
     },
     "orders": {
         "title": "訂單",
-        "underConstruction": "訂單管理功能即將推出！"
+        "underConstruction": "訂單管理功能即將推出！",
+        "noPendingOrders": "沒有待處理的訂單",
+        "noPendingOrdersDescription": "您建立的新付款請求將會顯示在這裡。",
+        "create": {
+            "title": "建立訂單"
+        },
+        "actions": {
+            "showQr": "顯示我的 QR Code",
+            "createOrder": "建立訂單"
+        }
     },
     "wallet": {
         "title": "錢包",

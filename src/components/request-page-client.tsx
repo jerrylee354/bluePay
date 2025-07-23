@@ -235,19 +235,22 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                     </DialogContent>
                 </Dialog>
 
-                <Separator />
-
-                <Link href="/pay/group" className="block hover:bg-muted/50 transition-colors rounded-b-xl">
-                    <div className="flex items-center gap-4 p-4">
-                        <div className="p-3 bg-primary/10 rounded-lg">
-                            <Users className="w-6 h-6 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="font-semibold">{d.groupPayment}</p>
-                            <p className="text-sm text-muted-foreground">{d.splitBillWithGroup}</p>
-                        </div>
-                    </div>
-                </Link>
+                {userData?.accountType !== 'business' && (
+                    <>
+                        <Separator />
+                        <Link href="/pay/group" className="block hover:bg-muted/50 transition-colors rounded-b-xl">
+                            <div className="flex items-center gap-4 p-4">
+                                <div className="p-3 bg-primary/10 rounded-lg">
+                                    <Users className="w-6 h-6 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold">{d.groupPayment}</p>
+                                    <p className="text-sm text-muted-foreground">{d.splitBillWithGroup}</p>
+                                </div>
+                            </div>
+                        </Link>
+                    </>
+                )}
             </CardContent>
         </Card>
     );
@@ -261,7 +264,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
     return (
         <div className="flex flex-col h-full md:relative md:min-h-[calc(100vh-9rem)]">
             <header className="mb-6 flex-shrink-0">
-                <h1 className="text-3xl font-bold">{d.title}</h1>
+                <h1 className="text-3xl font-bold">{dictionary.orders.create.title}</h1>
             </header>
 
             <div className="relative mb-6 flex-shrink-0">
@@ -293,7 +296,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                          <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname.endsWith('/pay') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname.includes('/pay') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                             <Link href="/pay">{d.pay}</Link>
@@ -301,7 +304,7 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                         <Button 
                             asChild
                             className={cn("rounded-full h-11 w-32 text-base font-semibold transition-colors duration-300", 
-                                pathname.endsWith('/pay/request') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                                pathname.includes('/pay/request') || pathname.includes('/orders/create') ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-muted/50'
                             )}
                         >
                              <Link href="/pay/request">{d.request}</Link>
