@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -13,30 +14,49 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent } from './ui/card';
 import { Skeleton } from './ui/skeleton';
 
-const TicketCard = ({ ticket, onClick }: { ticket: WalletItem, onClick: () => void }) => (
-    <button onClick={onClick} className="w-full text-left">
-        <div 
-            className="rounded-lg p-4 text-white shadow-md transition-transform hover:scale-105"
-            style={{ 
-                backgroundColor: ticket.style?.backgroundColor || '#4f46e5',
-                color: ticket.style?.textColor || '#ffffff',
-            }}
-        >
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className="text-sm opacity-80">{ticket.issuerName}</p>
-                    <h3 className="text-xl font-bold">{ticket.title}</h3>
+const TicketCard = ({ ticket, onClick }: { ticket: WalletItem, onClick: () => void }) => {
+    
+    const isExpired = ticket.expiresAt && new Date(ticket.expiresAt) < new Date();
+    const cardStyle = {
+        backgroundColor: ticket.style?.backgroundColor || '#4f46e5',
+        color: ticket.style?.textColor || '#ffffff',
+    };
+
+    return (
+        <button onClick={onClick} className="w-full text-left group" disabled={isExpired}>
+            <div 
+                className="rounded-lg p-4 text-white shadow-md transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+                style={cardStyle}
+            >
+                {isExpired && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <p className="font-bold text-lg -rotate-12">EXPIRED</p>
+                    </div>
+                )}
+                <div className="flex-1 group-hover:scale-105 transition-transform duration-300">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-sm opacity-80">{ticket.issuerName}</p>
+                            <h3 className="text-xl font-bold">{ticket.title}</h3>
+                        </div>
+                        <TicketIcon className="w-8 h-8 opacity-50" />
+                    </div>
+                    <p className="text-sm opacity-90 mt-2 line-clamp-2">{ticket.description}</p>
                 </div>
-                <TicketIcon className="w-8 h-8 opacity-50" />
+
+                <div className="mt-4 pt-2 border-t border-white/20 text-xs opacity-80">
+                     {ticket.expiresAt ? `Expires: ${new Date(ticket.expiresAt).toLocaleDateString()}` : 'No Expiration'}
+                </div>
+
             </div>
-        </div>
-    </button>
-);
+        </button>
+    );
+};
 
 const WalletSkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Skeleton className="h-24 rounded-lg" />
-        <Skeleton className="h-24 rounded-lg" />
+        <Skeleton className="h-28 rounded-lg" />
+        <Skeleton className="h-28 rounded-lg" />
     </div>
 )
 
@@ -101,6 +121,7 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                             >
                                 <p className="text-sm opacity-80">{selectedTicket.issuerName}</p>
                                 <h3 className="text-xl font-bold">{selectedTicket.title}</h3>
+                                {selectedTicket.expiresAt && <p className="text-xs opacity-80 mt-2">Expires: {new Date(selectedTicket.expiresAt).toLocaleDateString()}</p>}
                             </div>
                         </div>
                     )}

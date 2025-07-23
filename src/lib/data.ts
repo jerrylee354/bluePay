@@ -21,9 +21,11 @@ export type WalletItem = {
   issuerId: string;
   issuerName: string;
   title: string;
+  description: string;
   addedAt: string;
-  status: 'valid' | 'used';
+  status: 'valid' | 'used' | 'expired';
   usedAt?: string;
+  expiresAt: string | null;
   style?: {
     backgroundColor: string;
     textColor: string;
@@ -37,6 +39,7 @@ export type TicketTemplate = {
     title: string;
     description: string;
     createdAt: string;
+    expiresAt: string | null;
     style: {
         backgroundColor: string;
         textColor: string;

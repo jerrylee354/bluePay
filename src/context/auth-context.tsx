@@ -70,7 +70,7 @@ interface AuthContextType {
   addTicketToWallet: (templateId: string, issuerId: string) => Promise<void>;
   useTicket: (ticketId: string, userId: string) => Promise<void>;
   createTicketTemplate: (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>) => Promise<void>;
-  updateTicketTemplate: (templateId: string, data: Partial<Pick<TicketTemplate, 'title' | 'description' | 'style' | 'issuanceLimit'>>) => Promise<void>;
+  updateTicketTemplate: (templateId: string, data: Partial<Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -539,7 +539,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await addDoc(templatesColRef, templateData);
   }
 
-  const updateTicketTemplate = async (templateId: string, data: Partial<Pick<TicketTemplate, 'title' | 'description' | 'style' | 'issuanceLimit'>>) => {
+  const updateTicketTemplate = async (templateId: string, data: Partial<Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>>) => {
     if (!user) throw new Error("User not authenticated");
     const templateRef = doc(db, "users", user.uid, "ticketTemplates", templateId);
     await updateDoc(templateRef, data);
@@ -561,13 +561,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (templateData.issuanceLimit !== null && templateData.issuanceCount >= templateData.issuanceLimit) {
             throw new Error("This ticket has reached its issuance limit.");
         }
+
+        if (templateData.expiresAt && new Date(templateData.expiresAt) < new Date()) {
+            throw new Error("This ticket has expired.");
+        }
         
         const walletItemData: Omit<WalletItem, 'id'> = {
             templateId: templateId,
             issuerId: templateData.issuerId,
             issuerName: templateData.issuerName,
             title: templateData.title,
+            description: templateData.description,
             style: templateData.style,
+            expiresAt: templateData.expiresAt,
             addedAt: new Date().toISOString(),
             status: 'valid'
         };
@@ -598,6 +604,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (ticketData.status === 'used') {
         throw new Error("This ticket has already been used.");
+    }
+
+    if (ticketData.expiresAt && new Date(ticketData.expiresAt) < new Date()) {
+        throw new Error("This ticket has expired.");
     }
 
     await updateDoc(ticketRef, {

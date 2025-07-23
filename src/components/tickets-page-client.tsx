@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon, X } from 'lucide-react';
 import { Dictionary } from '@/dictionaries';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
@@ -15,8 +15,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose,
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -24,6 +22,9 @@ import { LoadingOverlay } from './ui/loading-overlay';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Label } from './ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar } from './ui/calendar';
+import { format } from 'date-fns';
 
 const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => (
     <div 
@@ -38,7 +39,7 @@ const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTem
             <h3 className="text-xl font-bold truncate">{template.title}</h3>
             <p className="text-sm opacity-90 mt-1 line-clamp-2">{template.description}</p>
         </div>
-        <div className="flex justify-end items-center mt-4 gap-2">
+        <div className="flex justify-between items-center mt-4 gap-2">
             <p className="text-xs opacity-70 flex-1">
                 {template.issuanceCount} / {template.issuanceLimit ?? '∞'} issued
             </p>
@@ -58,6 +59,8 @@ const colorOptions = [
     { name: 'Emerald', bg: '#10b981', text: '#ffffff' },
     { name: 'Amber', bg: '#f59e0b', text: '#1f2937' },
     { name: 'Rose', bg: '#f43f5e', text: '#ffffff' },
+    { name: 'Fuchsia', bg: '#d946ef', text: '#ffffff' },
+    { name: 'Lime', bg: '#84cc16', text: '#1a2e05' },
     { name: 'Slate', bg: '#475569', text: '#ffffff' },
 ];
 
@@ -82,8 +85,12 @@ const CreateEditTicketDialog = ({
     const [description, setDescription] = useState('');
     const [selectedStyle, setSelectedStyle] = useState(colorOptions[0]);
     const [limit, setLimit] = useState('');
+    const [expiresAt, setExpiresAt] = useState<Date | null>(null);
 
     const isEditing = !!existingTemplate;
+    const totalSteps = 4;
+    const dialogTitle = isEditing ? dictionary.editTicket : dictionary.createTicket;
+
 
     useEffect(() => {
         if (isOpen) {
@@ -92,19 +99,20 @@ const CreateEditTicketDialog = ({
                 setDescription(existingTemplate.description);
                 setSelectedStyle(colorOptions.find(c => c.bg === existingTemplate.style.backgroundColor) || colorOptions[0]);
                 setLimit(existingTemplate.issuanceLimit?.toString() ?? '');
+                setExpiresAt(existingTemplate.expiresAt ? new Date(existingTemplate.expiresAt) : null);
             } else {
-                // Reset form for creation
                 setStep(1);
                 setTitle('');
                 setDescription('');
                 setSelectedStyle(colorOptions[0]);
                 setLimit('');
+                setExpiresAt(null);
             }
         }
     }, [isOpen, isEditing, existingTemplate]);
 
-    const handleNext = () => setStep(s => s + 1);
-    const handleBack = () => setStep(s => s - 1);
+    const handleNext = () => setStep(s => Math.min(s + 1, totalSteps));
+    const handleBack = () => setStep(s => Math.max(s - 1, 1));
 
     const handleSubmit = async () => {
         if (!title) {
@@ -127,6 +135,7 @@ const CreateEditTicketDialog = ({
                     textColor: selectedStyle.text
                 },
                 issuanceLimit,
+                expiresAt: expiresAt ? expiresAt.toISOString() : null
             };
 
             if (isEditing) {
@@ -149,67 +158,96 @@ const CreateEditTicketDialog = ({
         switch(step) {
             case 1:
                 return (
-                    <div className="space-y-4">
-                        <DialogTitle>{isEditing ? dictionary.editTicket : dictionary.createTicket} - {dictionary.step1}</DialogTitle>
-                        <div>
-                            <Label htmlFor="ticketName">{dictionary.ticketName}</Label>
-                            <Input id="ticketName" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={dictionary.ticketNamePlaceholder} />
-                        </div>
-                        <div>
-                             <Label htmlFor="ticketDesc">{dictionary.ticketDescription}</Label>
-                            <Textarea id="ticketDesc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={dictionary.ticketDescriptionPlaceholder} />
-                        </div>
+                    <div className="space-y-4 w-full">
+                        <Label htmlFor="ticketName">{dictionary.ticketName}</Label>
+                        <Input id="ticketName" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={dictionary.ticketNamePlaceholder} className="text-base h-12" />
+                        <Label htmlFor="ticketDesc">{dictionary.ticketDescription}</Label>
+                        <Textarea id="ticketDesc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={dictionary.ticketDescriptionPlaceholder} className="text-base min-h-[100px]" />
                     </div>
                 );
             case 2:
                 return (
-                    <div>
-                        <DialogTitle>{isEditing ? dictionary.editTicket : dictionary.createTicket} - {dictionary.step2}</DialogTitle>
+                    <div className="w-full">
                         <Label>{dictionary.style}</Label>
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        <div className="grid grid-cols-4 gap-4 mt-2">
                             {colorOptions.map(color => (
                                 <button 
                                     key={color.name}
-                                    className={`w-10 h-10 rounded-full border-2 transition-all ${selectedStyle.bg === color.bg ? 'border-primary scale-110' : 'border-transparent'}`}
-                                    style={{ backgroundColor: color.bg }}
+                                    className="flex flex-col items-center gap-2 group"
                                     onClick={() => setSelectedStyle(color)}
-                                />
+                                >
+                                    <div
+                                      className={cn("w-16 h-16 rounded-full border-4 transition-all", selectedStyle.bg === color.bg ? 'border-primary scale-110' : 'border-transparent group-hover:border-muted')}
+                                      style={{ backgroundColor: color.bg }}
+                                    />
+                                    <span className="text-sm font-medium">{color.name}</span>
+                                </button>
                             ))}
                         </div>
                     </div>
                 );
             case 3:
                 return (
-                    <div>
-                        <DialogTitle>{isEditing ? dictionary.editTicket : dictionary.createTicket} - {dictionary.step3}</DialogTitle>
+                     <div className="w-full space-y-4">
                         <Label htmlFor="issuanceLimit">{dictionary.issuanceLimit}</Label>
-                        <Input id="issuanceLimit" value={limit} onChange={(e) => setLimit(e.target.value.replace(/[^0-9]/g, ''))} placeholder={dictionary.issuanceLimitPlaceholder} type="number" min="0" />
+                        <Input id="issuanceLimit" value={limit} onChange={(e) => setLimit(e.target.value.replace(/[^0-9]/g, ''))} placeholder={dictionary.issuanceLimitPlaceholder} type="number" min="0" className="text-base h-12" />
+                    </div>
+                );
+            case 4:
+                return (
+                    <div className="w-full space-y-4">
+                        <Label>{dictionary.expirationDate}</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full justify-start text-left font-normal h-12 text-base",
+                                        !expiresAt && "text-muted-foreground"
+                                    )}
+                                >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {expiresAt ? format(expiresAt, "PPP") : <span>{dictionary.expirationDatePlaceholder}</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                mode="single"
+                                selected={expiresAt ?? undefined}
+                                onSelect={(date) => setExpiresAt(date ?? null)}
+                                initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 );
             default: return null;
         }
     };
     
-    const totalSteps = 3;
-
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent>
+            <DialogContent className="max-w-xl flex flex-col h-full sm:h-auto">
                 <LoadingOverlay isLoading={isProcessing} />
-                <DialogHeader className="pr-10">
+                <DialogHeader>
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-2xl font-bold">{dialogTitle}</h2>
+                        <span className="text-sm text-muted-foreground">{dictionary.step} {step}/{totalSteps}</span>
+                    </div>
                     <DialogDescription>{dictionary.createTicketDescription}</DialogDescription>
                 </DialogHeader>
-                <div className="min-h-[200px] flex items-center">
+
+                <div className="flex-1 flex items-center justify-center py-8">
                     {renderStepContent()}
                 </div>
 
-                <div className="flex justify-between items-center pt-4">
+                <div className="flex justify-between items-center pt-4 border-t">
                     {step > 1 ? (
                         <Button variant="ghost" onClick={handleBack}><ChevronLeft className="mr-2 h-4 w-4"/> {dictionary.back}</Button>
                     ) : <div></div>}
 
                     {step < totalSteps ? (
-                        <Button onClick={handleNext}>{dictionary.next} <ChevronRight className="ml-2 h-4 w-4"/></Button>
+                        <Button onClick={handleNext} disabled={!title}>{dictionary.next} <ChevronRight className="ml-2 h-4 w-4"/></Button>
                     ) : (
                         <Button onClick={handleSubmit} disabled={isProcessing || !title}>{isEditing ? dictionary.saveChanges : dictionary.publish}</Button>
                     )}
@@ -226,34 +264,28 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const router = useRouter();
     const { toast } = useToast();
     
-    const [isMainDialogOpen, setIsMainDialogOpen] = useState(false);
-    const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'share' | null>(null);
+    const [isCreateEditOpen, setIsCreateEditOpen] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<TicketTemplate | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     const handleShare = (template: TicketTemplate) => {
         setSelectedTemplate(template);
-        setDialogMode('share');
-        setIsMainDialogOpen(true);
+        setIsShareOpen(true);
     };
 
     const handleEdit = (template: TicketTemplate) => {
         setSelectedTemplate(template);
-        setDialogMode('edit');
-        setIsMainDialogOpen(true);
+        setIsEditing(true);
+        setIsCreateEditOpen(true);
     };
     
     const handleCreate = () => {
         setSelectedTemplate(null);
-        setDialogMode('create');
-        setIsMainDialogOpen(true);
+        setIsEditing(false);
+        setIsCreateEditOpen(true);
     }
     
-    const handleDialogClose = () => {
-        setIsMainDialogOpen(false);
-        setDialogMode(null);
-        setSelectedTemplate(null);
-    }
-
     const qrValue = selectedTemplate ? `{"type":"ticket_add","templateId":"${selectedTemplate.id}","issuerId":"${selectedTemplate.issuerId}"}` : '';
     
     const copyToClipboard = () => {
@@ -299,13 +331,13 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
             )}
             
             <CreateEditTicketDialog 
-                isOpen={dialogMode === 'create' || dialogMode === 'edit'}
-                setIsOpen={handleDialogClose}
+                isOpen={isCreateEditOpen}
+                setIsOpen={setIsCreateEditOpen}
                 dictionary={d}
-                existingTemplate={dialogMode === 'edit' ? selectedTemplate : null}
+                existingTemplate={isEditing ? selectedTemplate : null}
             />
 
-            <Dialog open={dialogMode === 'share'} onOpenChange={handleDialogClose}>
+            <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle className="text-center">{d.shareTicket}</DialogTitle>

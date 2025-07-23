@@ -1,5 +1,4 @@
 
-
 {
     "locale": "zh-TW",
     "landing": {
@@ -259,6 +258,7 @@
     },
     "tickets": {
         "title": "票卡",
+        "step": "步驟",
         "noTemplatesTitle": "尚未建立任何票卡",
         "noTemplatesDescription": "建立您的第一張票卡以開始使用。",
         "createFirstTicket": "建立您的第一張票卡",
@@ -281,11 +281,10 @@
         "ticketUsedSuccess": "已成功核銷票卡！",
         "ticketUsedError": "核銷票卡失敗",
         "createTicketDescription": "為您的顧客建立新的票卡範本。",
-        "step1": "資訊",
-        "step2": "樣式",
-        "step3": "限制",
         "issuanceLimit": "發行數量限制",
         "issuanceLimitPlaceholder": "留空則為無限制",
+        "expirationDate": "有效期限",
+        "expirationDatePlaceholder": "設定有效期限（選填）",
         "next": "下一步",
         "back": "返回",
         "shareTicket": "分享票卡",

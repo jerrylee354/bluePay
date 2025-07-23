@@ -1,5 +1,4 @@
 
-
 {
     "locale": "en",
     "landing": {
@@ -259,6 +258,7 @@
     },
     "tickets": {
         "title": "Tickets",
+        "step": "Step",
         "noTemplatesTitle": "No tickets created yet",
         "noTemplatesDescription": "Create your first ticket to get started.",
         "createFirstTicket": "Create Your First Ticket",
@@ -281,11 +281,10 @@
         "ticketUsedSuccess": "Ticket Redeemed!",
         "ticketUsedError": "Failed to Redeem Ticket",
         "createTicketDescription": "Create a new ticket template for your customers.",
-        "step1": "Info",
-        "step2": "Style",
-        "step3": "Limit",
         "issuanceLimit": "Issuance Limit",
         "issuanceLimitPlaceholder": "Leave blank for unlimited",
+        "expirationDate": "Expiration Date",
+        "expirationDatePlaceholder": "Set an expiration date (optional)",
         "next": "Next",
         "back": "Back",
         "shareTicket": "Share Ticket",
