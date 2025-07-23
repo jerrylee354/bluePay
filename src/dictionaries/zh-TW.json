@@ -156,7 +156,7 @@
         "searchPlaceholder": "依姓名、@使用者名稱或電子郵件搜尋",
         "noUsersFound": "找不到符合「{searchTerm}」的使用者",
         "pay": "付款",
-        "request": "要求",
+        "request": "要求付款",
         "scanQrCode": {
             "title": "掃描 QR Code",
             "description": "掃描 QR Code 來付款",
@@ -258,3 +258,5 @@
         "confirm": "確定"
     }
 }
+
+    
