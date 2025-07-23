@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import BottomNav from './bottom-nav';
@@ -97,7 +97,15 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
+    const [localHasAppealed, setLocalHasAppealed] = useState(userData?.hasAppealed || false);
+
     const { toast } = useToast();
+
+    useEffect(() => {
+        if (userData?.hasAppealed) {
+            setLocalHasAppealed(true);
+        }
+    }, [userData]);
 
     const isBusiness = userData?.accountType === 'business';
     
@@ -114,12 +122,11 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
     
     useIdleTimeout({
         onIdle: handleIdle,
-        idleTimeout: isBusiness ? 60000 : 180000, // 1 minute for business, 3 minutes for personal
+        idleTimeout: isBusiness ? 60000 : 180000, 
     });
     
     const localeSegment = `/${dictionary.locale}`;
     const publicPaths = ['/', '/terms', '/privacy', '/login', '/signup', '/welcome'].map(p => {
-        // The root path in a multi-lang setup is just the locale itself
         if (p === '/') {
             return `/${dictionary.locale}`;
         }
@@ -143,12 +150,12 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         if (!user) return;
         try {
             await submitAppeal(user.uid);
+            setLocalHasAppealed(true);
             toast({
                 title: dictionary.accountSuspended.appealSuccessTitle,
                 description: dictionary.accountSuspended.appealSuccessDescription,
             });
         } catch (error) {
-            // Handle error, maybe show a toast
             toast({
                 variant: 'destructive',
                 title: "Appeal Failed",
@@ -162,7 +169,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
                     onAppeal={handleAppeal}
-                    hasAppealed={userData?.hasAppealed === true}
+                    hasAppealed={localHasAppealed}
                 />
     }
     
@@ -200,7 +207,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
                         {children}
                     </main>
                 </div>
-                 <BottomNav dictionary={dictionary.nav} /> {/* Moved BottomNav out of the flex-col container */}
+                 <BottomNav dictionary={dictionary.nav} />
             </div>
         );
     }
