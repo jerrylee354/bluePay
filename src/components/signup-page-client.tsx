@@ -342,10 +342,21 @@ export default function SignupPageClient({ dictionary }: { dictionary: Dictionar
             <LoadingOverlay isLoading={isLoading} />
              <div className="w-full max-w-md">
                 <Card className="w-full">
-                    <CardHeader>
-
+                    <CardHeader className="p-6">
+                         <Link href="/" className="flex items-center justify-center gap-2 mb-6">
+                            <Wallet className="w-8 h-8 text-primary" />
+                            <span className="text-3xl font-bold text-foreground">BluePay</span>
+                        </Link>
+                        {step > 1 && (
+                            <>
+                                <Progress value={progress} className="w-full" />
+                                <p className="text-center text-sm text-muted-foreground pt-2">
+                                    {d.joinTitle} - {d.step} {step - 1} / {totalSteps}
+                                </p>
+                            </>
+                        )}
                     </CardHeader>
-                    <CardContent className="p-6">
+                    <CardContent className="p-6 pt-0">
                          <form onSubmit={(e) => { e.preventDefault(); buttonAction(); }} className="space-y-6">
                             <div>
                                {renderStepContent()}

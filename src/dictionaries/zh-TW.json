@@ -73,6 +73,7 @@
     },
     "signup": {
         "joinTitle": "加入 BluePay",
+        "step": "步驟",
         "chooseAccountType": "選擇您的帳戶類型以開始。",
         "personalAccount": "個人帳戶",
         "personalDescription": "適用於個人收付款。",
@@ -368,7 +369,9 @@
     },
     "accountSuspended": {
         "title": "帳號已停用",
-        "description": "您的帳號已經偵測到有異常行為，因此已被停用。",
+        "description": "您的帳號已被停用。",
+        "description_large_transaction": "您的帳號偵測到有大金額異常行為，因此已被停用。",
+        "description_fraud": "您的帳號因涉嫌詐騙，已被停用。",
         "logout": "登出",
         "appeal": "申訴",
         "appealSuccessTitle": "申訴已提交",

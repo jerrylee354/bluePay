@@ -73,6 +73,7 @@
     },
     "signup": {
         "joinTitle": "Join BluePay",
+        "step": "Step",
         "chooseAccountType": "Choose your account type to get started.",
         "personalAccount": "Personal",
         "personalDescription": "For individuals to send & receive money.",
@@ -368,7 +369,9 @@
     },
     "accountSuspended": {
         "title": "Account Suspended",
-        "description": "Your account has been disabled due to detection of unusual activity.",
+        "description": "Your account has been suspended.",
+        "description_large_transaction": "Your account has been suspended due to detection of unusual large-amount transactions.",
+        "description_fraud": "Your account has been suspended on suspicion of fraudulent activity.",
         "logout": "Log Out",
         "appeal": "Appeal",
         "appealSuccessTitle": "Appeal Submitted",
