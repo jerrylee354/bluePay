@@ -41,7 +41,7 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('firebaseIdToken');
   const localeFromPath = pathname.split('/')[1];
 
-  const authenticatedRoutes = ['/home', '/activity', '/pay', '/wallet', '/settings', '/pay/confirm', '/pay/request', '/pay/scan'];
+  const authenticatedRoutes = ['/home', '/activity', '/pay', '/wallet', '/settings', '/pay/confirm', '/pay/request', '/pay/scan', '/orders', '/dashboard', '/tickets', '/tickets/scan', '/wallet/scan'];
   const authRoutes = ['/login', '/signup'];
 
   const isProtectedRoute = authenticatedRoutes.some(route => pathname.startsWith(`/${localeFromPath}${route}`));
@@ -49,8 +49,8 @@ export function middleware(request: NextRequest) {
   const isRootPage = pathname === `/${localeFromPath}` || pathname === `/${localeFromPath}/`;
 
   if (token) {
-    // If logged in, redirect from auth pages or root to home
-    if (isAuthRoute || isRootPage) {
+    // If logged in, redirect from auth pages or root to home, only if there are no search params
+    if ((isAuthRoute || isRootPage) && !request.nextUrl.search) {
       return NextResponse.redirect(new URL(`/${localeFromPath}/home`, request.url));
     }
   } else {
