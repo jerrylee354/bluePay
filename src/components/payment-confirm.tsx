@@ -114,8 +114,10 @@ export default function PaymentConfirm({
         const total = orderItems.reduce((sum, item) => sum + parseFloat(item.price || '0'), 0);
         if (total > 0) {
             setAmount(total.toFixed(2));
+        } else if (isBusinessRequest) {
+            setAmount('0');
         }
-    }, [orderItems]);
+    }, [orderItems, isBusinessRequest]);
 
     useEffect(() => {
         if (!userId) {
@@ -433,13 +435,15 @@ export default function PaymentConfirm({
                         </div>
                      )}
                 </div>
-                <div className="p-4 border-t">
-                     <input type="file" accept="image/*" ref={imageInputRef} onChange={handleImageChange} className="hidden" />
-                     <Button variant="outline" onClick={() => imageInputRef.current?.click()}>
-                        <ImageIcon className="mr-2 h-5 w-5" />
-                        {d_confirm.uploadImage}
-                    </Button>
-                </div>
+                {!isBusinessRequest &&
+                    <div className="p-4 border-t">
+                         <input type="file" accept="image/*" ref={imageInputRef} onChange={handleImageChange} className="hidden" />
+                         <Button variant="outline" onClick={() => imageInputRef.current?.click()}>
+                            <ImageIcon className="mr-2 h-5 w-5" />
+                            {d_confirm.uploadImage}
+                        </Button>
+                    </div>
+                }
             </div>
         );
     }
@@ -511,12 +515,11 @@ export default function PaymentConfirm({
                 </div>
             </div>
           </div>
-          <div className={cn("flex-shrink-0", isMobile ? "block" : "w-80", isBusinessRequest && "opacity-50 pointer-events-none")}>
-              <Keypad onKeyClick={handleKeypadClick} onDelete={handleDelete} />
-          </div>
+          {!isBusinessRequest &&
+            <div className={cn("flex-shrink-0", isMobile ? "block" : "w-80")}>
+                <Keypad onKeyClick={handleKeypadClick} onDelete={handleDelete} />
+            </div>
+          }
       </div>
     );
 }
-
-
-    
