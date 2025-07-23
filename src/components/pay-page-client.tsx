@@ -164,6 +164,28 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
         return null;
     }
 
+    const PageContent = () => (
+         <>
+             {searchTerm.length > 0 ? renderSearchResults() : (
+                <Card>
+                    <CardContent className="p-0">
+                        <Link href="/pay/scan" className="block hover:bg-muted/50 transition-colors rounded-t-xl">
+                            <div className="flex items-center gap-4 p-4">
+                                <div className="p-3 bg-primary/10 rounded-lg">
+                                    <QrCode className="w-6 h-6 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-semibold">{d.scanQrCode.title}</p>
+                                    <p className="text-sm text-muted-foreground">{d.scanQrCode.description}</p>
+                                </div>
+                            </div>
+                        </Link>
+                    </CardContent>
+                </Card>
+             )}
+        </>
+    );
+
     return (
         <div className="flex flex-col h-full md:relative md:min-h-[calc(100vh-9rem)]">
             <header className="mb-6 flex-shrink-0">
@@ -191,27 +213,11 @@ export default function PayPageClient({ dictionary }: { dictionary: Dictionary }
                 )}
             </div>
             
-            <div className="flex-grow overflow-y-auto pb-4 md:pb-24">
-                 {searchTerm.length > 0 ? renderSearchResults() : (
-                    <Card>
-                        <CardContent className="p-0">
-                            <Link href="/pay/scan" className="block hover:bg-muted/50 transition-colors rounded-t-xl">
-                                <div className="flex items-center gap-4 p-4">
-                                    <div className="p-3 bg-primary/10 rounded-lg">
-                                        <QrCode className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold">{d.scanQrCode.title}</p>
-                                        <p className="text-sm text-muted-foreground">{d.scanQrCode.description}</p>
-                                    </div>
-                                </div>
-                            </Link>
-                        </CardContent>
-                    </Card>
-                 )}
+            <div className="flex-grow overflow-y-auto pb-4 md:pb-0">
+                <PageContent />
             </div>
             
-            <div className="flex-shrink-0 mt-auto pt-4 md:absolute md:bottom-8 md:left-1/2 md:-translate-x-1/2">
+            <div className="flex-shrink-0 mt-auto pt-4 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-8">
                 <div className="flex w-full justify-center">
                     <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
                         <Button 

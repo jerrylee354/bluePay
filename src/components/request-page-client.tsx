@@ -249,6 +249,12 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
         </Card>
     );
 
+    const PageContent = () => (
+        <>
+            {searchTerm.length > 0 ? renderSearchResults() : renderDefaultContent()}
+        </>
+    );
+
     return (
         <div className="flex flex-col h-full md:relative md:min-h-[calc(100vh-9rem)]">
             <header className="mb-6 flex-shrink-0">
@@ -276,11 +282,11 @@ export default function RequestPageClient({ dictionary }: { dictionary: Dictiona
                 )}
             </div>
             
-            <div className="flex-grow overflow-y-auto pb-4 md:pb-24">
-                 {searchTerm.length > 0 ? renderSearchResults() : renderDefaultContent()}
+            <div className="flex-grow overflow-y-auto pb-4 md:pb-0">
+                 <PageContent />
             </div>
             
-            <div className="flex-shrink-0 mt-auto pt-4 md:absolute md:bottom-8 md:left-1/2 md:-translate-x-1/2">
+            <div className="flex-shrink-0 mt-auto pt-4 md:absolute md:bottom-0 md:left-1/2 md:-translate-x-1/2 md:pb-8">
                 <div className="flex w-full justify-center">
                     <div className="inline-flex items-center bg-secondary p-1 rounded-full shadow-md">
                          <Button 
