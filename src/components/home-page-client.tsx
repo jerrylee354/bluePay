@@ -1,7 +1,7 @@
 
 "use client";
 
-import { ArrowUpRight, ArrowDownLeft, LayoutDashboard } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { Dictionary } from "@/dictionaries";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import Dashboard from "./dashboard";
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -76,17 +77,6 @@ const RecentActivity = ({ transactions, userData, dictionary }: { transactions: 
       </div>
 );
 
-const BusinessDashboardPlaceholder = ({ dictionary }: { dictionary: Dictionary['home']}) => (
-    <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">{dictionary.dashboard}</h2>
-        </div>
-        <div className="flex flex-col items-center justify-center space-y-4 text-center p-8 bg-secondary rounded-xl min-h-[300px]">
-            <LayoutDashboard className="w-16 h-16 text-muted-foreground" />
-            <p className="text-muted-foreground">{dictionary.businessDashboardComingSoon}</p>
-        </div>
-    </div>
-);
 
 export default function HomePageClient({ dictionary }: { dictionary: Dictionary }) {
   const { user, userData, transactions, isLoading } = useAuth();
@@ -126,28 +116,29 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
           </Link>
         )}
       </header>
-
-      <Card className="w-full shadow-lg bg-primary text-primary-foreground">
-        <CardHeader>
-          <CardTitle className="text-sm font-normal text-primary-foreground/80">
-            {d.totalBalance}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {userData ? (
-            <p className="text-4xl font-bold tracking-tight">
-              {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
-            </p>
-          ) : (
-             <Skeleton className="h-10 w-48" />
-          )}
-        </CardContent>
-      </Card>
-      
+        
       {isBusiness ? (
-        <BusinessDashboardPlaceholder dictionary={d} />
+        <Dashboard transactions={transactions} dictionary={dictionary} timeframe="1hour" />
       ) : (
-        <RecentActivity transactions={recentTransactions} userData={userData} dictionary={d} />
+        <>
+            <Card className="w-full shadow-lg bg-primary text-primary-foreground">
+                <CardHeader>
+                  <CardTitle className="text-sm font-normal text-primary-foreground/80">
+                    {d.totalBalance}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {userData ? (
+                    <p className="text-4xl font-bold tracking-tight">
+                      {formatCurrency(userData.balance || 0, userData.currency || 'USD')}
+                    </p>
+                  ) : (
+                     <Skeleton className="h-10 w-48" />
+                  )}
+                </CardContent>
+            </Card>
+            <RecentActivity transactions={recentTransactions} userData={userData} dictionary={d} />
+        </>
       )}
     </div>
   );

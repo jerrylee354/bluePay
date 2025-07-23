@@ -116,7 +116,8 @@
         "pay": "支付",
         "wallet": "錢包",
         "settings": "設定",
-        "orders": "訂單"
+        "orders": "訂單",
+        "dashboard": "儀表板"
     },
     "home": {
         "welcome": "歡迎回來，",
@@ -354,5 +355,15 @@
         "welcomeToBluePay": "歡迎來到 BluePay。",
         "setupFailed": "設定失敗",
         "genericError": "發生錯誤，請再試一次。"
+    },
+    "dashboard": {
+        "title": "儀表板",
+        "allTime": "所有時間",
+        "lastHour": "最近一小時",
+        "totalRevenue": "總收入",
+        "totalSales": "總銷售量",
+        "avgOrderValue": "平均訂單金額",
+        "cancellationRate": "取消率",
+        "revenueChartTitle": "收入"
     }
 }

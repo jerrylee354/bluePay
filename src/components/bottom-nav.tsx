@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, History, CircleDollarSign, Wallet, Package } from "lucide-react";
+import { Home, History, CircleDollarSign, Wallet, Package, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dictionary } from "@/dictionaries";
 import { useAuth } from "@/context/auth-context";
@@ -23,11 +23,13 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
 
   const businessNavItems = [
     { href: "/home", label: dictionary.home, icon: Home },
+    { href: "/dashboard", label: dictionary.dashboard, icon: LayoutDashboard },
     { href: "/activity", label: dictionary.activity, icon: History },
     { href: "/orders", label: dictionary.orders, icon: Package },
   ];
   
   const navItems = isBusiness ? businessNavItems : personalNavItems;
+  const navGridClass = isBusiness ? "grid-cols-4" : "grid-cols-4";
 
   if (pathname.includes('/settings')) {
     return null;
@@ -35,7 +37,7 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
 
   return (
     <div className="fixed bottom-0 left-0 w-full border-t bg-background/95 backdrop-blur-sm z-50 h-24 pt-2 pb-safe-bottom">
-      <nav className="flex justify-around items-start h-full max-w-lg mx-auto">
+      <nav className={`grid ${navGridClass} justify-around items-start h-full max-w-lg mx-auto`}>
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           
@@ -44,7 +46,7 @@ export default function BottomNav({ dictionary }: { dictionary: Dictionary['nav'
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 rounded-md p-2 text-sm font-medium transition-colors w-1/4 h-full",
+                "flex flex-col items-center justify-center gap-1 rounded-md p-2 text-sm font-medium transition-colors h-full",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-primary/80"
