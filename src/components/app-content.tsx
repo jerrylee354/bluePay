@@ -230,7 +230,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
         }
     };
     
-    if ((userData?.status !== 'Yes' && !userData?.status.startsWith('No')) || (userData?.status.startsWith('No')) || showAppealSuccessScreen) {
+    if (userData?.status !== 'Yes') {
         return <AccountSuspendedScreen 
                     dictionary={dictionary.accountSuspended} 
                     onLogout={logout}
