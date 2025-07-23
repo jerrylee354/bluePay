@@ -10,6 +10,7 @@ interface VerifiedAvatarProps {
     user: DocumentData | null;
     className?: string;
     fallbackClassName?: string;
+    showBadge?: boolean;
 }
 
 const getInitials = (user: DocumentData | null) => {
@@ -19,13 +20,15 @@ const getInitials = (user: DocumentData | null) => {
     return "?";
 }
 
-export default function VerifiedAvatar({ user, className, fallbackClassName }: VerifiedAvatarProps) {
+export default function VerifiedAvatar({ user, className, fallbackClassName, showBadge = true }: VerifiedAvatarProps) {
     if (!user) return null;
 
     const isVerified = user.verify === 'Yes';
     const isBusiness = user.accountType === 'business';
 
     const renderBadge = () => {
+        if (!showBadge) return null;
+
         if (isBusiness) {
             return (
                  <div className={cn(

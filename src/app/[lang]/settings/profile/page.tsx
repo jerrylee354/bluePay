@@ -130,7 +130,7 @@ export default function ProfilePage({ setPage, dictionary }: { setPage?: (page: 
              <div className="p-4 md:p-0">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
                      <div className="relative group">
-                        <VerifiedAvatar user={userData} className="h-28 w-28 md:h-32 md:w-32 border-4 border-background shadow-md" fallbackClassName="text-4xl" />
+                        <VerifiedAvatar user={userData} className="h-28 w-28 md:h-32 md:w-32 border-4 border-background shadow-md" fallbackClassName="text-4xl" showBadge={false} />
                         <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} className="hidden" accept="image/*"/>
                         <button 
                             className="absolute bottom-1 right-1 bg-muted text-muted-foreground p-2 rounded-full border-2 border-background transition-all group-hover:bg-primary group-hover:text-primary-foreground" 
