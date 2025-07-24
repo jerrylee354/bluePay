@@ -99,7 +99,6 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
             <style jsx>{`
                 .dark-mode-reveal-bg {
                     animation: reveal-dark 8s ease-out forwards;
-                    backdrop-filter: blur(8px);
                 }
                 @keyframes reveal-dark {
                     from {
@@ -112,9 +111,9 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
             `}</style>
             <DialogContent className="overflow-hidden p-0" hideCloseButton>
                  <div className="relative p-6">
-                    {isAnimating && <div className="dark-mode-reveal-bg absolute inset-0 -z-10" />}
-                    <div className="relative z-10 text-center">
-                         <div className="p-6">
+                    {isAnimating && <div className="dark-mode-reveal-bg absolute inset-0 z-10 bg-slate-900/80 backdrop-blur-sm" />}
+                    <div className="relative z-20 text-center">
+                        <div className="p-6">
                             <Wallet className={cn("w-20 h-20 mx-auto text-primary transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")} />
                         </div>
                         <DialogHeader>
