@@ -165,8 +165,9 @@ export default function AddTicketPageClient({ dictionary, linkId }: AddTicketPag
                              <p className="text-muted-foreground">
                                 <span className="font-semibold">{ticketTemplate.issuerName}</span> {d_wallet.wantsToAdd}
                              </p>
-
-                            <TicketCardPreview template={ticketTemplate} />
+                            <div className="flex justify-center">
+                                <TicketCardPreview template={ticketTemplate} />
+                            </div>
                             
                              <div className="w-full grid grid-cols-2 gap-4">
                                 <Button variant="outline" onClick={handleClose} disabled={isProcessing}>

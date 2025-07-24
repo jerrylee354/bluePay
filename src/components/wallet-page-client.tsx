@@ -41,16 +41,16 @@ const TicketCard = ({ ticket, issuer, onClick }: { ticket: WalletItem, issuer: D
                     </div>
                 )}
                 <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="text-sm opacity-80">{ticket.issuerName}</p>
-                            <h3 className="text-xl font-bold">{ticket.title}</h3>
-                        </div>
-                        {issuer ? (
+                    <div className="flex items-start gap-4">
+                         {issuer ? (
                              <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
                         ) : (
                              <TicketIcon className="w-8 h-8 opacity-50" />
                         )}
+                        <div>
+                            <p className="text-sm opacity-80">{ticket.issuerName}</p>
+                            <h3 className="text-xl font-bold">{ticket.title}</h3>
+                        </div>
                     </div>
                     <p className="text-sm opacity-90 mt-2 line-clamp-2">{ticket.description}</p>
                 </div>
@@ -160,25 +160,20 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                         }}
                     >
                          <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-sm opacity-80">{ticket.issuerName}</p>
-                                    <h3 className="text-xl font-bold">{ticket.title}</h3>
-                                </div>
-                                {issuer ? (
+                            <div className="flex items-start gap-4">
+                               {issuer ? (
                                      <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
                                 ) : (
                                      <TicketIcon className="w-8 h-8 opacity-50" />
                                 )}
+                                <div>
+                                    <p className="text-sm opacity-80">{ticket.issuerName}</p>
+                                    <h3 className="text-xl font-bold">{ticket.title}</h3>
+                                </div>
                             </div>
                         </div>
                     </div>
                 ))}
-                {count > 1 && (
-                    <div className="absolute -top-2 -right-2 z-20">
-                         <VerifiedAvatar user={null} count={count} />
-                    </div>
-                )}
             </div>
         )
     }
