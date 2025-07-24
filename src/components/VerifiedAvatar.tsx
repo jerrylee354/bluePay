@@ -58,7 +58,7 @@ export default function VerifiedAvatar({ user, className, fallbackClassName, sho
         
         if (isVerified) {
              return (
-                <div className={cn("absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center", animationClass)}>
+                <div className={cn("absolute bottom-0 right-0 h-5 w-5 bg-transparent rounded-full flex items-center justify-center", animationClass)}>
                     <BadgeCheck className="h-5 w-5 text-primary" />
                 </div>
             )

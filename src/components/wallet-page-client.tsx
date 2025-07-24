@@ -9,12 +9,14 @@ import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
 import { WalletItem } from '@/lib/data';
 import QRCode from 'qrcode.react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import VerifiedAvatar from './VerifiedAvatar';
+import { DocumentData } from 'firebase/firestore';
 
-const TicketCard = ({ ticket, onClick }: { ticket: WalletItem, onClick: () => void }) => {
+
+const TicketCard = ({ ticket, issuer, onClick }: { ticket: WalletItem, issuer: DocumentData | null, onClick: () => void }) => {
     
     const isExpired = ticket.expiresAt && new Date(ticket.expiresAt) < new Date();
     const cardStyle = {
@@ -44,7 +46,11 @@ const TicketCard = ({ ticket, onClick }: { ticket: WalletItem, onClick: () => vo
                             <p className="text-sm opacity-80">{ticket.issuerName}</p>
                             <h3 className="text-xl font-bold">{ticket.title}</h3>
                         </div>
-                        <TicketIcon className="w-8 h-8 opacity-50" />
+                        {issuer ? (
+                             <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
+                        ) : (
+                             <TicketIcon className="w-8 h-8 opacity-50" />
+                        )}
                     </div>
                     <p className="text-sm opacity-90 mt-2 line-clamp-2">{ticket.description}</p>
                 </div>
@@ -57,6 +63,7 @@ const TicketCard = ({ ticket, onClick }: { ticket: WalletItem, onClick: () => vo
     );
 };
 
+
 const WalletSkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
@@ -65,13 +72,38 @@ const WalletSkeleton = () => (
 
 export default function WalletPageClient({ dictionary }: { dictionary: Dictionary}) {
     const d = dictionary.wallet;
-    const { user, walletItems, isLoading } = useAuth();
+    const { user, walletItems, isLoading, getUserById } = useAuth();
     const router = useRouter();
     const [selectedTicket, setSelectedTicket] = useState<WalletItem | null>(null);
     const [qrValue, setQrValue] = useState('');
     const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
     const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
     const [selectionGroup, setSelectionGroup] = useState<WalletItem[]>([]);
+    const [issuers, setIssuers] = useState<Record<string, DocumentData>>({});
+
+
+    useEffect(() => {
+        const fetchIssuers = async () => {
+            const issuerIds = [...new Set(walletItems.map(item => item.issuerId))];
+            const fetchedIssuers: Record<string, DocumentData> = {};
+            for (const id of issuerIds) {
+                if (!issuers[id]) {
+                    const issuerData = await getUserById(id);
+                    if (issuerData) {
+                        fetchedIssuers[id] = issuerData;
+                    }
+                }
+            }
+            if (Object.keys(fetchedIssuers).length > 0) {
+                setIssuers(prev => ({...prev, ...fetchedIssuers}));
+            }
+        };
+
+        if (walletItems.length > 0) {
+            fetchIssuers();
+        }
+    }, [walletItems, getUserById, issuers]);
+
 
     const groupedTickets = useMemo(() => {
         const validTickets = walletItems.filter(item => item.status === 'valid');
@@ -97,7 +129,8 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
     const TicketStack = ({ tickets }: { tickets: WalletItem[] }) => {
         const baseTicket = tickets[0];
         const count = tickets.length;
-
+        const issuer = issuers[baseTicket.issuerId];
+        
         const handleStackClick = () => {
             if(count > 1) {
                 setSelectionGroup(tickets);
@@ -105,11 +138,6 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
             } else {
                 handleTicketClick(baseTicket);
             }
-        };
-
-        const cardStyle = {
-            backgroundColor: baseTicket.style?.backgroundColor || '#4f46e5',
-            color: baseTicket.style?.textColor || '#ffffff',
         };
 
         return (
@@ -137,7 +165,11 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                                     <p className="text-sm opacity-80">{ticket.issuerName}</p>
                                     <h3 className="text-xl font-bold">{ticket.title}</h3>
                                 </div>
-                                <TicketIcon className="w-8 h-8 opacity-50" />
+                                {issuer ? (
+                                     <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
+                                ) : (
+                                     <TicketIcon className="w-8 h-8 opacity-50" />
+                                )}
                             </div>
                         </div>
                     </div>
@@ -160,7 +192,7 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
         <div className="space-y-6">
             <header className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">{d.title}</h1>
-                 <Button variant="outline" size="icon" onClick={() => router.push('/wallet/scan')}>
+                 <Button variant="outline" size="icon" onClick={() => router.push(`/${dictionary.locale}/wallet/scan`)}>
                     <Plus className="h-5 w-5"/>
                 </Button>
             </header>
@@ -178,7 +210,7 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                     <TicketIcon className="w-16 h-16 text-muted-foreground" />
                     <p className="font-semibold text-lg">{d.noTicketsTitle}</p>
                     <p className="text-sm text-muted-foreground">{d.noTicketsDescription}</p>
-                     <Button onClick={() => router.push('/wallet/scan')}>
+                     <Button onClick={() => router.push(`/${dictionary.locale}/wallet/scan`)}>
                         {d.addFirstTicket}
                     </Button>
                 </div>
@@ -194,19 +226,25 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                     </DialogHeader>
                     <div className="max-h-[60vh] overflow-y-auto -mx-6 px-6 pt-2">
                         <ul className="space-y-2">
-                            {selectionGroup.map(ticket => (
-                                <li key={ticket.id}>
-                                    <button 
-                                        onClick={() => handleSelectFromDialog(ticket)}
-                                        className="w-full text-left p-3 rounded-lg hover:bg-muted transition-colors"
-                                    >
-                                        <p className="font-semibold">{ticket.title}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Added on: {new Date(ticket.addedAt).toLocaleDateString()}
-                                        </p>
-                                    </button>
-                                </li>
-                            ))}
+                            {selectionGroup.map(ticket => {
+                                const issuer = issuers[ticket.issuerId];
+                                return (
+                                    <li key={ticket.id}>
+                                        <button 
+                                            onClick={() => handleSelectFromDialog(ticket)}
+                                            className="w-full text-left p-3 rounded-lg hover:bg-muted transition-colors flex items-center gap-4"
+                                        >
+                                            {issuer && <VerifiedAvatar user={issuer} className="w-10 h-10 flex-shrink-0" showBadge={false}/>}
+                                            <div className="flex-1">
+                                                <p className="font-semibold">{ticket.title}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Added on: {new Date(ticket.addedAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 </DialogContent>
@@ -240,5 +278,3 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
         </div>
     );
 }
-
-    

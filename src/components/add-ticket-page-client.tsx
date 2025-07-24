@@ -38,7 +38,7 @@ const TicketCardPreview = ({ template }: { template: TicketTemplate }) => {
             </div>
             {template.expiresAt && (
                  <div className="mt-6 pt-3 border-t border-white/20 text-sm opacity-80">
-                     Expires: {new Date(template.expiresAt).toLocaleDateString()}
+                     {`Expires: ${new Date(template.expiresAt).toLocaleDateString()}`}
                 </div>
             )}
         </div>
