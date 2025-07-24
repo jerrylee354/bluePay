@@ -29,7 +29,7 @@ export default function VerifiedAvatar({ user, className, fallbackClassName, sho
     const renderBadge = () => {
         if (count) {
              return (
-                 <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold border-2 border-background">
+                 <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold border-2 border-transparent">
                     {count}
                 </div>
             )

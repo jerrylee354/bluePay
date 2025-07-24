@@ -79,29 +79,26 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
     const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
     const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
     const [selectionGroup, setSelectionGroup] = useState<WalletItem[]>([]);
-    const [issuers, setIssuers] = useState<Record<string, DocumentData>>({});
-
+    const [issuers, setIssuers] = useState<Record<string, DocumentData | null>>({});
 
     useEffect(() => {
-        const fetchIssuers = async () => {
-            const issuerIds = [...new Set(walletItems.map(item => item.issuerId))];
-            const fetchedIssuers: Record<string, DocumentData> = {};
-            for (const id of issuerIds) {
-                if (!issuers[id]) {
-                    const issuerData = await getUserById(id);
-                    if (issuerData) {
-                        fetchedIssuers[id] = issuerData;
-                    }
-                }
-            }
-            if (Object.keys(fetchedIssuers).length > 0) {
-                setIssuers(prev => ({...prev, ...fetchedIssuers}));
-            }
-        };
-
-        if (walletItems.length > 0) {
-            fetchIssuers();
+      const fetchIssuers = async () => {
+        const issuerIds = [...new Set(walletItems.map(item => item.issuerId))];
+        const newIssuersToFetch = issuerIds.filter(id => !issuers.hasOwnProperty(id));
+        
+        if (newIssuersToFetch.length > 0) {
+          const fetchedIssuers: Record<string, DocumentData | null> = {};
+          for (const id of newIssuersToFetch) {
+            const issuerData = await getUserById(id);
+            fetchedIssuers[id] = issuerData;
+          }
+          setIssuers(prev => ({ ...prev, ...fetchedIssuers }));
         }
+      };
+
+      if (walletItems.length > 0) {
+        fetchIssuers();
+      }
     }, [walletItems, getUserById, issuers]);
 
 
@@ -142,38 +139,41 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
 
         return (
             <div 
-                className="relative h-40 w-full cursor-pointer group"
+                className="relative w-full cursor-pointer group"
                 onClick={handleStackClick}
             >
-                {tickets.slice(0, 3).map((ticket, index) => (
-                    <div
-                        key={ticket.id}
-                        className={cn(
-                            "absolute inset-0 rounded-lg p-4 text-white shadow-md transition-transform duration-300 ease-in-out",
-                            "group-hover:-translate-y-1"
-                        )}
-                        style={{
-                            transform: `translate(${index * 3}px, ${index * 3}px)`,
-                            zIndex: count - index,
-                            backgroundColor: ticket.style?.backgroundColor || '#4f46e5',
-                            color: ticket.style?.textColor || '#ffffff',
-                        }}
-                    >
-                         <div className="flex-1">
-                            <div className="flex items-start gap-4">
-                               {issuer ? (
-                                     <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
+                <div className="relative h-40">
+                    {tickets.slice(0, 3).map((ticket, index) => (
+                        <div
+                            key={ticket.id}
+                            className={cn(
+                                "absolute inset-0 rounded-lg p-4 text-white shadow-md transition-transform duration-300 ease-in-out",
+                                "group-hover:-translate-y-1"
+                            )}
+                            style={{
+                                transform: `translate(${index * 4}px, ${index * 4}px)`,
+                                zIndex: count - index,
+                                backgroundColor: ticket.style?.backgroundColor || '#4f46e5',
+                                color: ticket.style?.textColor || '#ffffff',
+                            }}
+                        >
+                            <div className="flex-1">
+                                <div className="flex items-start gap-4">
+                                {issuer ? (
+                                    <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
                                 ) : (
-                                     <TicketIcon className="w-8 h-8 opacity-50" />
+                                    <TicketIcon className="w-8 h-8 opacity-50" />
                                 )}
                                 <div>
                                     <p className="text-sm opacity-80">{ticket.issuerName}</p>
                                     <h3 className="text-xl font-bold">{ticket.title}</h3>
                                 </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
+                {count > 1 && <VerifiedAvatar user={null} count={count} />}
             </div>
         )
     }
