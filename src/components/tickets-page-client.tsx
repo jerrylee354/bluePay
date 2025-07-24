@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Label } from './ui/label';
 
-const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => {
+const TicketTemplateCard = ({ template, onShare, onEdit, dictionary }: { template: TicketTemplate, onShare: () => void, onEdit: () => void, dictionary: Dictionary['tickets'] }) => {
     const isExpired = template.expiresAt && new Date(template.expiresAt) < new Date();
     
     return (
@@ -38,8 +38,8 @@ const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTem
         >
             {isExpired && (
                 <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10">
-                    <p className="font-bold text-lg -rotate-12 transform">EXPIRED</p>
-                    <p className="text-xs opacity-80 mt-1">This template can no longer be shared.</p>
+                    <p className="font-bold text-lg -rotate-12 transform">{dictionary.expired}</p>
+                    <p className="text-xs opacity-80 mt-1">{dictionary.cannotBeShared}</p>
                 </div>
             )}
             <div className="flex-1">
@@ -364,7 +364,7 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
             ) : ticketTemplates.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {ticketTemplates.map(template => (
-                        <TicketTemplateCard key={template.id} template={template} onShare={() => handleShare(template)} onEdit={() => handleEdit(template)} />
+                        <TicketTemplateCard key={template.id} template={template} onShare={() => handleShare(template)} onEdit={() => handleEdit(template)} dictionary={d}/>
                     ))}
                 </div>
             ) : (

@@ -68,7 +68,7 @@ export default function PaymentSuccess({ transaction, dictionary }: { transactio
 
     return (
         <div className="flex flex-col items-center justify-center bg-background p-4 sm:p-6 md:p-8 min-h-dvh">
-            <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row md:gap-8 lg:gap-12">
+            <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row md:gap-8 lg:gap-12 flex-1 md:items-center">
                 <div className="flex flex-col items-center justify-center text-center md:w-1/2 flex-shrink-0">
                     <Card className="w-full shadow-none border-0 md:shadow-lg md:border">
                         <CardContent className="p-6 md:p-8">

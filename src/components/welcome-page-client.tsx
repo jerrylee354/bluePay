@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet, Upload, Building, Phone } from 'lucide-react';
+import { Wallet, Upload, Building, Phone, Sun, Moon, Laptop } from 'lucide-react';
 import { db, updateDoc } from '@/lib/firebase';
 import { doc } from 'firebase/firestore';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
@@ -17,10 +17,26 @@ import { AlertCircle } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { Dictionary } from '@/dictionaries';
 import VerifiedAvatar from './VerifiedAvatar';
+import { useTheme } from 'next-themes';
+
+const ThemeOption = ({ icon: Icon, label, value, currentTheme, setTheme }: { icon: React.ElementType, label: string, value: string, currentTheme?: string, setTheme: (theme: string) => void }) => (
+    <button 
+        className={cn(
+            "flex flex-col items-center justify-center gap-2 p-4 border-2 rounded-lg transition-colors w-full",
+            currentTheme === value ? "border-primary bg-primary/10" : "border-transparent hover:bg-muted/50"
+        )}
+        onClick={() => setTheme(value)}
+    >
+        <Icon className={cn("w-10 h-10", currentTheme === value ? "text-primary" : "text-muted-foreground")} />
+        <span className="font-medium">{label}</span>
+    </button>
+);
+
 
 function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
     const { user, userData, checkUsernameExists, refreshUserData, isLoading: isAuthLoading } = useAuth();
     const d = dictionary.welcome;
+    const d_theme = dictionary.settings.theme;
     
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +50,7 @@ function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
 
     const router = useRouter();
     const { toast } = useToast();
+    const { theme, setTheme } = useTheme();
     const isBusiness = userData?.accountType === 'business';
 
     useEffect(() => {
@@ -115,11 +132,11 @@ function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
     
     const handleNextStep = async () => {
         setError(null);
-        if (step === 1) {
+        if (step === 1) { // Welcome
             setStep(2);
             return;
         } 
-        if (step === 2) {
+        if (step === 2) { // Username
              if (!username || username.length < 3) {
                 setError(d.usernameLengthError);
                 return;
@@ -149,13 +166,19 @@ function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
                 setIsLoading(false);
             }
         }
-        if (step === 3 && isBusiness) {
-            if (!businessPhone) {
-                setError(d.phoneRequiredError);
-                return;
+        if (step === 3) { // Profile Setup / Business Info
+            if (isBusiness) {
+                if (!businessPhone) {
+                    setError(d.phoneRequiredError);
+                    return;
+                }
+                setStep(4);
+            } else {
+                 setStep(4);
             }
+        }
+        if (step === 4) { // Theme selection
             await finishOnboarding();
-            return;
         }
     };
 
@@ -251,7 +274,7 @@ function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
                                 )}
                             </div>
                              <Button onClick={handleNextStep} disabled={isLoading || !businessPhone} className="w-full max-w-xs h-12 text-lg font-semibold">
-                                {d.finishSetup}
+                                {d.saveAndContinue}
                             </Button>
                         </div>
                     )
@@ -281,13 +304,30 @@ function WelcomeContent({ dictionary }: { dictionary: Dictionary }) {
                             />
                         </div>
                         <div className="flex flex-col items-center gap-4">
-                            <Button onClick={finishOnboarding} disabled={isLoading} className="w-full max-w-xs h-12 text-lg font-semibold">
-                                {avatarFile ? d.saveAndFinish : d.finishSetup}
+                            <Button onClick={handleNextStep} disabled={isLoading} className="w-full max-w-xs h-12 text-lg font-semibold">
+                                {d.saveAndContinue}
                             </Button>
-                            <Button variant="link" onClick={finishOnboarding} disabled={isLoading} className="text-muted-foreground">
+                            <Button variant="link" onClick={() => setStep(4)} disabled={isLoading} className="text-muted-foreground">
                                 {d.skipForNow}
                             </Button>
                         </div>
+                    </div>
+                );
+            case 4:
+                return (
+                    <div className="text-center space-y-6 animate-fade-in p-4 sm:p-6">
+                        <div className="space-y-2">
+                            <h1 className="text-3xl font-bold tracking-tight">{d_theme.title}</h1>
+                            <p className="text-muted-foreground text-lg">{d_theme.description}</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 px-4">
+                             <ThemeOption icon={Sun} label={d_theme.light} value="light" currentTheme={theme} setTheme={setTheme} />
+                             <ThemeOption icon={Moon} label={d_theme.dark} value="dark" currentTheme={theme} setTheme={setTheme} />
+                             <ThemeOption icon={Laptop} label={d_theme.system} value="system" currentTheme={theme} setTheme={setTheme} />
+                        </div>
+                        <Button onClick={handleNextStep} disabled={isLoading} className="w-full max-w-xs h-12 text-lg font-semibold">
+                            {d.finishSetup}
+                        </Button>
                     </div>
                 );
             }

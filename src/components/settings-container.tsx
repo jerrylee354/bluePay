@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, X, User, Shield, Eye, Bell, LogOut } from 'lucide-react';
+import { ChevronLeft, X, User, Shield, Eye, Bell, LogOut, Palette } from 'lucide-react';
 import { Dictionary } from '@/dictionaries';
 import { Card, CardContent } from '@/components/ui/card';
 import ProfilePage from '@/app/[lang]/settings/profile/page';
@@ -11,9 +11,10 @@ import SecurityPage from '@/app/[lang]/settings/security/page';
 import PrivacySettingsPage from '@/app/[lang]/settings/privacy/page';
 import NotificationSettingsPage from '@/app/[lang]/settings/notifications/page';
 import EditUsernamePage from '@/app/[lang]/settings/profile/edit-username/page';
+import ThemeSettingsPage from '@/app/[lang]/settings/theme/page';
 import { useAuth } from '@/context/auth-context';
 
-export type SettingsPage = 'main' | 'profile' | 'security' | 'privacy' | 'notifications' | 'edit-username';
+export type SettingsPage = 'main' | 'profile' | 'security' | 'privacy' | 'notifications' | 'theme' | 'edit-username';
 
 const SettingsListItem = ({ icon: Icon, text, onClick }: { icon: React.ElementType, text: string, onClick: () => void }) => (
     <div onClick={onClick} className="flex items-center p-4 hover:bg-muted/50 rounded-lg cursor-pointer transition-colors">
@@ -37,6 +38,7 @@ export default function SettingsContainer({ dictionary, onClose }: { dictionary:
         security: SecurityPage,
         privacy: PrivacySettingsPage,
         notifications: NotificationSettingsPage,
+        theme: ThemeSettingsPage,
         'edit-username': EditUsernamePage,
     };
 
@@ -46,6 +48,7 @@ export default function SettingsContainer({ dictionary, onClose }: { dictionary:
         security: { title: dictionary.settings.security.title, component: components.security, backPage: 'main' },
         privacy: { title: dictionary.settings.privacy.title, component: components.privacy, backPage: 'main' },
         notifications: { title: dictionary.settings.notifications.title, component: components.notifications, backPage: 'main' },
+        theme: { title: dictionary.settings.theme.title, component: components.theme, backPage: 'main'},
         'edit-username': { title: dictionary.settings.profile.editUsername, component: components['edit-username'], backPage: 'profile' },
     };
 
@@ -92,6 +95,7 @@ export default function SettingsContainer({ dictionary, onClose }: { dictionary:
                                 <SettingsListItem icon={Shield} text={dictionary.settings.security.title} onClick={() => setPage('security')} />
                                 <SettingsListItem icon={Eye} text={dictionary.settings.privacy.title} onClick={() => setPage('privacy')} />
                                 <SettingsListItem icon={Bell} text={dictionary.settings.notifications.title} onClick={() => setPage('notifications')} />
+                                <SettingsListItem icon={Palette} text={dictionary.settings.theme.title} onClick={() => setPage('theme')} />
                             </CardContent>
                         </Card>
 

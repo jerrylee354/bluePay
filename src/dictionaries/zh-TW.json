@@ -305,7 +305,9 @@
         "shareTicket": "分享票卡",
         "copyLink": "複製新連結",
         "linkCopied": "新的一次性連結已複製到剪貼簿！",
-        "copyFailed": "複製連結失敗。"
+        "copyFailed": "複製連結失敗。",
+        "expired": "已過期",
+        "cannotBeShared": "此範本無法再分享。"
     },
     "settings": {
         "title": "設定",
@@ -368,6 +370,13 @@
             "pushDescription": "接收有關您帳戶活動的提醒。",
             "email": "電子郵件通知",
             "emailDescription": "獲取促銷和帳戶相關的電子郵件。"
+        },
+        "theme": {
+            "title": "主題",
+            "description": "選擇 BluePay 在您裝置上的外觀。",
+            "light": "淺色",
+            "dark": "深色",
+            "system": "系統"
         }
     },
     "status": {

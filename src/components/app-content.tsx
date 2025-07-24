@@ -170,6 +170,7 @@ function AuthDependentContent({ children, dictionary, isPaymentSuccessful }: { c
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
+    const router = useRouter();
 
     const isBusiness = userData?.accountType === 'business';
     
@@ -178,7 +179,6 @@ function AuthDependentContent({ children, dictionary, isPaymentSuccessful }: { c
             if (isBusiness) {
                 setIsLocked(true);
             } else {
-                logout({ redirect: false });
                 setIsIdle(true);
             }
         }
@@ -191,13 +191,15 @@ function AuthDependentContent({ children, dictionary, isPaymentSuccessful }: { c
 
     const handleConfirmIdle = () => {
         setIsIdle(false);
-        const localeSegment = `/${dictionary.locale}`;
-        const router = useRouter();
-        router.push(`${localeSegment}/login`);
+        logout();
     };
 
     const handleUnlock = () => {
         setIsLocked(false);
+    }
+
+    if (isIdle) {
+        return <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>
     }
 
     if (isLocked) {
@@ -211,7 +213,6 @@ function AuthDependentContent({ children, dictionary, isPaymentSuccessful }: { c
     if (isMobile && isFullScreenPage) {
          return (
             <main className="h-dvh bg-background">
-                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 {children}
             </main>
          );
@@ -220,7 +221,6 @@ function AuthDependentContent({ children, dictionary, isPaymentSuccessful }: { c
     if (isMobile) {
         return (
              <div className="relative flex min-h-dvh w-full flex-col">
-                {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
                 <div className="w-full max-w-lg mx-auto bg-background flex-1 flex flex-col">
                     <main className="flex-1 overflow-y-auto p-4 pb-28">
                         {children}
@@ -233,7 +233,6 @@ function AuthDependentContent({ children, dictionary, isPaymentSuccessful }: { c
 
     return (
         <div className="flex h-screen overflow-hidden">
-            {isIdle && <IdleTimeoutDialog onConfirm={handleConfirmIdle} dictionary={dictionary.idleTimeout}/>}
             <DesktopNav dictionary={dictionary.nav} settingsDictionary={dictionary} />
             <div className="flex-1 overflow-y-auto">
                 <main className="p-8">

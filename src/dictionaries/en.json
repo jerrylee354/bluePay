@@ -305,7 +305,9 @@
         "shareTicket": "Share Ticket",
         "copyLink": "Copy New Link",
         "linkCopied": "New single-use link copied to clipboard!",
-        "copyFailed": "Failed to copy link."
+        "copyFailed": "Failed to copy link.",
+        "expired": "EXPIRED",
+        "cannotBeShared": "This template can no longer be shared."
     },
     "settings": {
         "title": "Settings",
@@ -368,6 +370,13 @@
             "pushDescription": "Receive alerts about your account activity.",
             "email": "Email Notifications",
             "emailDescription": "Get promotional and account-related emails."
+        },
+        "theme": {
+            "title": "Theme",
+            "description": "Choose how BluePay looks on your device.",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
         }
     },
     "status": {
