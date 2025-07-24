@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -82,23 +82,51 @@ const RecentActivity = ({ transactions, userData, dictionary }: { transactions: 
       </div>
 );
 
-const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: boolean, onOpenChange: (open: boolean) => void, onTry: () => void, dictionary: Dictionary['home']['darkModeDialog'] }) => (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>{dictionary.title}</DialogTitle>
-                <DialogDescription>{dictionary.description}</DialogDescription>
-            </DialogHeader>
-            <div className="p-6 text-center">
-                <div className="text-8xl">🌚</div>
-            </div>
-            <DialogFooter className="grid grid-cols-2 gap-2">
-                <Button variant="ghost" onClick={() => onOpenChange(false)}>{dictionary.close}</Button>
-                <Button onClick={onTry}>{dictionary.tryItNow}</Button>
-            </DialogFooter>
-        </DialogContent>
-    </Dialog>
-);
+const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: boolean, onOpenChange: (open: boolean) => void, onTry: () => void, dictionary: Dictionary['home']['darkModeDialog'] }) => {
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    useEffect(() => {
+        if (open) {
+            const timer = setTimeout(() => setIsAnimating(true), 100);
+            return () => clearTimeout(timer);
+        } else {
+            setIsAnimating(false);
+        }
+    }, [open]);
+    
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <style jsx>{`
+                .dark-mode-reveal {
+                    animation: reveal-dark 0.5s ease-out forwards;
+                }
+                @keyframes reveal-dark {
+                    from {
+                        clip-path: circle(0% at 0% 100%);
+                    }
+                    to {
+                        clip-path: circle(150% at 0% 100%);
+                    }
+                }
+            `}</style>
+            <DialogContent className="overflow-hidden p-0">
+                <div className={cn("p-6", isAnimating && 'dark-mode-reveal bg-slate-900 text-slate-50')}>
+                    <DialogHeader>
+                        <DialogTitle>{dictionary.title}</DialogTitle>
+                        <DialogDescription className={cn(isAnimating && 'text-slate-400')}>{dictionary.description}</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-6 text-center">
+                        <Wallet className={cn("w-20 h-20 mx-auto text-primary transition-colors duration-500", isAnimating && "text-slate-50")} />
+                    </div>
+                    <DialogFooter className="grid grid-cols-2 gap-2">
+                        <Button variant="ghost" onClick={() => onOpenChange(false)} className={cn(isAnimating && 'text-slate-50 hover:bg-slate-800 hover:text-slate-50')}>{dictionary.close}</Button>
+                        <Button onClick={onTry} className={cn(isAnimating && 'bg-slate-50 text-slate-900 hover:bg-slate-200')}>{dictionary.tryItNow}</Button>
+                    </DialogFooter>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 
 export default function HomePageClient({ dictionary }: { dictionary: Dictionary }) {
