@@ -109,7 +109,7 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
                     }
                 }
             `}</style>
-            <DialogContent className="overflow-hidden p-0">
+            <DialogContent className="overflow-hidden p-0" hideCloseButton>
                 <div className="relative p-6">
                     {isAnimating && <div className="dark-mode-reveal-bg absolute inset-0 bg-slate-900 -z-10" />}
                     <div className="relative z-10">
