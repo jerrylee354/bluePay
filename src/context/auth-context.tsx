@@ -59,6 +59,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<any>;
   logout: (options?: { redirect: boolean }) => Promise<void>;
   signup: (email: string, pass: string, additionalData: Record<string, any>) => Promise<any>;
+  updateTheme: (theme: string) => Promise<void>;
   checkEmailExists: (email: string) => Promise<boolean>;
   checkUsernameExists: (username: string) => Promise<boolean>;
   searchUsers: (searchTerm: string) => Promise<DocumentData[]>;
@@ -211,6 +212,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ...additionalData,
       balance: 0,
       currency: 'USD',
+      theme: 'light',
       hasCompletedOnboarding: false,
       profileStatus: true,
       status: 'Yes',
@@ -236,6 +238,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setIsLoggingOut(false);
 };
+  
+  const updateTheme = async (theme: string) => {
+    if (!user) return;
+    const userDocRef = doc(db, 'users', user.uid);
+    await updateDoc(userDocRef, { theme });
+  };
   
   const checkEmailExists = async (email: string) => {
     try {
@@ -310,7 +318,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const [emailSnapshot, firstNameSnapshot, lastNameSnapshot] = await Promise.all([
             getDocs(emailQuery),
             getDocs(firstNameQuery),
-            getDocs(lastNameQuery)
+            getDocs(lastNameSnapshot)
         ]);
         
         const usersMap = new Map<string, DocumentData>();
@@ -664,7 +672,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate, updateTicketTemplate, createTicketLink, paymentSuccessState, setPaymentSuccessState, clearPaymentSuccessState }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, updateTheme, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate, updateTicketTemplate, createTicketLink, paymentSuccessState, setPaymentSuccessState, clearPaymentSuccessState }}>
       {children}
     </AuthContext.Provider>
   );

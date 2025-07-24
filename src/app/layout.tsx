@@ -2,7 +2,6 @@ import React from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { type Locale } from '@/i18n';
-import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'BluePay',
@@ -28,14 +27,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico?favicon.56766c03.ico" sizes="48x48" type="image/x-icon" />
       </head>
       <body className="font-body antialiased bg-background">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
           {children}
-        </ThemeProvider>
       </body>
     </html>
   );

@@ -23,6 +23,7 @@ import { DocumentData } from 'firebase/firestore';
 import VerificationStatusDialog from './VerificationStatusDialog';
 import PaymentSuccess from './payment-success';
 import { Transaction } from '@/lib/data';
+import { ThemeProvider } from './theme-provider';
 
 const AppLoader = () => (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -358,10 +359,17 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
 export default function AppContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
     return (
         <AuthProvider>
-            <AppContentWithAuth dictionary={dictionary}>
-                {children}
-            </AppContentWithAuth>
-            <Toaster />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              disableTransitionOnChange
+            >
+                <AppContentWithAuth dictionary={dictionary}>
+                    {children}
+                </AppContentWithAuth>
+                <Toaster />
+            </ThemeProvider>
         </AuthProvider>
     );
 }
