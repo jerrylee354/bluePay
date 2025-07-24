@@ -160,7 +160,7 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                             <div className="flex-1">
                                 <div className="flex items-start gap-4">
                                 {issuer ? (
-                                    <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
+                                    <VerifiedAvatar user={issuer} className="w-10 h-10 flex-shrink-0 border-2 border-white/50" showBadge={false}/>
                                 ) : (
                                     <TicketIcon className="w-8 h-8 opacity-50" />
                                 )}
@@ -173,7 +173,6 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                         </div>
                     ))}
                 </div>
-                {count > 1 && <VerifiedAvatar user={null} count={count} />}
             </div>
         )
     }
