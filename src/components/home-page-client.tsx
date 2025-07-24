@@ -98,7 +98,7 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
         <Dialog open={open} onOpenChange={onOpenChange}>
             <style jsx>{`
                 .dark-mode-reveal-bg {
-                    animation: reveal-dark 1s ease-out forwards;
+                    animation: reveal-dark 8s ease-out forwards;
                 }
                 @keyframes reveal-dark {
                     from {
