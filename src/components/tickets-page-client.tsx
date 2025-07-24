@@ -16,6 +16,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from './ui/dialog';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -23,7 +24,6 @@ import { LoadingOverlay } from './ui/loading-overlay';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Label } from './ui/label';
-import VerifiedAvatar from './VerifiedAvatar';
 
 const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => {
     const isExpired = template.expiresAt && new Date(template.expiresAt) < new Date();
@@ -240,7 +240,7 @@ const CreateEditTicketDialog = ({
     
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-w-lg flex flex-col sm:h-auto max-h-[90dvh]" hideCloseButton>
+            <DialogContent className="max-w-lg flex flex-col sm:h-auto max-h-[90dvh]">
                 <LoadingOverlay isLoading={isProcessing} />
                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <div className="flex items-center justify-between">
