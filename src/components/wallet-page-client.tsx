@@ -46,7 +46,9 @@ const TicketCard = ({ ticket, issuer, onClick }: { ticket: WalletItem, issuer: D
                          {issuer ? (
                              <VerifiedAvatar user={issuer} className="w-10 h-10 border-2 border-white/50" showBadge={false} />
                         ) : (
-                             <TicketIcon className="w-8 h-8 opacity-50" />
+                             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                <TicketIcon className="w-6 h-6 opacity-50" />
+                             </div>
                         )}
                         <div>
                             <p className="text-sm opacity-80">{ticket.issuerName}</p>
@@ -73,7 +75,7 @@ const WalletSkeleton = () => (
 
 export default function WalletPageClient({ dictionary }: { dictionary: Dictionary}) {
     const d = dictionary.wallet;
-    const { user, userData, walletItems, isLoading, getUserById } = useAuth();
+    const { user, userData, walletItems, isLoading: isAuthLoading, getUserById } = useAuth();
     const router = useRouter();
     const [selectedTicket, setSelectedTicket] = useState<WalletItem | null>(null);
     const [qrValue, setQrValue] = useState('');
@@ -81,37 +83,46 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
     const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
     const [selectionGroup, setSelectionGroup] = useState<WalletItem[]>([]);
     const [issuers, setIssuers] = useState<Record<string, DocumentData | null>>({});
+    const [isLoadingIssuers, setIsLoadingIssuers] = useState(true);
 
     useEffect(() => {
-        if (!isLoading && userData?.accountType === 'business') {
+        if (!isAuthLoading && userData?.accountType === 'business') {
             router.push('/home');
         }
-    }, [userData, isLoading, router]);
+    }, [userData, isAuthLoading, router]);
 
 
     useEffect(() => {
       const fetchIssuers = async () => {
+        setIsLoadingIssuers(true);
         const issuerIds = [...new Set(walletItems.map(item => item.issuerId))];
-        const newIssuersToFetch = issuerIds.filter(id => !issuers.hasOwnProperty(id));
+        const newIssuersToFetch = issuerIds.filter(id => !issuers[id]);
         
         if (newIssuersToFetch.length > 0) {
           const fetchedIssuers: Record<string, DocumentData | null> = {};
-          for (const id of newIssuersToFetch) {
+          await Promise.all(newIssuersToFetch.map(async (id) => {
             const issuerData = await getUserById(id);
             fetchedIssuers[id] = issuerData;
-          }
+          }));
           setIssuers(prev => ({ ...prev, ...fetchedIssuers }));
         }
+        setIsLoadingIssuers(false);
       };
 
       if (walletItems.length > 0) {
         fetchIssuers();
+      } else {
+        setIsLoadingIssuers(false);
       }
-    }, [walletItems, getUserById, issuers]);
+    }, [walletItems, getUserById]);
 
 
     const groupedTickets = useMemo(() => {
-        const validTickets = walletItems.filter(item => item.status === 'valid');
+        const validTickets = walletItems.filter(item => {
+            const isExpired = item.expiresAt && new Date(item.expiresAt) < new Date();
+            return item.status === 'valid' && !isExpired;
+        });
+
         return validTickets.reduce((acc, ticket) => {
             const key = ticket.templateId;
             if (!acc[key]) {
@@ -155,29 +166,15 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                         <div
                             key={ticket.id}
                             className={cn(
-                                "absolute inset-0 rounded-lg p-4 text-white shadow-md transition-transform duration-300 ease-in-out",
+                                "absolute inset-0 rounded-lg transition-transform duration-300 ease-in-out",
                                 "group-hover:-translate-y-1"
                             )}
                             style={{
                                 transform: `translate(${index * 4}px, ${index * 4}px)`,
                                 zIndex: count - index,
-                                backgroundColor: ticket.style?.backgroundColor || '#4f46e5',
-                                color: ticket.style?.textColor || '#ffffff',
                             }}
                         >
-                            <div className="flex-1">
-                                <div className="flex items-start gap-4">
-                                {issuer ? (
-                                    <VerifiedAvatar user={issuer} className="w-10 h-10 flex-shrink-0 border-2 border-white/50" showBadge={false}/>
-                                ) : (
-                                    <TicketIcon className="w-8 h-8 opacity-50" />
-                                )}
-                                <div>
-                                    <p className="text-sm opacity-80">{ticket.issuerName}</p>
-                                    <h3 className="text-xl font-bold">{ticket.title}</h3>
-                                </div>
-                                </div>
-                            </div>
+                            <TicketCard ticket={ticket} issuer={issuer} onClick={() => {}} />
                         </div>
                     ))}
                 </div>
@@ -190,7 +187,7 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
         handleTicketClick(ticket);
     };
     
-    if (isLoading || !userData) {
+    if (isAuthLoading || isLoadingIssuers || !userData) {
         return <LoadingOverlay isLoading={true} />;
     }
 
@@ -203,7 +200,7 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                 </Button>
             </header>
 
-            {isLoading ? (
+            {isAuthLoading ? (
                 <WalletSkeleton />
             ) : Object.keys(groupedTickets).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">

@@ -27,32 +27,42 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar } from './ui/calendar';
 import { format } from 'date-fns';
 
-const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => (
-    <div 
-        className="rounded-lg p-4 text-white shadow-md flex flex-col justify-between overflow-hidden"
-        style={{ 
-            backgroundColor: template.style?.backgroundColor || '#4f46e5',
-            color: template.style?.textColor || '#ffffff',
-        }}
-    >
-        <div className="flex-1">
-            <p className="text-sm opacity-80">{template.issuerName}</p>
-            <h3 className="text-xl font-bold truncate">{template.title}</h3>
-            <p className="text-sm opacity-90 mt-1 line-clamp-2">{template.description}</p>
+const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => {
+    const isExpired = template.expiresAt && new Date(template.expiresAt) < new Date();
+    
+    return (
+        <div 
+            className="rounded-lg p-4 text-white shadow-md flex flex-col justify-between overflow-hidden relative"
+            style={{ 
+                backgroundColor: template.style?.backgroundColor || '#4f46e5',
+                color: template.style?.textColor || '#ffffff',
+            }}
+        >
+            {isExpired && (
+                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10">
+                    <p className="font-bold text-lg -rotate-12 transform">EXPIRED</p>
+                    <p className="text-xs opacity-80 mt-1">This template can no longer be shared.</p>
+                </div>
+            )}
+            <div className="flex-1">
+                <p className="text-sm opacity-80">{template.issuerName}</p>
+                <h3 className="text-xl font-bold truncate">{template.title}</h3>
+                <p className="text-sm opacity-90 mt-1 line-clamp-2">{template.description}</p>
+            </div>
+            <div className="flex justify-between items-center mt-4 gap-2">
+                <p className="text-xs opacity-70 flex-1">
+                    {template.issuanceCount} / {template.issuanceLimit ?? '∞'} issued
+                </p>
+                 <Button size="icon" variant="ghost" className="bg-white/20 hover:bg-white/30 text-white w-8 h-8" onClick={onEdit}>
+                    <Edit className="h-4 w-4"/>
+                </Button>
+                <Button size="icon" variant="ghost" className="bg-white/20 hover:bg-white/30 text-white w-8 h-8" onClick={onShare} disabled={isExpired}>
+                    <Share2 className="h-4 w-4"/>
+                </Button>
+            </div>
         </div>
-        <div className="flex justify-between items-center mt-4 gap-2">
-            <p className="text-xs opacity-70 flex-1">
-                {template.issuanceCount} / {template.issuanceLimit ?? '∞'} issued
-            </p>
-             <Button size="icon" variant="ghost" className="bg-white/20 hover:bg-white/30 text-white w-8 h-8" onClick={onEdit}>
-                <Edit className="h-4 w-4"/>
-            </Button>
-            <Button size="icon" variant="ghost" className="bg-white/20 hover:bg-white/30 text-white w-8 h-8" onClick={onShare}>
-                <Share2 className="h-4 w-4"/>
-            </Button>
-        </div>
-    </div>
-);
+    );
+};
 
 const colorOptions = [
     { name: 'Indigo', bg: '#4f46e5', text: '#ffffff' },
@@ -86,7 +96,7 @@ const CreateEditTicketDialog = ({
     const [description, setDescription] = useState('');
     const [selectedStyle, setSelectedStyle] = useState(colorOptions[0]);
     const [limit, setLimit] = useState('');
-    const [expiresAt, setExpiresAt] = useState<Date | null>(null);
+    const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined);
 
     const isEditing = !!existingTemplate;
     const totalSteps = 4;
@@ -101,13 +111,13 @@ const CreateEditTicketDialog = ({
                 setDescription(existingTemplate.description);
                 setSelectedStyle(colorOptions.find(c => c.bg === existingTemplate.style.backgroundColor) || colorOptions[0]);
                 setLimit(existingTemplate.issuanceLimit?.toString() ?? '');
-                setExpiresAt(existingTemplate.expiresAt ? new Date(existingTemplate.expiresAt) : null);
+                setExpiresAt(existingTemplate.expiresAt ? new Date(existingTemplate.expiresAt) : undefined);
             } else {
                 setTitle('');
                 setDescription('');
                 setSelectedStyle(colorOptions[0]);
                 setLimit('');
-                setExpiresAt(null);
+                setExpiresAt(undefined);
             }
         }
     }, [isOpen, isEditing, existingTemplate]);
@@ -215,8 +225,8 @@ const CreateEditTicketDialog = ({
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
                                 mode="single"
-                                selected={expiresAt ?? undefined}
-                                onSelect={(date) => setExpiresAt(date ?? null)}
+                                selected={expiresAt}
+                                onSelect={setExpiresAt}
                                 initialFocus
                                 />
                             </PopoverContent>

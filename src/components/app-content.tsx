@@ -21,6 +21,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { DocumentData } from 'firebase/firestore';
 import VerificationStatusDialog from './VerificationStatusDialog';
+import PaymentSuccess from './payment-success';
+import { Transaction } from '@/lib/data';
 
 const AppLoader = () => (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
@@ -163,7 +165,7 @@ const AccountSuspendedScreen = ({
 };
 
 
-function AuthDependentContent({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
+function AuthDependentContent({ children, dictionary, isPaymentSuccessful }: { children: React.ReactNode, dictionary: Dictionary, isPaymentSuccessful: boolean }) {
     const { isAuthenticated, logout, userData } = useAuth();
     const isMobile = useIsMobile();
     const [isIdle, setIsIdle] = useState(false);
@@ -204,7 +206,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
 
     const pathname = usePathname();
     const fullScreenRoutes = ['/pay/confirm', '/pay/scan', '/wallet/add'];
-    const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route));
+    const isFullScreenPage = fullScreenRoutes.some(route => pathname.includes(route)) || isPaymentSuccessful;
 
     if (isMobile && isFullScreenPage) {
          return (
@@ -245,7 +247,7 @@ function AuthDependentContent({ children, dictionary }: { children: React.ReactN
 }
 
 function AppContentWithAuth({ children, dictionary }: { children: React.ReactNode, dictionary: Dictionary }) {
-    const { user, userData, isLoading, isLoggingOut, logout, submitAppeal } = useAuth();
+    const { user, userData, isLoading, isLoggingOut, logout, submitAppeal, paymentSuccessState } = useAuth();
     const pathname = usePathname();
     const prevUserDataRef = useRef<DocumentData | null>();
     const { toast } = useToast();
@@ -296,6 +298,15 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
     
     const isPublicRoute = publicPaths.includes(pathname) || pathname.includes('/wallet/add');
 
+    if (paymentSuccessState.isPaymentSuccessful && paymentSuccessState.transaction) {
+        return (
+            <PaymentSuccess
+                transaction={paymentSuccessState.transaction}
+                dictionary={dictionary}
+            />
+        );
+    }
+    
     if (isPublicRoute) {
         return <>{children}</>;
     }
@@ -329,7 +340,7 @@ function AppContentWithAuth({ children, dictionary }: { children: React.ReactNod
 
     return (
         <>
-            <AuthDependentContent dictionary={dictionary}>
+            <AuthDependentContent dictionary={dictionary} isPaymentSuccessful={paymentSuccessState.isPaymentSuccessful}>
                 {children}
             </AuthDependentContent>
             {showVerificationDialog && verificationChangeType && (

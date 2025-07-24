@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -14,7 +15,6 @@ import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import imageCompression from 'browser-image-compression';
-import PaymentSuccess from './payment-success';
 import { type Transaction } from '@/lib/data';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { cn } from '@/lib/utils';
@@ -85,7 +85,7 @@ export default function PaymentConfirm({
 }: PaymentConfirmProps) {
     const router = useRouter();
     
-    const { getUserById, processTransaction, requestTransaction, user, userData } = useAuth();
+    const { getUserById, processTransaction, requestTransaction, user, userData, setPaymentSuccessState } = useAuth();
     const { toast } = useToast();
     const isMobile = useIsMobile();
     const d = dictionary.pay;
@@ -101,9 +101,7 @@ export default function PaymentConfirm({
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
-    const [isPaymentSuccessful, setIsPaymentSuccessful] = useState(false);
-    const [completedTransaction, setCompletedTransaction] = useState<Transaction | null>(null);
-
+    
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     
     const userId = userIdFromProps || null;
@@ -258,6 +256,8 @@ export default function PaymentConfirm({
                 locale: dictionary.locale as 'en' | 'zh-TW',
                 orderItems: isBusinessRequest ? orderItems.filter(item => item.name && item.price) : undefined,
             };
+            
+            let completedTransaction: Transaction;
 
             if (mode === 'pay') {
                 if (numericAmount > userData.balance) {
@@ -269,27 +269,12 @@ export default function PaymentConfirm({
                     setIsProcessing(false);
                     return;
                 }
-                await processTransaction(transactionPayload);
+                completedTransaction = await processTransaction(transactionPayload);
             } else { // Request logic
-                 await requestTransaction(transactionPayload);
+                completedTransaction = await requestTransaction(transactionPayload);
             }
-
-            const mockTransaction: Transaction = {
-                id: 'temp-' + Date.now(),
-                type: mode === 'pay' ? 'payment' : 'receipt',
-                status: mode === 'pay' ? dictionary.status.Completed : dictionary.status.Requested,
-                date: new Date().toISOString(),
-                amount: numericAmount,
-                description: note,
-                attachmentUrl: attachedImage,
-                name: `${recipient.firstName} ${recipient.lastName}`,
-                otherPartyUid: recipient.uid,
-                otherParty: recipient,
-                orderItems: isBusinessRequest ? orderItems : undefined,
-            };
-
-            setCompletedTransaction(mockTransaction);
-            setIsPaymentSuccessful(true);
+            
+            setPaymentSuccessState({ isPaymentSuccessful: true, transaction: completedTransaction });
 
         } catch (error: any) {
             toast({
@@ -318,14 +303,6 @@ export default function PaymentConfirm({
         }
     }
     
-    const handleFinish = () => {
-        if (onClose) {
-            onClose();
-        } else {
-            router.push(`/${dictionary.locale}/home`);
-        }
-    }
-    
     // Business Request Order Item Management
     const addOrderItem = () => {
         setOrderItems(prev => [...prev, { id: Date.now().toString(), name: '', price: '' }]);
@@ -338,16 +315,6 @@ export default function PaymentConfirm({
     const removeOrderItem = (id: string) => {
         setOrderItems(prev => prev.filter(item => item.id !== id));
     };
-
-    if (isPaymentSuccessful && completedTransaction) {
-        return (
-            <PaymentSuccess
-                transaction={completedTransaction}
-                onFinish={handleFinish}
-                dictionary={dictionary}
-            />
-        );
-    }
 
     if (isMobile === undefined) {
         return <LoadingOverlay isLoading={true} />;

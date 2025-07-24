@@ -44,6 +44,11 @@ interface CancelTransactionParams {
     requesteeId: string;
 }
 
+interface PaymentSuccessState {
+    isPaymentSuccessful: boolean;
+    transaction: Transaction | null;
+}
+
 interface AuthContextType {
   user: FirebaseUser | null;
   userData: DocumentData | null;
@@ -59,8 +64,8 @@ interface AuthContextType {
   searchUsers: (searchTerm: string) => Promise<DocumentData[]>;
   getUserByUsername: (username: string) => Promise<DocumentData | null>;
   getUserById: (userId: string) => Promise<DocumentData | null>;
-  processTransaction: (params: TransactionParams) => Promise<void>;
-  requestTransaction: (params: TransactionParams) => Promise<void>;
+  processTransaction: (params: TransactionParams) => Promise<Transaction>;
+  requestTransaction: (params: TransactionParams) => Promise<Transaction>;
   declineTransaction: (params: DeclineTransactionParams) => Promise<void>;
   cancelTransaction: (params: CancelTransactionParams) => Promise<void>;
   submitAppeal: (userId: string) => Promise<void>;
@@ -72,6 +77,9 @@ interface AuthContextType {
   createTicketTemplate: (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>) => Promise<void>;
   updateTicketTemplate: (templateId: string, data: Partial<Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>>) => Promise<void>;
   createTicketLink: (templateId: string) => Promise<string>;
+  paymentSuccessState: PaymentSuccessState;
+  setPaymentSuccessState: (state: PaymentSuccessState) => void;
+  clearPaymentSuccessState: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,6 +106,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [ticketTemplates, setTicketTemplates] = useState<TicketTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [paymentSuccessState, setPaymentSuccessState] = useState<PaymentSuccessState>({ isPaymentSuccessful: false, transaction: null });
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -105,6 +115,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const localeFromPath = pathname.split('/')[1] as Locale;
     return i18n.locales.includes(localeFromPath) ? localeFromPath : i18n.defaultLocale;
   }
+
+  const clearPaymentSuccessState = () => {
+    setPaymentSuccessState({ isPaymentSuccessful: false, transaction: null });
+    const locale = getCurrentLocale();
+    router.push(`/${locale}/home`);
+  };
 
   const refreshUserData = useCallback(async () => {
     if (auth.currentUser) {
@@ -310,10 +326,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, payerTxId, locale, orderItems }: TransactionParams): Promise<void> => {
+  const processTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, payerTxId, locale, orderItems }: TransactionParams): Promise<Transaction> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     const dictionary = await getDictionary(locale);
+    let createdTransaction: Transaction | null = null;
 
     try {
         let requesterDocRef: any = null;
@@ -339,12 +356,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (!fromUserDoc.exists() || !toUserDoc.exists()) {
                 throw new Error("User not found.");
             }
-
-            if (payerTxId && requesterDocRef) {
-                const payerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
-                const payerTxDoc = await transaction.get(payerTxRef);
-                if (!payerTxDoc.exists()) throw new Error("Payer transaction document not found for update.");
-            }
             
             const fromUserData = fromUserDoc.data();
             const toUserData = toUserDoc.data();
@@ -365,9 +376,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const payerTxRef = doc(db, "users", fromUserId, "transactions", payerTxId);
                 transaction.update(payerTxRef, { status: dictionary.status.Completed, date: timestamp });
                 transaction.update(requesterDocRef, { status: dictionary.status.Completed, date: timestamp });
+                const payerTxSnapshot = await transaction.get(payerTxRef);
+                createdTransaction = { id: payerTxSnapshot.id, ...payerTxSnapshot.data() } as Transaction;
+
             } else { 
                 const sharedRequestId = doc(collection(db, "dummy")).id;
-                const sharedTxData = {
+                const senderTransactionRef = doc(collection(db, "users", fromUserId, "transactions"));
+                
+                const senderTxData = {
                     amount: amount,
                     description: note,
                     date: timestamp,
@@ -375,20 +391,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     attachmentUrl: attachmentUrl || null,
                     requestId: sharedRequestId,
                     orderItems: orderItems || null,
-                };
-
-                const senderTransactionRef = doc(collection(db, "users", fromUserId, "transactions"));
-                transaction.set(senderTransactionRef, {
-                    ...sharedTxData,
                     type: 'payment',
                     name: `${toUserData.firstName} ${toUserData.lastName}`,
                     currency: fromUserData.currency,
                     otherPartyUid: toUserId,
-                });
+                };
+                transaction.set(senderTransactionRef, senderTxData);
+                createdTransaction = { id: senderTransactionRef.id, ...senderTxData, otherParty: toUserData } as Transaction;
 
                 const receiverTransactionRef = doc(collection(db, "users", toUserId, "transactions"));
                 transaction.set(receiverTransactionRef, {
-                    ...sharedTxData,
+                    amount,
+                    description: note,
+                    date: timestamp,
+                    status: dictionary.status.Completed,
+                    attachmentUrl: attachmentUrl || null,
+                    requestId: sharedRequestId,
+                    orderItems: orderItems || null,
                     type: 'receipt',
                     name: `${fromUserData.firstName} ${fromUserData.lastName}`,
                     currency: toUserData.currency,
@@ -396,6 +415,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 });
             }
         });
+
+        if (!createdTransaction) throw new Error("Transaction could not be created.");
+        return createdTransaction;
+
     } catch (e) {
         console.error("Transaction failed: ", e);
         if (e instanceof Error) {
@@ -405,7 +428,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, locale, orderItems }: TransactionParams): Promise<void> => {
+  const requestTransaction = async ({ fromUserId, toUserId, amount, note, attachmentUrl, locale, orderItems }: TransactionParams): Promise<Transaction> => {
     const fromUserRef = doc(db, "users", fromUserId);
     const toUserRef = doc(db, "users", toUserId);
     const dictionary = await getDictionary(locale);
@@ -424,30 +447,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const timestamp = now.toISOString();
     const sharedRequestId = doc(collection(db, "dummy")).id;
     
-    const sharedData = {
+    const batch = writeBatch(db);
+
+    const requesterTxRef = doc(collection(db, "users", fromUserId, "transactions"));
+    const requesterTxData = {
         amount: amount,
         description: note,
         date: timestamp,
         attachmentUrl: attachmentUrl || null,
         requestId: sharedRequestId,
         orderItems: orderItems || null,
-    };
-    
-    const batch = writeBatch(db);
-
-    const requesterTxRef = doc(collection(db, "users", fromUserId, "transactions"));
-    batch.set(requesterTxRef, {
-        ...sharedData,
         status: dictionary.status.Pending,
         type: 'receipt',
         name: `${toUserData.firstName} ${toUserData.lastName}`,
         currency: fromUserData.currency,
         otherPartyUid: toUserId,
-    });
+    };
+    batch.set(requesterTxRef, requesterTxData);
     
     const requesteeTxRef = doc(collection(db, "users", toUserId, "transactions"));
     batch.set(requesteeTxRef, {
-        ...sharedData,
+        amount: amount,
+        description: note,
+        date: timestamp,
+        attachmentUrl: attachmentUrl || null,
+        requestId: sharedRequestId,
+        orderItems: orderItems || null,
         status: dictionary.status.Requested,
         type: 'payment',
         name: `${fromUserData.firstName} ${fromUserData.lastName}`,
@@ -456,6 +481,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     
     await batch.commit();
+
+    return { id: requesterTxRef.id, ...requesterTxData, otherParty: toUserData } as Transaction;
   };
 
   const declineTransaction = async ({ payerTxId, requesterId, locale }: DeclineTransactionParams) => {
@@ -637,7 +664,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate, updateTicketTemplate, createTicketLink }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate, updateTicketTemplate, createTicketLink, paymentSuccessState, setPaymentSuccessState, clearPaymentSuccessState }}>
       {children}
     </AuthContext.Provider>
   );
