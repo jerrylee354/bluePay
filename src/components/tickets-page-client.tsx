@@ -23,6 +23,7 @@ import { LoadingOverlay } from './ui/loading-overlay';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Label } from './ui/label';
+import VerifiedAvatar from './VerifiedAvatar';
 
 const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => {
     const isExpired = template.expiresAt && new Date(template.expiresAt) < new Date();
@@ -165,13 +166,17 @@ const CreateEditTicketDialog = ({
     
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.value) {
-            // HTML date input gives YYYY-MM-DD, but JS Date constructor
-            // can parse it correctly if it's in UTC time zone.
-            const dateInUTC = new Date(e.target.value + 'T00:00:00Z');
-            setExpiresAt(dateInUTC);
+            setExpiresAt(new Date(e.target.value));
         } else {
             setExpiresAt(undefined);
         }
+    };
+
+    const getDatetimeLocalValue = (date: Date | undefined) => {
+        if (!date) return '';
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+        return localDate.toISOString().slice(0, 16);
     };
 
     const renderStepContent = () => {
@@ -218,11 +223,11 @@ const CreateEditTicketDialog = ({
                     <div className="w-full space-y-4">
                         <Label htmlFor="expirationDate">{dictionary.expirationDate}</Label>
                         <div className="relative">
-                            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
                              <Input
                                 id="expirationDate"
-                                type="date"
-                                value={expiresAt ? expiresAt.toISOString().split('T')[0] : ''}
+                                type="datetime-local"
+                                value={getDatetimeLocalValue(expiresAt)}
                                 onChange={handleDateChange}
                                 className="h-12 text-base pl-10"
                             />
@@ -242,9 +247,11 @@ const CreateEditTicketDialog = ({
                         <DialogTitle className="text-2xl font-bold">{dialogTitle}</DialogTitle>
                          <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">{dictionary.step} {step}/{totalSteps}</span>
-                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
-                                <X className="h-5 w-5" />
-                            </Button>
+                             <DialogClose asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </DialogClose>
                         </div>
                     </div>
                     <DialogDescription className="sr-only">{dictionary.createTicketDescription}</DialogDescription>
