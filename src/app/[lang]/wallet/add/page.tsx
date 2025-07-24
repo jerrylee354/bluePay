@@ -10,18 +10,16 @@ export default async function AddTicketPage({
     searchParams,
 }: {
     params: { lang: Locale };
-    searchParams: { [key: string]: string | string[] | undefined };
+    searchParams: { [key:string]: string | string[] | undefined };
 }) {
     const dictionary = await getDictionary(params.lang);
-    const templateId = typeof searchParams.templateId === 'string' ? searchParams.templateId : null;
-    const issuerId = typeof searchParams.issuerId === 'string' ? searchParams.issuerId : null;
+    const linkId = typeof searchParams.linkId === 'string' ? searchParams.linkId : null;
 
     return (
         <Suspense fallback={<LoadingOverlay isLoading={true} />}>
             <AddTicketPageClient
                 dictionary={dictionary}
-                templateId={templateId}
-                issuerId={issuerId}
+                linkId={linkId}
             />
         </Suspense>
     );

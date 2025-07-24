@@ -228,8 +228,8 @@ const CreateEditTicketDialog = ({
     };
     
     return (
-        <Dialog open={isOpen} modal={false}>
-            <DialogContent className="max-w-lg flex flex-col h-full sm:h-auto max-h-[90vh]">
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="max-w-lg flex flex-col sm:h-auto max-h-[90dvh]">
                 <LoadingOverlay isLoading={isProcessing} />
                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <div className="flex items-center justify-between">
@@ -267,7 +267,7 @@ const CreateEditTicketDialog = ({
 
 export default function TicketsPageClient({ dictionary }: { dictionary: Dictionary}) {
     const d = dictionary.tickets;
-    const { user, userData, ticketTemplates, isLoading } = useAuth();
+    const { user, userData, ticketTemplates, isLoading, createTicketLink } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     
@@ -276,21 +276,31 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const [selectedTemplate, setSelectedTemplate] = useState<TicketTemplate | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [qrValue, setQrValue] = useState('');
+    const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+
 
     useEffect(() => {
         if (!isLoading && userData?.accountType !== 'business') {
           router.push('/home');
         }
-      }, [userData, isLoading, router]);
+    }, [userData, isLoading, router]);
 
-    const handleShare = (template: TicketTemplate) => {
-        if (typeof window !== 'undefined' && user) {
+    const handleShare = async (template: TicketTemplate) => {
+        if (!user) return;
+        setIsGeneratingLink(true);
+        setSelectedTemplate(template);
+        setIsShareOpen(true);
+        try {
+            const linkId = await createTicketLink(template.id);
             const baseUrl = window.location.origin;
             const lang = dictionary.locale;
-            const addUrl = `${baseUrl}/${lang}/wallet/add?templateId=${template.id}&issuerId=${user.uid}`;
+            const addUrl = `${baseUrl}/${lang}/wallet/add?linkId=${linkId}`;
             setQrValue(addUrl);
-            setSelectedTemplate(template);
-            setIsShareOpen(true);
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: "Failed to create link", description: error.message });
+            setIsShareOpen(false);
+        } finally {
+            setIsGeneratingLink(false);
         }
     };
     
@@ -306,13 +316,23 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
         setIsCreateEditOpen(true);
     }
     
-    const copyToClipboard = () => {
-        if (!qrValue) return;
-        navigator.clipboard.writeText(qrValue).then(() => {
+    const copyToClipboard = async () => {
+        if (!selectedTemplate) return;
+        
+        setIsGeneratingLink(true);
+        try {
+            const linkId = await createTicketLink(selectedTemplate.id);
+            const baseUrl = window.location.origin;
+            const lang = dictionary.locale;
+            const addUrl = `${baseUrl}/${lang}/wallet/add?linkId=${linkId}`;
+            
+            await navigator.clipboard.writeText(addUrl);
             toast({ title: d.linkCopied });
-        }, (err) => {
-            toast({ variant: 'destructive', title: d.copyFailed, description: err.message });
-        });
+        } catch (error: any) {
+             toast({ variant: 'destructive', title: d.copyFailed, description: error.message });
+        } finally {
+            setIsGeneratingLink(false);
+        }
     };
 
     if (isLoading || !userData || userData.accountType !== 'business') {
@@ -321,6 +341,7 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
 
     return (
         <div className="space-y-6">
+            <LoadingOverlay isLoading={isGeneratingLink} />
             <header className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">{d.title}</h1>
                 <div className="flex gap-2">
@@ -366,8 +387,8 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
                         <DialogDescription className="text-center">{d.shareThisQr}</DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col items-center justify-center text-center p-4 space-y-4">
-                        {qrValue && <QRCode value={qrValue} size={256} />}
-                        <Button onClick={copyToClipboard} variant="secondary" className="w-full">
+                        {isGeneratingLink ? <div className="w-64 h-64 bg-muted rounded-lg animate-pulse" /> : <QRCode value={qrValue} size={256} />}
+                        <Button onClick={copyToClipboard} variant="secondary" className="w-full" disabled={isGeneratingLink}>
                             <Copy className="mr-2 h-4 w-4" />
                             {d.copyLink}
                         </Button>

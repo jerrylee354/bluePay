@@ -247,17 +247,24 @@
     },
     "wallet": {
         "title": "錢包",
-        "underConstruction": "錢包功能即將推出！",
         "noTicketsTitle": "您的錢包是空的",
         "noTicketsDescription": "掃描商家的 QR Code 以新增票卡或優惠券。",
         "addFirstTicket": "新增您的第一張票卡",
         "showTicketToMerchant": "向商家出示 QR Code",
         "addTicketSuccess": "已成功新增票卡！",
-        "addTicketError": "新增票卡失敗",
+        "addTicketError": "無法新增票卡",
         "scanTicketTitle": "掃描票卡 QR Code",
         "addTicketToWallet": "新增票卡至錢包",
+        "wantsToAdd": "想要新增一張票卡到您的錢包。",
         "close": "關閉",
-        "add": "新增至錢包"
+        "add": "新增至錢包",
+        "cancel": "取消",
+        "invalidLink": "無效的票卡連結。所需資訊缺失。",
+        "linkExpired": "此票卡連結已過期或已被使用。",
+        "ticketExpired": "此票卡優惠已過期，無法再新增。",
+        "limitReached": "此票卡已達發行上限，無法再新增。",
+        "templateNotFound": "找不到票卡樣板。",
+        "fetchError": "讀取票卡資訊失敗。"
     },
     "tickets": {
         "title": "票卡",
@@ -277,7 +284,7 @@
         "saveChanges": "儲存變更",
         "ticketCreated": "已成功建立票卡！",
         "ticketUpdated": "票卡已更新！",
-        "shareThisQr": "與您的顧客分享此 QR Code 以新增此票卡。",
+        "shareThisQr": "顧客可掃描此 QR Code 來新增票卡。此為一次性連結。",
         "scanUserTicket": "掃描顧客的票卡",
         "confirmRedemption": "確認核銷",
         "confirmRedemptionDescription": "您確定要將此票卡標記為已使用嗎？",
@@ -296,8 +303,8 @@
         "next": "下一步",
         "back": "返回",
         "shareTicket": "分享票卡",
-        "copyLink": "複製連結",
-        "linkCopied": "連結已複製到剪貼簿！",
+        "copyLink": "複製新連結",
+        "linkCopied": "新的一次性連結已複製到剪貼簿！",
         "copyFailed": "複製連結失敗。"
     },
     "settings": {

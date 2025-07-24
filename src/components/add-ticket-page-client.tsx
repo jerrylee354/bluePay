@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -9,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Dictionary } from '@/dictionaries';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Ticket, X } from 'lucide-react';
+import { AlertCircle, Ticket } from 'lucide-react';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { TicketTemplate } from '@/lib/data';
@@ -46,14 +47,14 @@ const TicketCardPreview = ({ template }: { template: TicketTemplate }) => {
 
 interface AddTicketPageClientProps {
     dictionary: Dictionary;
-    templateId: string | null;
-    issuerId: string | null;
+    linkId: string | null;
 }
 
-export default function AddTicketPageClient({ dictionary, templateId, issuerId }: AddTicketPageClientProps) {
+export default function AddTicketPageClient({ dictionary, linkId }: AddTicketPageClientProps) {
     const router = useRouter();
     const { user, addTicketToWallet, isLoading: isAuthLoading } = useAuth();
     const { toast } = useToast();
+    const d_wallet = dictionary.wallet;
 
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -69,11 +70,11 @@ export default function AddTicketPageClient({ dictionary, templateId, issuerId }
     }, [isAuthLoading, user, router, dictionary.locale]);
 
     useEffect(() => {
-        if (!user) return; // Wait for user to be available
+        if (!user) return;
 
         const fetchTicketTemplate = async () => {
-            if (!templateId || !issuerId) {
-                setError("Invalid ticket link. Required information is missing.");
+            if (!linkId) {
+                setError(d_wallet.invalidLink);
                 setIsLoading(false);
                 return;
             }
@@ -83,47 +84,57 @@ export default function AddTicketPageClient({ dictionary, templateId, issuerId }
             setTicketTemplate(null);
             
             try {
+                const linkRef = doc(db, "ticketLinks", linkId);
+                const linkSnap = await getDoc(linkRef);
+
+                if (!linkSnap.exists() || linkSnap.data()?.used) {
+                    setError(d_wallet.linkExpired);
+                    setIsLoading(false);
+                    return;
+                }
+                const { templateId, issuerId } = linkSnap.data();
+
                 const templateRef = doc(db, "users", issuerId, "ticketTemplates", templateId);
                 const templateSnap = await getDoc(templateRef);
 
                 if (templateSnap.exists()) {
                     const template = { id: templateSnap.id, ...templateSnap.data() } as TicketTemplate;
-                    if (template.expiresAt && new Date(template.expiresAt) < new Date()) {
-                        setError("This ticket offer has expired and can no longer be added.");
+                     if (template.expiresAt && new Date(template.expiresAt) < new Date()) {
+                        setError(d_wallet.ticketExpired);
                     } else if (template.issuanceLimit !== null && template.issuanceCount >= template.issuanceLimit) {
-                        setError("This ticket has reached its issuance limit and can no longer be added.");
+                        setError(d_wallet.limitReached);
                     } else {
                         setTicketTemplate(template);
                     }
                 } else {
-                    setError("Ticket template not found.");
+                    setError(d_wallet.templateNotFound);
                 }
             } catch (err) {
-                setError("Failed to fetch ticket information.");
+                setError(d_wallet.fetchError);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchTicketTemplate();
-    }, [templateId, issuerId, user]);
+    }, [linkId, user, d_wallet]);
 
     const handleAddTicket = async () => {
-        if (!templateId || !issuerId) return;
+        if (!linkId) return;
         setIsProcessing(true);
         try {
-            await addTicketToWallet(templateId, issuerId);
-            toast({ title: dictionary.wallet.addTicketSuccess });
+            await addTicketToWallet(linkId);
+            toast({ title: d_wallet.addTicketSuccess });
             router.push(`/${dictionary.locale}/wallet`);
         } catch (err: any) {
-            setError(err.message || dictionary.wallet.addTicketError);
+            setError(err.message || d_wallet.addTicketError);
         } finally {
             setIsProcessing(false);
         }
     };
 
     const handleClose = () => {
-        router.back();
+        router.push(`/${dictionary.locale}/home`);
     };
 
     if (isAuthLoading || (!ticketTemplate && !error && isLoading)) {
@@ -135,34 +146,34 @@ export default function AddTicketPageClient({ dictionary, templateId, issuerId }
             <LoadingOverlay isLoading={isProcessing} />
             <Card className="w-full max-w-md animate-in fade-in-0 zoom-in-95">
                 <CardContent className="p-6 text-center space-y-6">
-                    {isLoading && <div className="h-60 w-full animate-pulse rounded-lg bg-muted" />}
+                    {isLoading && <div className="h-72 w-full animate-pulse rounded-lg bg-muted" />}
 
                     {error && !isLoading && (
-                        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                        <div className="flex flex-col items-center justify-center space-y-4 text-center h-72">
                             <AlertCircle className="h-16 w-16 text-destructive" />
-                            <h2 className="text-xl font-bold">Unable to Add Ticket</h2>
+                            <h2 className="text-xl font-bold">{d_wallet.addTicketError}</h2>
                             <p className="text-muted-foreground">{error}</p>
                             <Button onClick={handleClose} className="w-full">
-                                {dictionary.wallet.close}
+                                {d_wallet.close}
                             </Button>
                         </div>
                     )}
                     
                     {!isLoading && !error && ticketTemplate && (
                         <div className="flex flex-col items-center justify-center space-y-6">
-                             <h1 className="text-2xl font-bold">Add Ticket to Wallet</h1>
+                             <h1 className="text-2xl font-bold">{d_wallet.addTicketToWallet}</h1>
                              <p className="text-muted-foreground">
-                                <span className="font-semibold">{ticketTemplate.issuerName}</span> wants to add a ticket to your wallet.
+                                <span className="font-semibold">{ticketTemplate.issuerName}</span> {d_wallet.wantsToAdd}
                              </p>
 
                             <TicketCardPreview template={ticketTemplate} />
                             
                              <div className="w-full grid grid-cols-2 gap-4">
                                 <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
-                                    {dictionary.wallet.close}
+                                    {d_wallet.cancel}
                                 </Button>
                                 <Button onClick={handleAddTicket} disabled={isProcessing || isLoading || !!error}>
-                                    {dictionary.wallet.add}
+                                    {d_wallet.add}
                                 </Button>
                             </div>
                         </div>

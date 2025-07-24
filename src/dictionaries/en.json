@@ -247,17 +247,24 @@
     },
     "wallet": {
         "title": "Wallet",
-        "underConstruction": "Wallet feature coming soon!",
         "noTicketsTitle": "Your wallet is empty",
         "noTicketsDescription": "Add tickets or coupons by scanning a merchant's QR code.",
         "addFirstTicket": "Add Your First Ticket",
         "showTicketToMerchant": "Show QR Code to Merchant",
         "addTicketSuccess": "Ticket Added!",
-        "addTicketError": "Failed to Add Ticket",
+        "addTicketError": "Unable to Add Ticket",
         "scanTicketTitle": "Scan Ticket QR Code",
         "addTicketToWallet": "Add Ticket to Wallet",
+        "wantsToAdd": "wants to add a ticket to your wallet.",
         "close": "Close",
-        "add": "Add to Wallet"
+        "add": "Add to Wallet",
+        "cancel": "Cancel",
+        "invalidLink": "Invalid ticket link. Required information is missing.",
+        "linkExpired": "This ticket link has expired or has already been used.",
+        "ticketExpired": "This ticket offer has expired and can no longer be added.",
+        "limitReached": "This ticket has reached its issuance limit and can no longer be added.",
+        "templateNotFound": "Ticket template not found.",
+        "fetchError": "Failed to fetch ticket information."
     },
     "tickets": {
         "title": "Tickets",
@@ -277,7 +284,7 @@
         "saveChanges": "Save Changes",
         "ticketCreated": "Ticket Created!",
         "ticketUpdated": "Ticket Updated!",
-        "shareThisQr": "Share this QR code with your customers to add this ticket.",
+        "shareThisQr": "Customers can scan this QR code to add the ticket. This is a one-time use link.",
         "scanUserTicket": "Scan User's Ticket",
         "confirmRedemption": "Confirm Redemption",
         "confirmRedemptionDescription": "Do you want to mark this ticket as used?",
@@ -296,8 +303,8 @@
         "next": "Next",
         "back": "Back",
         "shareTicket": "Share Ticket",
-        "copyLink": "Copy Link",
-        "linkCopied": "Link copied to clipboard!",
+        "copyLink": "Copy New Link",
+        "linkCopied": "New single-use link copied to clipboard!",
         "copyFailed": "Failed to copy link."
     },
     "settings": {

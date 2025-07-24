@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,6 +13,7 @@ interface VerifiedAvatarProps {
     fallbackClassName?: string;
     showBadge?: boolean;
     badgeAnimation?: 'granted' | 'revoked' | null;
+    count?: number | null;
 }
 
 const getInitials = (user: DocumentData | null) => {
@@ -21,13 +23,23 @@ const getInitials = (user: DocumentData | null) => {
     return "?";
 }
 
-export default function VerifiedAvatar({ user, className, fallbackClassName, showBadge = true, badgeAnimation = null }: VerifiedAvatarProps) {
-    if (!user) return null;
-
-    const isVerified = user.verify === 'Yes';
-    const isBusiness = user.accountType === 'business';
+export default function VerifiedAvatar({ user, className, fallbackClassName, showBadge = true, badgeAnimation = null, count = null }: VerifiedAvatarProps) {
+    if (!user && !count) return null;
 
     const renderBadge = () => {
+        if (count) {
+             return (
+                 <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold border-2 border-background">
+                    {count}
+                </div>
+            )
+        }
+        
+        if (!user) return null;
+        
+        const isVerified = user.verify === 'Yes';
+        const isBusiness = user.accountType === 'business';
+
         if (!showBadge && !badgeAnimation) return null;
 
         const animationClass = badgeAnimation === 'granted' ? 'fly-in' : badgeAnimation === 'revoked' ? 'pop-out' : '';
@@ -46,7 +58,7 @@ export default function VerifiedAvatar({ user, className, fallbackClassName, sho
         
         if (isVerified) {
              return (
-                 <div className={cn("absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center", animationClass)}>
+                <div className={cn("absolute bottom-0 right-0 h-5 w-5 bg-background rounded-full flex items-center justify-center", animationClass)}>
                     <BadgeCheck className="h-5 w-5 text-primary" />
                 </div>
             )
@@ -57,11 +69,17 @@ export default function VerifiedAvatar({ user, className, fallbackClassName, sho
     
     return (
         <div className="relative">
-            <Avatar className={cn("h-10 w-10", className)}>
-                <AvatarImage src={user.photoURL} alt={user.firstName || "User Avatar"} />
-                <AvatarFallback className={cn(fallbackClassName)}>
-                    {getInitials(user)}
-                </AvatarFallback>
+             <Avatar className={cn("h-10 w-10", className)}>
+                {user ? (
+                    <>
+                        <AvatarImage src={user.photoURL} alt={user.firstName || "User Avatar"} />
+                        <AvatarFallback className={cn(fallbackClassName)}>
+                            {getInitials(user)}
+                        </AvatarFallback>
+                    </>
+                ) : (
+                    <AvatarFallback className={cn(fallbackClassName, "bg-muted")}></AvatarFallback>
+                )}
             </Avatar>
             {renderBadge()}
         </div>

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -66,10 +67,11 @@ interface AuthContextType {
   isLoading: boolean;
   isLoggingOut: boolean;
   refreshUserData: () => Promise<void>;
-  addTicketToWallet: (templateId: string, issuerId: string) => Promise<void>;
+  addTicketToWallet: (linkId: string) => Promise<void>;
   useTicket: (ticketId: string, userId: string) => Promise<void>;
   createTicketTemplate: (template: Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>) => Promise<void>;
   updateTicketTemplate: (templateId: string, data: Partial<Omit<TicketTemplate, 'id' | 'issuerId' | 'issuerName' | 'createdAt' | 'issuanceCount'>>) => Promise<void>;
+  createTicketLink: (templateId: string) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -544,10 +546,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await updateDoc(templateRef, data);
   };
 
-  const addTicketToWallet = async (templateId: string, issuerId: string) => {
+  const addTicketToWallet = async (linkId: string) => {
     if (!user) throw new Error("User not authenticated");
 
     await runTransaction(db, async (transaction) => {
+        const linkRef = doc(db, "ticketLinks", linkId);
+        const linkSnap = await transaction.get(linkRef);
+
+        if (!linkSnap.exists() || linkSnap.data()?.used) {
+            throw new Error("This link is invalid or has already been used.");
+        }
+
+        const { templateId, issuerId } = linkSnap.data();
         const templateRef = doc(db, "users", issuerId, "ticketTemplates", templateId);
         const templateSnap = await transaction.get(templateRef);
 
@@ -579,8 +589,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const walletColRef = collection(db, "users", user.uid, "walletItems");
         const newWalletItemRef = doc(walletColRef);
         transaction.set(newWalletItemRef, walletItemData);
-
         transaction.update(templateRef, { issuanceCount: templateData.issuanceCount + 1 });
+        transaction.update(linkRef, { used: true });
     });
   };
 
@@ -614,8 +624,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const createTicketLink = async (templateId: string) => {
+    if (!user) throw new Error("User not authenticated.");
+    const ticketLinksRef = collection(db, "ticketLinks");
+    const newLinkRef = await addDoc(ticketLinksRef, {
+        templateId,
+        issuerId: user.uid,
+        createdAt: serverTimestamp(),
+        used: false,
+    });
+    return newLinkRef.id;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate, updateTicketTemplate }}>
+    <AuthContext.Provider value={{ user, userData, transactions, walletItems, ticketTemplates, isAuthenticated: !!user, login, logout, signup, checkEmailExists, checkUsernameExists, searchUsers, getUserByUsername, getUserById, processTransaction, requestTransaction, declineTransaction, cancelTransaction, submitAppeal, isLoading, isLoggingOut, refreshUserData, addTicketToWallet, useTicket, createTicketTemplate, updateTicketTemplate, createTicketLink }}>
       {children}
     </AuthContext.Provider>
   );
@@ -628,5 +650,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-    
