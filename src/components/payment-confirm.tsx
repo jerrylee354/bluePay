@@ -274,6 +274,10 @@ export default function PaymentConfirm({
                 completedTransaction = await requestTransaction(transactionPayload);
             }
             
+            if (isDialog && onClose) {
+                onClose();
+            }
+            
             setPaymentSuccessState({ isPaymentSuccessful: true, transaction: completedTransaction });
 
         } catch (error: any) {
@@ -414,7 +418,7 @@ export default function PaymentConfirm({
       <div className={cn("bg-background", isMobile ? "flex flex-col h-dvh" : "flex flex-row h-[580px] rounded-xl overflow-hidden")}>
           <LoadingOverlay isLoading={isProcessing || isLoading} />
           <div className="flex-1 flex flex-col md:border-r">
-              {isMobile && (
+              {(isMobile || isDialog) && (
                   <header className="relative flex items-center justify-between p-4 flex-shrink-0">
                       <Button variant="ghost" size="icon" onClick={handleBack}>
                           <ChevronLeft className="h-6 w-6" />

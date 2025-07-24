@@ -23,9 +23,6 @@ import { LoadingOverlay } from './ui/loading-overlay';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Label } from './ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Calendar } from './ui/calendar';
-import { format } from 'date-fns';
 
 const TicketTemplateCard = ({ template, onShare, onEdit }: { template: TicketTemplate, onShare: () => void, onEdit: () => void }) => {
     const isExpired = template.expiresAt && new Date(template.expiresAt) < new Date();
@@ -165,6 +162,17 @@ const CreateEditTicketDialog = ({
             setIsProcessing(false);
         }
     };
+    
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.value) {
+            // HTML date input gives YYYY-MM-DD, but JS Date constructor
+            // can parse it correctly if it's in UTC time zone.
+            const dateInUTC = new Date(e.target.value + 'T00:00:00Z');
+            setExpiresAt(dateInUTC);
+        } else {
+            setExpiresAt(undefined);
+        }
+    };
 
     const renderStepContent = () => {
         switch(step) {
@@ -206,31 +214,19 @@ const CreateEditTicketDialog = ({
                     </div>
                 );
             case 4:
-                return (
+                 return (
                     <div className="w-full space-y-4">
-                        <Label>{dictionary.expirationDate}</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "w-full justify-start text-left font-normal h-12 text-base",
-                                        !expiresAt && "text-muted-foreground"
-                                    )}
-                                >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {expiresAt ? format(expiresAt, "PPP") : <span>{dictionary.expirationDatePlaceholder}</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                mode="single"
-                                selected={expiresAt}
-                                onSelect={setExpiresAt}
-                                initialFocus
-                                />
-                            </PopoverContent>
-                        </Popover>
+                        <Label htmlFor="expirationDate">{dictionary.expirationDate}</Label>
+                        <div className="relative">
+                            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                             <Input
+                                id="expirationDate"
+                                type="date"
+                                value={expiresAt ? expiresAt.toISOString().split('T')[0] : ''}
+                                onChange={handleDateChange}
+                                className="h-12 text-base pl-10"
+                            />
+                        </div>
                     </div>
                 );
             default: return null;
@@ -239,7 +235,7 @@ const CreateEditTicketDialog = ({
     
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-w-lg flex flex-col sm:h-auto max-h-[90dvh]">
+            <DialogContent className="max-w-lg flex flex-col sm:h-auto max-h-[90dvh]" hideCloseButton>
                 <LoadingOverlay isLoading={isProcessing} />
                 <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
                     <div className="flex items-center justify-between">
