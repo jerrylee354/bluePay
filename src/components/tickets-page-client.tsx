@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { Plus, Ticket, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, X } from 'lucide-react';
+import { Plus, Ticket as TicketIcon, ScanLine, Share2, Edit, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, X } from 'lucide-react';
 import { Dictionary } from '@/dictionaries';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
@@ -275,7 +275,7 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<TicketTemplate | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [qrValue, setQrValue] = useState('');
+    const [shareableLink, setShareableLink] = useState('');
     const [isGeneratingLink, setIsGeneratingLink] = useState(false);
 
 
@@ -287,15 +287,17 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
 
     const handleShare = async (template: TicketTemplate) => {
         if (!user) return;
-        setIsGeneratingLink(true);
         setSelectedTemplate(template);
         setIsShareOpen(true);
+        setIsGeneratingLink(true);
+        setShareableLink('');
+
         try {
             const linkId = await createTicketLink(template.id);
             const baseUrl = window.location.origin;
             const lang = dictionary.locale;
             const addUrl = `${baseUrl}/${lang}/wallet/add?linkId=${linkId}`;
-            setQrValue(addUrl);
+            setShareableLink(addUrl);
         } catch (error: any) {
             toast({ variant: 'destructive', title: "Failed to create link", description: error.message });
             setIsShareOpen(false);
@@ -317,21 +319,12 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
     }
     
     const copyToClipboard = async () => {
-        if (!selectedTemplate) return;
-        
-        setIsGeneratingLink(true);
+        if (!shareableLink) return;
         try {
-            const linkId = await createTicketLink(selectedTemplate.id);
-            const baseUrl = window.location.origin;
-            const lang = dictionary.locale;
-            const addUrl = `${baseUrl}/${lang}/wallet/add?linkId=${linkId}`;
-            
-            await navigator.clipboard.writeText(addUrl);
+            await navigator.clipboard.writeText(shareableLink);
             toast({ title: d.linkCopied });
         } catch (error: any) {
              toast({ variant: 'destructive', title: d.copyFailed, description: error.message });
-        } finally {
-            setIsGeneratingLink(false);
         }
     };
 
@@ -341,7 +334,6 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
 
     return (
         <div className="space-y-6">
-            <LoadingOverlay isLoading={isGeneratingLink} />
             <header className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">{d.title}</h1>
                 <div className="flex gap-2">
@@ -364,7 +356,7 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center space-y-4 text-center p-8 bg-secondary rounded-xl min-h-[300px]">
-                    <Ticket className="w-16 h-16 text-muted-foreground" />
+                    <TicketIcon className="w-16 h-16 text-muted-foreground" />
                     <p className="font-semibold text-lg">{d.noTemplatesTitle}</p>
                     <p className="text-sm text-muted-foreground">{d.noTemplatesDescription}</p>
                      <Button onClick={handleCreate}>
@@ -387,8 +379,12 @@ export default function TicketsPageClient({ dictionary }: { dictionary: Dictiona
                         <DialogDescription className="text-center">{d.shareThisQr}</DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col items-center justify-center text-center p-4 space-y-4">
-                        {isGeneratingLink ? <div className="w-64 h-64 bg-muted rounded-lg animate-pulse" /> : <QRCode value={qrValue} size={256} />}
-                        <Button onClick={copyToClipboard} variant="secondary" className="w-full" disabled={isGeneratingLink}>
+                        {isGeneratingLink || !shareableLink ? (
+                            <div className="w-64 h-64 bg-muted rounded-lg animate-pulse" />
+                         ) : (
+                            <QRCode value={shareableLink} size={256} />
+                         )}
+                        <Button onClick={copyToClipboard} variant="secondary" className="w-full" disabled={!shareableLink}>
                             <Copy className="mr-2 h-4 w-4" />
                             {d.copyLink}
                         </Button>
