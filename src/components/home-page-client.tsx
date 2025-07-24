@@ -82,7 +82,7 @@ const RecentActivity = ({ transactions, userData, dictionary }: { transactions: 
       </div>
 );
 
-const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: boolean, onOpenChange: (open: boolean) => void, onTry: () => void, dictionary: Dictionary['home']['darkModeDialog'] }) => {
+const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary }: { open: boolean, onOpenChange: (open: boolean) => void, onTry: () => void, dictionary: Dictionary['home']['darkModeDialog'] }) => {
     const [isAnimating, setIsAnimating] = useState(false);
 
     useEffect(() => {
@@ -98,6 +98,19 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
         <Dialog open={open} onOpenChange={onOpenChange}>
             <style jsx>{`
                 .dark-mode-reveal-bg {
+                    position: absolute;
+                    inset: 0;
+                    z-index: 10;
+                    background-color: hsl(var(--background));
+                    animation: reveal-dark 8s ease-out forwards;
+                    overflow: hidden;
+                }
+                .dark-mode-reveal-bg::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background-color: hsl(var(--background));
+                    backdrop-filter: blur(8px);
                     animation: reveal-dark 8s ease-out forwards;
                 }
                 @keyframes reveal-dark {
@@ -112,13 +125,7 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
             <DialogContent className="overflow-hidden p-0" hideCloseButton>
                  <div className="relative p-6">
                     {isAnimating && (
-                        <div 
-                            className="dark-mode-reveal-bg absolute inset-0 z-10"
-                            style={{ 
-                              backgroundColor: 'hsl(var(--background))',
-                              backdropFilter: 'blur(8px)'
-                            }}
-                        />
+                        <div className="dark-mode-reveal-bg" />
                     )}
                     <div className="relative z-20 text-center">
                         <div className="p-6">
