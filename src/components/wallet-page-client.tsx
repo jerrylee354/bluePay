@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -72,7 +73,7 @@ const WalletSkeleton = () => (
 
 export default function WalletPageClient({ dictionary }: { dictionary: Dictionary}) {
     const d = dictionary.wallet;
-    const { user, walletItems, isLoading, getUserById } = useAuth();
+    const { user, userData, walletItems, isLoading, getUserById } = useAuth();
     const router = useRouter();
     const [selectedTicket, setSelectedTicket] = useState<WalletItem | null>(null);
     const [qrValue, setQrValue] = useState('');
@@ -80,6 +81,13 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
     const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
     const [selectionGroup, setSelectionGroup] = useState<WalletItem[]>([]);
     const [issuers, setIssuers] = useState<Record<string, DocumentData | null>>({});
+
+    useEffect(() => {
+        if (!isLoading && userData?.accountType === 'business') {
+            router.push('/home');
+        }
+    }, [userData, isLoading, router]);
+
 
     useEffect(() => {
       const fetchIssuers = async () => {
@@ -181,6 +189,10 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
         setIsSelectionDialogOpen(false);
         handleTicketClick(ticket);
     };
+    
+    if (isLoading || !userData) {
+        return <LoadingOverlay isLoading={true} />;
+    }
 
     return (
         <div className="space-y-6">

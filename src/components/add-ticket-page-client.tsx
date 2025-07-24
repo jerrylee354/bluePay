@@ -52,7 +52,7 @@ interface AddTicketPageClientProps {
 
 export default function AddTicketPageClient({ dictionary, linkId }: AddTicketPageClientProps) {
     const router = useRouter();
-    const { user, addTicketToWallet, isLoading: isAuthLoading } = useAuth();
+    const { user, userData, addTicketToWallet, isLoading: isAuthLoading } = useAuth();
     const { toast } = useToast();
     const d_wallet = dictionary.wallet;
 
@@ -67,10 +67,13 @@ export default function AddTicketPageClient({ dictionary, linkId }: AddTicketPag
         sessionStorage.setItem('redirectAfterLogin', currentPath);
         router.push(`/${dictionary.locale}/login`);
       }
-    }, [isAuthLoading, user, router, dictionary.locale]);
+      if (!isAuthLoading && userData?.accountType === 'business') {
+        router.push('/home');
+      }
+    }, [isAuthLoading, user, userData, router, dictionary.locale]);
 
     useEffect(() => {
-        if (!user) return;
+        if (!user || userData?.accountType === 'business') return;
 
         const fetchTicketTemplate = async () => {
             if (!linkId) {
@@ -117,7 +120,7 @@ export default function AddTicketPageClient({ dictionary, linkId }: AddTicketPag
         };
 
         fetchTicketTemplate();
-    }, [linkId, user, d_wallet]);
+    }, [linkId, user, userData, d_wallet]);
 
     const handleAddTicket = async () => {
         if (!linkId) return;

@@ -40,7 +40,7 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     const d_tickets = dictionary.tickets;
     const router = useRouter();
     const { toast } = useToast();
-    const { useTicket } = useAuth();
+    const { useTicket, userData, isLoading: isAuthLoading } = useAuth();
     
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,6 +50,12 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
     const [isProcessing, setIsProcessing] = useState(false);
     const [dialogData, setDialogData] = useState<ScannedTicketData | null>(null);
     const [redeemError, setRedeemError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!isAuthLoading && mode === 'add' && userData?.accountType === 'business') {
+            router.push('/home');
+        }
+    }, [userData, isAuthLoading, router, mode]);
 
 
     useEffect(() => {
@@ -120,10 +126,9 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
           try {
             if (mode === 'add') {
                 const url = new URL(scanResult);
-                const templateId = url.searchParams.get('templateId');
-                const issuerId = url.searchParams.get('issuerId');
+                const linkId = url.searchParams.get('linkId');
 
-                if (url.pathname.includes('/wallet/add') && templateId && issuerId) {
+                if (url.pathname.includes('/wallet/add') && linkId) {
                     router.push(url.pathname + url.search);
                 } else {
                     throw new Error("Invalid QR code for this action.");
@@ -167,6 +172,10 @@ export default function ScanTicketPageClient({ dictionary, mode }: ScanTicketPag
 
     const backPath = mode === 'add' ? '/wallet' : '/tickets';
     const pageTitle = mode === 'add' ? d_wallet.scanTicketTitle : d_tickets.scanUserTicket;
+    
+    if (isAuthLoading) {
+        return <LoadingOverlay isLoading={true} />
+    }
 
     const renderDialog = () => {
         if (redeemError) {
