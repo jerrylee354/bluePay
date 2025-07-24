@@ -111,17 +111,17 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
                 }
             `}</style>
             <DialogContent className="overflow-hidden p-0" hideCloseButton>
-                <div className="relative p-6">
-                    {isAnimating && <div className="dark-mode-reveal-bg absolute inset-0 bg-slate-900/80 -z-10" />}
-                    <div className="relative z-10">
+                 <div className="relative p-6">
+                    {isAnimating && <div className="dark-mode-reveal-bg absolute inset-0 -z-10" />}
+                    <div className="relative z-10 text-center">
+                         <div className="p-6">
+                            <Wallet className={cn("w-20 h-20 mx-auto text-primary transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")} />
+                        </div>
                         <DialogHeader>
                             <DialogTitle className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")}>{dictionary.title}</DialogTitle>
                             <DialogDescription className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && 'text-slate-400')}>{dictionary.description}</DialogDescription>
                         </DialogHeader>
-                        <div className="p-6 text-center">
-                            <Wallet className={cn("w-20 h-20 mx-auto text-primary transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")} />
-                        </div>
-                        <DialogFooter className="grid grid-cols-2 gap-2">
+                        <DialogFooter className="grid grid-cols-2 gap-2 mt-6">
                             <Button variant="ghost" onClick={() => onOpenChange(false)} className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && 'text-slate-50 hover:bg-slate-800 hover:text-slate-50')}>{dictionary.close}</Button>
                             <Button onClick={onTry} className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && 'bg-slate-50 text-slate-900 hover:bg-slate-200')}>{dictionary.tryItNow}</Button>
                         </DialogFooter>
