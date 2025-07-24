@@ -87,8 +87,10 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary }: { open: boole
 
     useEffect(() => {
         if (open) {
-            const timer = setTimeout(() => setIsAnimating(true), 100);
-            return () => clearTimeout(timer);
+            // Use requestAnimationFrame to ensure the element is painted before animation starts
+            requestAnimationFrame(() => {
+                setIsAnimating(true);
+            });
         } else {
             setIsAnimating(false);
         }
@@ -96,38 +98,28 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary }: { open: boole
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <style jsx>{`
+             <style jsx>{`
                 .dark-mode-reveal-bg {
                     position: absolute;
                     inset: 0;
                     z-index: 10;
                     background-color: hsl(var(--background));
-                    animation: reveal-dark 8s ease-out forwards;
-                    overflow: hidden;
+                    clip-path: circle(0% at 0% 100%);
+                    transition: clip-path 8s ease-out;
+                    pointer-events: none;
                 }
-                .dark-mode-reveal-bg::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    background-color: hsl(var(--background));
-                    backdrop-filter: blur(8px);
-                    animation: reveal-dark 8s ease-out forwards;
+                .dark-mode-reveal-bg.animate {
+                    clip-path: circle(150% at 0% 100%);
                 }
-                @keyframes reveal-dark {
-                    from {
-                        clip-path: circle(0% at 0% 100%);
-                    }
-                    to {
-                        clip-path: circle(150% at 0% 100%);
-                    }
+                .content-wrapper {
+                    position: relative;
+                    z-index: 20;
                 }
             `}</style>
             <DialogContent className="overflow-hidden p-0" hideCloseButton>
-                 <div className="relative p-6">
-                    {isAnimating && (
-                        <div className="dark-mode-reveal-bg" />
-                    )}
-                    <div className="relative z-20 text-center">
+                 <div className="relative">
+                     <div className={cn("dark-mode-reveal-bg", isAnimating && "animate")} style={{'--background': '222.2 84% 4.9%'}} />
+                    <div className="content-wrapper text-center">
                         <div className="p-6">
                              <Wallet className={cn("w-20 h-20 mx-auto text-primary transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")} />
                         </div>
@@ -135,7 +127,7 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary }: { open: boole
                             <DialogTitle className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")}>{dictionary.title}</DialogTitle>
                             <DialogDescription className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && 'text-slate-400')}>{dictionary.description}</DialogDescription>
                         </DialogHeader>
-                        <DialogFooter className="grid grid-cols-2 gap-2 mt-6">
+                        <DialogFooter className="grid grid-cols-2 gap-2 mt-6 p-6 pt-0">
                             <Button variant="ghost" onClick={() => onOpenChange(false)} className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && 'text-slate-50 hover:bg-slate-800 hover:text-slate-50')}>{dictionary.close}</Button>
                             <Button onClick={onTry} className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && 'bg-slate-50 text-slate-900 hover:bg-slate-200')}>{dictionary.tryItNow}</Button>
                         </DialogFooter>
