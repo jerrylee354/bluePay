@@ -16,7 +16,7 @@ import { Dictionary } from "@/dictionaries";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import Dashboard from "./dashboard";
 import VerifiedAvatar from "./VerifiedAvatar";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 
 function formatCurrency(amount: number, currency: string) {
@@ -111,10 +111,15 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
             `}</style>
             <DialogContent className="overflow-hidden p-0" hideCloseButton>
                  <div className="relative p-6">
-                    {isAnimating && <div className="dark-mode-reveal-bg absolute inset-0 z-10 bg-slate-900/80 backdrop-blur-sm" />}
+                    {isAnimating && (
+                        <div 
+                            className="dark-mode-reveal-bg absolute inset-0 z-10"
+                            style={{ backgroundColor: 'hsl(222.2 84% 4.9%)', backdropFilter: 'blur(8px)' }}
+                        />
+                    )}
                     <div className="relative z-20 text-center">
                         <div className="p-6">
-                            <Wallet className={cn("w-20 h-20 mx-auto text-primary transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")} />
+                             <Wallet className={cn("w-20 h-20 mx-auto text-primary transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")} />
                         </div>
                         <DialogHeader>
                             <DialogTitle className={cn("transition-colors duration-[4s] delay-[3s]", isAnimating && "text-slate-50")}>{dictionary.title}</DialogTitle>
