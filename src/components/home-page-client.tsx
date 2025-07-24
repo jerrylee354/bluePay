@@ -16,7 +16,7 @@ import { Dictionary } from "@/dictionaries";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import Dashboard from "./dashboard";
 import VerifiedAvatar from "./VerifiedAvatar";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 
 function formatCurrency(amount: number, currency: string) {
@@ -114,7 +114,10 @@ const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: bool
                     {isAnimating && (
                         <div 
                             className="dark-mode-reveal-bg absolute inset-0 z-10"
-                            style={{ backgroundColor: 'hsl(222.2 84% 4.9%)', backdropFilter: 'blur(8px)' }}
+                            style={{ 
+                              backgroundColor: 'hsl(var(--background))',
+                              backdropFilter: 'blur(8px)'
+                            }}
                         />
                     )}
                     <div className="relative z-20 text-center">
