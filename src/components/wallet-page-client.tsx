@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -10,7 +9,7 @@ import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
 import { WalletItem } from '@/lib/data';
 import QRCode from 'qrcode.react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
 import { Skeleton } from './ui/skeleton';
 import { cn } from '@/lib/utils';
 import VerifiedAvatar from './VerifiedAvatar';
@@ -60,7 +59,7 @@ const TicketCard = ({ ticket, onClick }: { ticket: WalletItem, onClick: () => vo
 
 const WalletSkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
+        {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-40 rounded-lg" />)}
     </div>
 )
 
@@ -70,7 +69,9 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
     const router = useRouter();
     const [selectedTicket, setSelectedTicket] = useState<WalletItem | null>(null);
     const [qrValue, setQrValue] = useState('');
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+    const [isSelectionDialogOpen, setIsSelectionDialogOpen] = useState(false);
+    const [selectionGroup, setSelectionGroup] = useState<WalletItem[]>([]);
 
     const groupedTickets = useMemo(() => {
         const validTickets = walletItems.filter(item => item.status === 'valid');
@@ -89,31 +90,22 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
             const redemptionData = { type: 'ticket_redemption', ticketId: ticket.id, userId: user.uid };
             setQrValue(JSON.stringify(redemptionData));
             setSelectedTicket(ticket);
-            setIsDialogOpen(true);
+            setIsQrDialogOpen(true);
         }
     };
 
     const TicketStack = ({ tickets }: { tickets: WalletItem[] }) => {
-        const [isExpanded, setIsExpanded] = useState(false);
         const baseTicket = tickets[0];
         const count = tickets.length;
-        const cardRef = useRef<HTMLDivElement>(null);
-        const [dialogTicket, setDialogTicket] = useState<WalletItem | null>(null);
 
         const handleStackClick = () => {
             if(count > 1) {
-                setIsExpanded(!isExpanded);
+                setSelectionGroup(tickets);
+                setIsSelectionDialogOpen(true);
             } else {
                 handleTicketClick(baseTicket);
             }
         };
-
-        const handleExpandedCardClick = (ticket: WalletItem, e: React.MouseEvent) => {
-            e.stopPropagation();
-            setIsExpanded(false);
-            setDialogTicket(ticket);
-            handleTicketClick(ticket);
-        }
 
         const cardStyle = {
             backgroundColor: baseTicket.style?.backgroundColor || '#4f46e5',
@@ -122,28 +114,22 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
 
         return (
             <div 
-                ref={cardRef} 
-                className="relative h-40 w-full"
+                className="relative h-40 w-full cursor-pointer group"
                 onClick={handleStackClick}
-                style={{ perspective: '1200px' }}
             >
                 {tickets.slice(0, 3).map((ticket, index) => (
                     <div
                         key={ticket.id}
                         className={cn(
-                            "absolute inset-0 rounded-lg p-4 text-white shadow-md transition-all duration-300 ease-in-out cursor-pointer",
-                            isExpanded ? 'hover:!scale-110 hover:!z-20' : 'group-hover:-translate-y-1'
+                            "absolute inset-0 rounded-lg p-4 text-white shadow-md transition-transform duration-300 ease-in-out",
+                            "group-hover:-translate-y-1"
                         )}
                         style={{
-                            transformOrigin: 'bottom center',
-                            transform: isExpanded 
-                                ? `rotate(${(index - (count - 1) / 2) * 10}deg) translateY(-20px) scale(1)` 
-                                : `rotate(${index * 2}deg) translate(${index * 2}px, ${index * 2}px) scale(${1 - index * 0.05})`,
+                            transform: `translate(${index * 3}px, ${index * 3}px)`,
                             zIndex: count - index,
                             backgroundColor: ticket.style?.backgroundColor || '#4f46e5',
                             color: ticket.style?.textColor || '#ffffff',
                         }}
-                         onClick={(e) => isExpanded && handleExpandedCardClick(ticket, e)}
                     >
                          <div className="flex-1">
                             <div className="flex justify-between items-start">
@@ -156,14 +142,19 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                         </div>
                     </div>
                 ))}
-                {count > 1 && !isExpanded && (
-                    <div className="absolute top-2 right-2 z-20">
+                {count > 1 && (
+                    <div className="absolute -top-2 -right-2 z-20">
                          <VerifiedAvatar user={null} count={count} />
                     </div>
                 )}
             </div>
         )
     }
+
+    const handleSelectFromDialog = (ticket: WalletItem) => {
+        setIsSelectionDialogOpen(false);
+        handleTicketClick(ticket);
+    };
 
     return (
         <div className="space-y-6">
@@ -193,7 +184,35 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
                 </div>
             )}
             
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isSelectionDialogOpen} onOpenChange={setIsSelectionDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Select a Ticket</DialogTitle>
+                        <DialogDescription>
+                            You have multiple tickets of this type. Please choose one to use.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-[60vh] overflow-y-auto -mx-6 px-6 pt-2">
+                        <ul className="space-y-2">
+                            {selectionGroup.map(ticket => (
+                                <li key={ticket.id}>
+                                    <button 
+                                        onClick={() => handleSelectFromDialog(ticket)}
+                                        className="w-full text-left p-3 rounded-lg hover:bg-muted transition-colors"
+                                    >
+                                        <p className="font-semibold">{ticket.title}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Added on: {new Date(ticket.addedAt).toLocaleDateString()}
+                                        </p>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
                 <DialogContent
                     className="p-0 border-0 max-w-sm"
                     style={selectedTicket ? { 
@@ -221,3 +240,5 @@ export default function WalletPageClient({ dictionary }: { dictionary: Dictionar
         </div>
     );
 }
+
+    
