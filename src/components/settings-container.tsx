@@ -13,13 +13,17 @@ import NotificationSettingsPage from '@/app/[lang]/settings/notifications/page';
 import EditUsernamePage from '@/app/[lang]/settings/profile/edit-username/page';
 import ThemeSettingsPage from '@/app/[lang]/settings/theme/page';
 import { useAuth } from '@/context/auth-context';
+import { Badge } from './ui/badge';
 
 export type SettingsPage = 'main' | 'profile' | 'security' | 'privacy' | 'notifications' | 'theme' | 'edit-username';
 
-const SettingsListItem = ({ icon: Icon, text, onClick }: { icon: React.ElementType, text: string, onClick: () => void }) => (
+const SettingsListItem = ({ icon: Icon, text, onClick, badgeText }: { icon: React.ElementType, text: string, onClick: () => void, badgeText?: string }) => (
     <div onClick={onClick} className="flex items-center p-4 hover:bg-muted/50 rounded-lg cursor-pointer transition-colors">
         <Icon className="w-6 h-6 mr-4 text-muted-foreground" />
-        <span className="flex-1 text-base font-medium">{text}</span>
+        <div className="flex-1 flex items-center gap-2">
+            <span className="text-base font-medium">{text}</span>
+            {badgeText && <Badge variant="outline" className="border-primary text-primary">{badgeText}</Badge>}
+        </div>
         <ChevronLeft className="w-5 h-5 text-muted-foreground transform rotate-180" />
     </div>
 );
@@ -95,7 +99,12 @@ export default function SettingsContainer({ dictionary, onClose }: { dictionary:
                                 <SettingsListItem icon={Shield} text={dictionary.settings.security.title} onClick={() => setPage('security')} />
                                 <SettingsListItem icon={Eye} text={dictionary.settings.privacy.title} onClick={() => setPage('privacy')} />
                                 <SettingsListItem icon={Bell} text={dictionary.settings.notifications.title} onClick={() => setPage('notifications')} />
-                                <SettingsListItem icon={Palette} text={dictionary.settings.theme.title} onClick={() => setPage('theme')} />
+                                <SettingsListItem 
+                                    icon={Palette} 
+                                    text={dictionary.settings.theme.title} 
+                                    onClick={() => setPage('theme')}
+                                    badgeText={dictionary.settings.theme.beta}
+                                />
                             </CardContent>
                         </Card>
 

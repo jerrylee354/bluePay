@@ -1,8 +1,10 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import Link from "next/link";
+import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Transaction } from "@/lib/data";
@@ -14,6 +16,8 @@ import { Dictionary } from "@/dictionaries";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import Dashboard from "./dashboard";
 import VerifiedAvatar from "./VerifiedAvatar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
 
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
@@ -78,13 +82,53 @@ const RecentActivity = ({ transactions, userData, dictionary }: { transactions: 
       </div>
 );
 
+const DarkModeDialog = ({ open, onOpenChange, onTry, dictionary } : { open: boolean, onOpenChange: (open: boolean) => void, onTry: () => void, dictionary: Dictionary['home']['darkModeDialog'] }) => (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>{dictionary.title}</DialogTitle>
+                <DialogDescription>{dictionary.description}</DialogDescription>
+            </DialogHeader>
+            <div className="p-6 text-center">
+                <div className="text-8xl">🌚</div>
+            </div>
+            <DialogFooter className="grid grid-cols-2 gap-2">
+                <Button variant="ghost" onClick={() => onOpenChange(false)}>{dictionary.close}</Button>
+                <Button onClick={onTry}>{dictionary.tryItNow}</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+);
+
 
 export default function HomePageClient({ dictionary }: { dictionary: Dictionary }) {
   const { user, userData, transactions, isLoading } = useAuth();
+  const { setTheme } = useTheme();
   const recentTransactions = transactions.slice(0, 4);
   const isMobile = useIsMobile();
   const d = dictionary.home;
   const isBusiness = userData?.accountType === 'business';
+  
+  const [showDarkModeDialog, setShowDarkModeDialog] = useState(false);
+
+  useEffect(() => {
+    const hasSeenDialog = localStorage.getItem('hasSeenDarkModeDialog');
+    if (!hasSeenDialog) {
+      setShowDarkModeDialog(true);
+    }
+  }, []);
+
+  const handleTryDarkMode = () => {
+    setTheme('dark');
+    localStorage.setItem('hasSeenDarkModeDialog', 'true');
+    setShowDarkModeDialog(false);
+  }
+
+  const handleCloseDialog = () => {
+    localStorage.setItem('hasSeenDarkModeDialog', 'true');
+    setShowDarkModeDialog(false);
+  }
+
 
   if (isLoading) {
       return <LoadingOverlay isLoading={true} />;
@@ -140,6 +184,13 @@ export default function HomePageClient({ dictionary }: { dictionary: Dictionary 
             <RecentActivity transactions={recentTransactions} userData={userData} dictionary={d} />
         </>
       )}
+
+      <DarkModeDialog
+        open={showDarkModeDialog}
+        onOpenChange={handleCloseDialog}
+        onTry={handleTryDarkMode}
+        dictionary={d.darkModeDialog}
+      />
     </div>
   );
 }

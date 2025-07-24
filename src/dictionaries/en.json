@@ -129,7 +129,13 @@
         "loadingTransactions": "Loading transactions...",
         "noRecentTransactions": "No recent transactions found.",
         "dashboard": "Dashboard",
-        "businessDashboardComingSoon": "Dashboard for business accounts coming soon."
+        "businessDashboardComingSoon": "Dashboard for business accounts coming soon.",
+        "darkModeDialog": {
+            "title": "Introducing Dark Mode",
+            "description": "Enjoy a new look for BluePay. You can change this anytime in the settings.",
+            "tryItNow": "Try it Now",
+            "close": "Close"
+        }
     },
     "activity": {
         "title": "Activity",
@@ -373,6 +379,7 @@
         },
         "theme": {
             "title": "Theme",
+            "beta": "Beta",
             "description": "Choose how BluePay looks on your device.",
             "light": "Light",
             "dark": "Dark",

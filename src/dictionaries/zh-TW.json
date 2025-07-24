@@ -129,7 +129,13 @@
         "loadingTransactions": "正在載入交易紀錄...",
         "noRecentTransactions": "找不到最近的交易紀錄。",
         "dashboard": "儀表板",
-        "businessDashboardComingSoon": "商業帳戶的儀表板功能即將推出。"
+        "businessDashboardComingSoon": "商業帳戶的儀表板功能即將推出。",
+        "darkModeDialog": {
+            "title": "隆重介紹深色模式",
+            "description": "享受 BluePay 的全新外觀。您可以隨時在設定中更改。",
+            "tryItNow": "立即試用",
+            "close": "關閉"
+        }
     },
     "activity": {
         "title": "活動",
@@ -373,6 +379,7 @@
         },
         "theme": {
             "title": "主題",
+            "beta": "測試版",
             "description": "選擇 BluePay 在您裝置上的外觀。",
             "light": "淺色",
             "dark": "深色",
